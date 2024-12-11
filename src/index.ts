@@ -58,21 +58,38 @@ const makeStandardStyle = (group: Color, header: Color, data: Color): CustomStyl
 };
 
 export const StandardStyleSet = {
+    // redberry:       makeStandardStyle('#5B0F00', '#85200C', '#E6B8AF'),
+    // red:            makeStandardStyle('#660000', '#990000', '#F4CCCC'),
+    // orange:         makeStandardStyle('#783F04', '#B45F06', '#FCE5CD'),
+    // terracotta:     makeStandardStyle('#602A15', '#8A4F3A', '#F3E0D7'),
+    // yellow:         makeStandardStyle('#7F6000', '#BF9000', '#FFF2CC'),
+    // green:          makeStandardStyle('#274E13', '#38761D', '#D9EAD3'),
+    // cyan:           makeStandardStyle('#0C343D', '#134F5C', '#D0E0E3'),
+    // cornflowerblue: makeStandardStyle('#1C4587', '#1155CC', '#C9DAF8'),
+    // blue:           makeStandardStyle('#073763', '#0B5394', '#CFE2F3'),
+    // purple:         makeStandardStyle('#20124D', '#351C75', '#D9D2E9'),
+    // magenta:        makeStandardStyle('#4C1130', '#65183E', '#B3A0A8'),
+    // gray:           makeStandardStyle('#4D4D4D', '#808080', '#F2F2F2'),
+
     redberry:       makeStandardStyle('#5B0F00', '#85200C', '#E6B8AF'),
     red:            makeStandardStyle('#660000', '#990000', '#F4CCCC'),
+    coral:          makeStandardStyle('#652b2b', '#af4a4a', '#ffd7d7'),
+    bronze:         makeStandardStyle('#5D4037', '#895d4d', '#D7CCC8'),
     orange:         makeStandardStyle('#783F04', '#B45F06', '#FCE5CD'),
+    rust:           makeStandardStyle('#8B3103', '#B54D18', '#F5DEB3'),
     yellow:         makeStandardStyle('#7F6000', '#BF9000', '#FFF2CC'),
     green:          makeStandardStyle('#274E13', '#38761D', '#D9EAD3'),
+    moss:           makeStandardStyle('#1E4D2B', '#3A7A47', '#D4E4D4'),
+    sage:           makeStandardStyle('#38471f', '#596f34', '#D5E8D4'),
+    slate:          makeStandardStyle('#223939', '#2f4f4f', '#E0E6E6'),
     cyan:           makeStandardStyle('#0C343D', '#134F5C', '#D0E0E3'),
     cornflowerblue: makeStandardStyle('#1C4587', '#1155CC', '#C9DAF8'),
     blue:           makeStandardStyle('#073763', '#0B5394', '#CFE2F3'),
-    purple:         makeStandardStyle('#20124D', '#351C75', '#D9D2E9'),
+    lavender:       makeStandardStyle('#3f3677', '#5f51b7', '#E6E6FA'),
+    plum:           makeStandardStyle('#4E1A45', '#6C3483', '#E8DAEF'),
     magenta:        makeStandardStyle('#4C1130', '#65183E', '#B3A0A8'),
-    gray:           makeStandardStyle('#4D4D4D', '#808080', '#F2F2F2'),
-    mint:           makeStandardStyle('#0F403D', '#147F76', '#DAF7F0'),
-    lavender:       makeStandardStyle('#4E237A', '#875FAD', '#EADDF0'),
-    terracotta:     makeStandardStyle('#602A15', '#8A4F3A', '#F3E0D7'),
-    gold:           makeStandardStyle('#4F3E00', '#8E7600', '#FFF6D5'),
+    purple:         makeStandardStyle('#20124D', '#351C75', '#D9D2E9'),
+    gray:           makeStandardStyle('#3b3b3b', '#656565', '#F2F2F2'),
 } as const satisfies Record<string, CustomStyleSet>;
 
 export type StandardStyleSet = keyof typeof StandardStyleSet;
@@ -191,7 +208,7 @@ export type TimeFormatString =
     | 'HH:mm:ss.SS'
     | 'HH:mm:ss.SSS';
 
-const DateFormats = Object.freeze({
+export const DateFormats = Object.freeze({
     'ISODate': 'YYYY-MM-DD',
     'SlashedDate': 'MM/DD/YYYY',
     'EuropeanDate': 'DD/MM/YYYY',
@@ -199,9 +216,9 @@ const DateFormats = Object.freeze({
     'ShortLongDate': 'ddd, MMM D, YYYY',
     'MonthDayYear': 'MMM DD, YYYY',
     'DayMonthYear': 'DD MMM YYYY',
-}) satisfies Record<string, DateFormatString>;
+} as const) satisfies Record<string, DateFormatString>;
 
-const TimeFormats = Object.freeze({
+export const TimeFormats = Object.freeze({
     '24HourTime': 'HH:mm',
     '12HourTime': 'h:mm AM/PM',
     '24HourTimeWithSeconds': 'HH:mm:ss',
@@ -209,7 +226,7 @@ const TimeFormats = Object.freeze({
     '24HourTimeWithTenths': 'HH:mm:ss.S',
     '24HourTimeWithHundredths': 'HH:mm:ss.SS',
     '24HourTimeWithMilliseconds': 'HH:mm:ss.SSS',
-}) satisfies Record<string, TimeFormatString>;
+}as const) satisfies Record<string, TimeFormatString>;
 
 export type TemporalFormat = {
     type: 'temporal';
@@ -263,9 +280,8 @@ export type TableSheet = TableUnit & {
 };
 
 export type Definitions = {
-    colors: Record<string, Color>;
-    // prebuilts are automatically defined along with these
-    styles: Record<string, Style>;
+    colors: Record<string, Color>;    
+    styles: Record<string, Style>; // Standard Styles are automatically included but will be overwritten for references if you do
     borders: Record<string, Border>;
     types: Record<string, DataType>;
 };
