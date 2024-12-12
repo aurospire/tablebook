@@ -1,55 +1,72 @@
 /* Reference */
+export const ReferenceRegex = /^@.+$/;
 export type Reference = `@${string}`;
 
-export type Inheritor = { inherit?: Reference; };
-
 /* Data Reference */
+export const SelfLiteral = 'self';
 export type Self = 'self';
 
-export type ColumnReference = { table?: string; group?: string; column: string; };
+export type ColumnReference = {
+    table?: string; // If Missing, same Table
+    group?: string; // If Missing, same Group
+    column: string;
+};
 
-export type PositionRowReference = { type: 'index' | 'offset'; value: number; };
+export const PositionalRowReferenceTypes = ['index', 'offset'] as const;
+export type PositionalRowReference = {
+    type: typeof PositionalRowReferenceTypes[number];
+    value: number;
+};
 
-export type RangeRowReference = { type: 'range'; start: RowReference; end: RowReference; };
+export const RangeRowReferenceType = 'range';
+export type RangeRowReference = {
+    type: typeof RangeRowReferenceType;
+    start: PositionalRowReference;
+    end: PositionalRowReference;
+};
 
-export type RowReference = PositionRowReference | RangeRowReference;
+export type RowReference = PositionalRowReference | RangeRowReference;
 
 export type DataReference = { column: ColumnReference | Self; row: RowReference | Self; } | Self;
 
 /* Styling */
+export const ColorRegex = /^#[A-Za-z0-9]{6}$/;
 export type Color = `#${string}`;
 
 export type TextForm = boolean | { bold?: boolean; italic?: boolean; };
 
-export type BorderType = 'solid' | 'dotted' | 'dashed';
-
-export type Style = Inheritor & {
-    fore?: Color | Reference;
-    back?: Color | Reference;
-    form?: TextForm;
+export type Style = {
+    fore?: Color | Reference; // defaults to black
+    back?: Color | Reference; // defaults to white
+    form?: TextForm; // defaults to false
 };
 
-export type Border = Inheritor & {
-    color?: Color | Reference;
-    width?: number;
-    type?: BorderType;
+export const BorderTypes = ['solid', 'dotted', 'dashed'] as const;
+
+export type BorderType = typeof BorderTypes[number];
+
+export type Border = {
+    color?: Color | Reference; // defaults to black
+    width?: number; // defaults to 1
+    type?: BorderType; // defaults to solid
 };
 
-export type BorderSet = Inheritor & {
-    below?: Border | Reference;
-    between?: Border | Reference;
+export type Partition = {
+    below?: Border; // Border below the Group-Header or Column-Header
+    between?: Border; // Border between the Groups-Columns or individual Columns
 };
 
-export type HeaderStyle = Style & { border?: BorderSet; };
+export type HeaderStyle = Style & { partition?: Partition; };
 
 
-export type CustomStyleSet = Inheritor & {
+export type CustomTheme = {
+    inherits?: Reference; // Deep overriding (into styles and borders)
     group?: HeaderStyle | Reference;
     header?: HeaderStyle | Reference;
     data?: Style | Reference;
 };
 
-const makeStandardStyle = (group: Color, header: Color, data: Color): CustomStyleSet => {
+const makeStandardTheme = (group: Color, header: Color, data: Color): CustomTheme => {
     return {
         group: { fore: '#FFFFFF', back: group, form: { bold: true } },
         header: { fore: '#FFFFFF', back: header, form: { bold: true } },
@@ -57,113 +74,177 @@ const makeStandardStyle = (group: Color, header: Color, data: Color): CustomStyl
     };
 };
 
-export const StandardStyleSet = {
-    // redberry:       makeStandardStyle('#5B0F00', '#85200C', '#E6B8AF'),
-    // red:            makeStandardStyle('#660000', '#990000', '#F4CCCC'),
-    // orange:         makeStandardStyle('#783F04', '#B45F06', '#FCE5CD'),
-    // terracotta:     makeStandardStyle('#602A15', '#8A4F3A', '#F3E0D7'),
-    // yellow:         makeStandardStyle('#7F6000', '#BF9000', '#FFF2CC'),
-    // green:          makeStandardStyle('#274E13', '#38761D', '#D9EAD3'),
-    // cyan:           makeStandardStyle('#0C343D', '#134F5C', '#D0E0E3'),
-    // cornflowerblue: makeStandardStyle('#1C4587', '#1155CC', '#C9DAF8'),
-    // blue:           makeStandardStyle('#073763', '#0B5394', '#CFE2F3'),
-    // purple:         makeStandardStyle('#20124D', '#351C75', '#D9D2E9'),
-    // magenta:        makeStandardStyle('#4C1130', '#65183E', '#B3A0A8'),
-    // gray:           makeStandardStyle('#4D4D4D', '#808080', '#F2F2F2'),
+export const StandardThemes = {
+    // redberry:       makeStandardTheme('#5B0F00', '#85200C', '#E6B8AF'),
+    // red:            makeStandardTheme('#660000', '#990000', '#F4CCCC'),
+    // orange:         makeStandardTheme('#783F04', '#B45F06', '#FCE5CD'),
+    // terracotta:     makeStandardTheme('#602A15', '#8A4F3A', '#F3E0D7'),
+    // yellow:         makeStandardTheme('#7F6000', '#BF9000', '#FFF2CC'),
+    // green:          makeStandardTheme('#274E13', '#38761D', '#D9EAD3'),
+    // cyan:           makeStandardTheme('#0C343D', '#134F5C', '#D0E0E3'),
+    // cornflowerblue: makeStandardTheme('#1C4587', '#1155CC', '#C9DAF8'),
+    // blue:           makeStandardTheme('#073763', '#0B5394', '#CFE2F3'),
+    // purple:         makeStandardTheme('#20124D', '#351C75', '#D9D2E9'),
+    // magenta:        makeStandardTheme('#4C1130', '#65183E', '#B3A0A8'),
+    // gray:           makeStandardTheme('#4D4D4D', '#808080', '#F2F2F2'),
 
-    redberry:       makeStandardStyle('#5B0F00', '#85200C', '#E6B8AF'),
-    red:            makeStandardStyle('#660000', '#990000', '#F4CCCC'),
-    coral:          makeStandardStyle('#652b2b', '#af4a4a', '#ffd7d7'),
-    bronze:         makeStandardStyle('#5D4037', '#895d4d', '#D7CCC8'),
-    orange:         makeStandardStyle('#783F04', '#B45F06', '#FCE5CD'),
-    rust:           makeStandardStyle('#8B3103', '#B54D18', '#F5DEB3'),
-    yellow:         makeStandardStyle('#7F6000', '#BF9000', '#FFF2CC'),
-    green:          makeStandardStyle('#274E13', '#38761D', '#D9EAD3'),
-    moss:           makeStandardStyle('#1E4D2B', '#3A7A47', '#D4E4D4'),
-    sage:           makeStandardStyle('#38471f', '#596f34', '#D5E8D4'),
-    slate:          makeStandardStyle('#223939', '#2f4f4f', '#E0E6E6'),
-    cyan:           makeStandardStyle('#0C343D', '#134F5C', '#D0E0E3'),
-    cornflowerblue: makeStandardStyle('#1C4587', '#1155CC', '#C9DAF8'),
-    blue:           makeStandardStyle('#073763', '#0B5394', '#CFE2F3'),
-    lavender:       makeStandardStyle('#3f3677', '#5f51b7', '#E6E6FA'),
-    plum:           makeStandardStyle('#4E1A45', '#6C3483', '#E8DAEF'),
-    magenta:        makeStandardStyle('#4C1130', '#65183E', '#B3A0A8'),
-    purple:         makeStandardStyle('#20124D', '#351C75', '#D9D2E9'),
-    gray:           makeStandardStyle('#3b3b3b', '#656565', '#F2F2F2'),
-} as const satisfies Record<string, CustomStyleSet>;
+    // redberry:       makeStandardTheme('#5B0F00', '#85200C', '#E6B8AF'),
+    // red:            makeStandardTheme('#660000', '#990000', '#F4CCCC'),
+    // coral:          makeStandardTheme('#652b2b', '#af4a4a', '#ffd7d7'),
+    // bronze:         makeStandardTheme('#5D4037', '#895d4d', '#D7CCC8'),
+    // orange:         makeStandardTheme('#783F04', '#B45F06', '#FCE5CD'),
+    // rust:           makeStandardTheme('#8B3103', '#B54D18', '#F5DEB3'),
+    // yellow:         makeStandardTheme('#7F6000', '#BF9000', '#FFF2CC'),
+    // green:          makeStandardTheme('#274E13', '#38761D', '#D9EAD3'),
+    // moss:           makeStandardTheme('#1E4D2B', '#3A7A47', '#D4E4D4'),
+    // sage:           makeStandardTheme('#38471f', '#596f34', '#D5E8D4'),
+    // slate:          makeStandardTheme('#223939', '#2f4f4f', '#E0E6E6'),
+    // cyan:           makeStandardTheme('#0C343D', '#134F5C', '#D0E0E3'),
+    // cornflowerblue: makeStandardTheme('#1C4587', '#1155CC', '#C9DAF8'),
+    // blue:           makeStandardTheme('#073763', '#0B5394', '#CFE2F3'),
+    // lavender:       makeStandardTheme('#3f3677', '#5f51b7', '#E6E6FA'),
+    // plum:           makeStandardTheme('#4E1A45', '#6C3483', '#E8DAEF'),
+    // magenta:        makeStandardTheme('#4C1130', '#65183E', '#B3A0A8'),
+    // purple:         makeStandardTheme('#20124D', '#351C75', '#D9D2E9'),
+    // gray:           makeStandardTheme('#3b3b3b', '#656565', '#F2F2F2'),
 
-export type StandardStyleSet = keyof typeof StandardStyleSet;
+    redberry: makeStandardTheme('#5B0F00', '#85200C', '#E6B8AF'),
+    red: makeStandardTheme('#660000', '#990000', '#F4CCCC'),
+    coral: makeStandardTheme('#652b2b', '#af4a4a', '#ffd7d7'),
+    bronze: makeStandardTheme('#5D4037', '#895d4d', '#D7CCC8'),
+    orange: makeStandardTheme('#783F04', '#B45F06', '#FCE5CD'),
+    rust: makeStandardTheme('#8B3103', '#B54D18', '#F5DEB3'),
+    yellow: makeStandardTheme('#7F6000', '#BF9000', '#FFF2CC'),
+    green: makeStandardTheme('#274E13', '#38761D', '#D9EAD3'),
+    moss: makeStandardTheme('#1E4D2B', '#3A7A47', '#D4E4D4'),
+    sage: makeStandardTheme('#38471f', '#596f34', '#D5E8D4'),
+    slate: makeStandardTheme('#223939', '#2f4f4f', '#E0E6E6'),
+    cyan: makeStandardTheme('#0C343D', '#134F5C', '#D0E0E3'),
+    cornflowerblue: makeStandardTheme('#1C4587', '#1155CC', '#C9DAF8'),
+    blue: makeStandardTheme('#073763', '#0B5394', '#CFE2F3'),
+    lavender: makeStandardTheme('#3f3677', '#5f51b7', '#E6E6FA'),
+    plum: makeStandardTheme('#4E1A45', '#6C3483', '#E8DAEF'),
+    magenta: makeStandardTheme('#4C1130', '#65183E', '#B3A0A8'),
+    purple: makeStandardTheme('#20124D', '#351C75', '#D9D2E9'),
+    gray: makeStandardTheme('#3b3b3b', '#656565', '#F2F2F2'),
+} as const;
 
+export type StandardTheme = keyof typeof StandardThemes;
 
-export type StyleSet = StandardStyleSet | CustomStyleSet;
+export type Theme = StandardTheme | CustomTheme;
+
 
 /* Operators */
-export type ComparisonOperator = '=' | '>' | '<' | '>=' | '<=' | '<>';
+export const ComparisonOperators = ['=', '>', '<', '>=', '<=', '<>'] as const;
+export type ComparisonOperator = typeof ComparisonOperators[number];
 
-export type ArithmeticOperator = '+' | '-' | '*' | '/' | '^';
+export const IntegrativeOperators = ['+', '-', '*', '/', '^', '&'] as const;
+export type IntegrativeOperator = typeof IntegrativeOperators[number];
 
-export type ConcatOperator = '&';
-
-export type Operator = ComparisonOperator | ArithmeticOperator | ConcatOperator;
+export type Operator = ComparisonOperator | IntegrativeOperator;
 
 
-/* Data Validation and Rules */
+/* Expressions */
+export const CompoundExpressionType = 'compound';
+export type CompoundExpression = { type: typeof CompoundExpressionType; with: Operator; left: Expression; right: Expression; };
+
+export const NegatedExpressionType = 'negated';
+export type NegatedExpression = { type: typeof NegatedExpressionType; on: Expression; };
+
+export const FunctionExpressionType = 'function';
+export type FunctionExpression = { type: typeof FunctionExpressionType; name: string; args: Expression[]; }; // NO HARDCODED - ITS UP TO USERS TO MAKE SURE FUNCTIONS ARE VALID
+
+export const LiteralExpressionType = 'literal';
+export type LiteralExpression = { type: typeof LiteralExpressionType; value: string | number | boolean; };
+
+export const DataExpressionType = 'data';
+export type DataExpression = { type: typeof DataExpressionType; from: DataReference; };
+
+export type SelfExpression = { type: typeof SelfLiteral; };
+
+export type Expression =
+    | CompoundExpression
+    | NegatedExpression
+    | FunctionExpression
+    | LiteralExpression
+    | DataExpression
+    | SelfExpression;
+
+
+/* Data Rules */
+
 // Rule[] => All(Rule) all must pass
 
+export const DateStringRegex = /^\d{4}-\d{2}-d{2}$/;
 export type DateString = `${number}-${number}-${number}`;
 
+export const TimeStringRegex = /^\d{2}:\d{2}:d{2}$/;
 export type TimeString = `${number}:${number}:${number}`;
 
+export const DateTimeStringRegex = /^\d{4}-\d{2}-d{2} \d{2}:\d{2}:d{2}$/;
 export type DateTimeString = `${DateString} ${TimeString}`;
 
 
 export type Comparable = number | DateString | TimeString | DateTimeString;
 
-
 export type ComparisonRule<T extends Comparable> = { type: ComparisonOperator; to: T; };
 
-export type BetweenRule<T extends Comparable> = { type: 'between'; low: T; high: T; };
+export const BetweenRuleType = 'between';
+export type BetweenRule<T extends Comparable> = { type: typeof BetweenRuleType; low: T; high: T; };
 
 
-export type NumberValueRule<T extends Comparable> = ComparisonRule<T> | BetweenRule<T>;
 
-export type TextValueRule = { type: 'contains' | 'begins' | 'ends'; value: string; };
+export const MatchRuleTypes = ['contains', 'begins', 'ends'] as const;
+export type MatchRule = { type: typeof MatchRuleTypes[number]; value: string; };
 
-
-export type CustomRule = { type: 'custom'; expression: Expression; };
-
-
-export type NumberRule = NumberValueRule<Comparable> | CustomRule;
-
-export type TextRule = TextValueRule | NumberValueRule<number> | CustomRule;
+export const CustomRuleType = 'custom';
+export type CustomRule = { type: typeof CustomRuleType; expression: Expression; };
 
 
-export type ConditionalStyle<Rule> = { on: Rule[]; style: Style; };
+export type NumericRule = ComparisonRule<Comparable> | BetweenRule<Comparable> | CustomRule;
+
+export type TextRule = MatchRule | ComparisonRule<number> | BetweenRule<number> | CustomRule;
+
+
+export type ConditionalStyle<Rule> = {
+    on: Rule[]; // ALL Rules have to pass 
+    style: Style | Reference;
+};
 
 
 /* Data Types */
+export const TextTypeType = 'text';
 export type TextType = {
-    type: 'text';
+    type: typeof TextTypeType;
     expression?: Expression;
     rules?: TextRule[];
-    styles?: ConditionalStyle<TextRule[]>;
+    styles?: ConditionalStyle<TextRule>[];
 };
 
+export const NumericTypeType = 'numeric';
 export type NumericType = {
-    type: 'numeric';
+    type: typeof NumericTypeType;
     expression?: Expression;
-    rules?: NumberRule[];
+    rules?: NumericRule[];
     format?: NumericFormat;
-    styles?: ConditionalStyle<NumberRule[]>;
+    styles?: ConditionalStyle<NumericRule>[];
 };
 
-export type EnumItem = string | { value: string; style?: Style; };
+export type EnumItem = string | { value: string; style?: Style | Reference; };
 
-export type EnumType = { type: 'enum'; values: EnumItem[]; };
+export const EnumTypeType = 'enum';
+export type EnumType = {
+    type: typeof EnumTypeType;
+    values: EnumItem[];
+};
 
-export type LookupType = { type: 'lookup'; values: ColumnReference; };
+export const LookupTypeType = 'lookup';
+export type LookupType = {
+    type: typeof LookupTypeType;
+    values: ColumnReference;
+};
 
-export type DataType = Reference | TextType | NumericType | EnumType | LookupType;
+export type DataType = TextType | NumericType | EnumType | LookupType | Reference;
 
 /* Formats */
 export type DigitPlaceholder = {
@@ -172,41 +253,28 @@ export type DigitPlaceholder = {
     align?: number; /** '?' in NumericFormat */
 };
 
+export const NegativeFormats = ['minus', 'enclosed'] as const;
+
 export type BaseNumberFormat<Type extends string> = {
     type: Type;
-    integer: number | DigitPlaceholder;
-    decimal: number | DigitPlaceholder;
+    integer?: number | DigitPlaceholder;
+    decimal?: number | DigitPlaceholder;
     commas?: boolean; /** Separate thousands with ',' */
-    negatives?: 'minus' | 'enclosed';
+    negatives?: typeof NegativeFormats[number]; // defaults to minus
 };
 
-export type NumberFormat = BaseNumberFormat<'number'>;
+export const NumberFormatType = 'number';
+export type NumberFormat = BaseNumberFormat<typeof NumberFormatType>;
 
-export type PercentageFormat = BaseNumberFormat<'percent'>;
+export const PercentFormatType = 'percent';
+export type PercentFormat = BaseNumberFormat<typeof PercentFormatType>;
 
-export type CurrencyFormat = BaseNumberFormat<'currency'> & {
-    symbol: string;
-    position?: 'prefix' | 'suffix';
+export const CurrencyFormatType = 'currency';
+export const CurrencySymbolPositions = ['prefix', 'suffix'] as const;
+export type CurrencyFormat = BaseNumberFormat<typeof CurrencyFormatType> & {
+    symbol?: string; // defaults to '$'
+    position?: typeof CurrencySymbolPositions[number];
 };
-
-export type DateFormatString =
-    | 'YYYY-MM-DD'
-    | 'MM/DD/YYYY'
-    | 'DD/MM/YYYY'
-    | 'MMM DD, YYYY'
-    | 'DD MMM YYYY'
-    | 'YYYY/MM/DD'
-    | "dddd, MMMM D, YYYY"
-    | "ddd, MMM D, YYYY";
-
-export type TimeFormatString =
-    | 'HH:mm'
-    | 'h:mm AM/PM'
-    | 'HH:mm:ss'
-    | 'h:mm:ss AM/PM'
-    | 'HH:mm:ss.S'
-    | 'HH:mm:ss.SS'
-    | 'HH:mm:ss.SSS';
 
 export const DateFormats = Object.freeze({
     'ISODate': 'YYYY-MM-DD',
@@ -216,7 +284,7 @@ export const DateFormats = Object.freeze({
     'ShortLongDate': 'ddd, MMM D, YYYY',
     'MonthDayYear': 'MMM DD, YYYY',
     'DayMonthYear': 'DD MMM YYYY',
-} as const) satisfies Record<string, DateFormatString>;
+} as const);
 
 export const TimeFormats = Object.freeze({
     '24HourTime': 'HH:mm',
@@ -226,47 +294,33 @@ export const TimeFormats = Object.freeze({
     '24HourTimeWithTenths': 'HH:mm:ss.S',
     '24HourTimeWithHundredths': 'HH:mm:ss.SS',
     '24HourTimeWithMilliseconds': 'HH:mm:ss.SSS',
-} as const) satisfies Record<string, TimeFormatString>;
+} as const);
 
+export type DateFormatString = typeof DateFormats[keyof typeof DateFormats];
+
+export type TimeFormatString = typeof TimeFormats[keyof typeof TimeFormats];
+
+export const TemporalFormatType = 'temporal';
 export type TemporalFormat = {
-    type: 'temporal';
+    type: typeof TemporalFormatType;
     date?: DateFormatString;
     time?: TimeFormatString;
 };
 
-export type NumericFormat = NumberFormat | PercentageFormat | CurrencyFormat | TemporalFormat;
+export type NumericFormat = NumberFormat | PercentFormat | CurrencyFormat | TemporalFormat;
 
-/* Expressions */
-export type CompoundExpression = { type: 'compound'; with: Operator; left: Expression; right: Expression; };
-
-export type NegateExpression = { type: 'negate'; on: Expression; };
-
-export type FunctionExpression = { type: 'function'; name: string; args: Expression[]; };
-
-export type LiteralExpression = { type: 'literal'; value: string | number | boolean; };
-
-export type DataExpression = { type: 'data'; from: DataReference; };
-
-export type SelfExpression = { type: 'self'; };
-
-export type Expression =
-    | CompoundExpression
-    | NegateExpression
-    | FunctionExpression
-    | LiteralExpression
-    | DataExpression
-    | SelfExpression;
 
 /* Table Structures */
+export const TableUnitNameRegex = /^[A-Z_](A-Za-z0-9_)*$/;
 export type TableUnit = {
-    name: string;   // [A-Z_](A-Za-z0-9_)*    
-    style?: StyleSet;
-    description?: string;
+    name: string;
+    theme?: Theme | Reference;
+    description?: string; // meta description of column
 };
 
 export type TableColumn = TableUnit & {
     type: DataType;
-    source?: string; // description of source of data
+    source?: string; // meta description of source of data
 };
 
 // Group of Columns
@@ -280,10 +334,10 @@ export type TableSheet = TableUnit & {
 };
 
 export type Definitions = {
-    colors: Record<string, Color>;
-    styles: Record<string, Style>; // Standard Styles are automatically included but will be overwritten for references if you do
-    borders: Record<string, Border>;
-    types: Record<string, DataType>;
+    colors?: Record<string, Color>;
+    styles?: Record<string, Style | HeaderStyle>;
+    themes?: Record<string, Theme>; // Includes Standard Themes by default, overriding them by name not allowed
+    types?: Record<string, DataType>;
 };
 
 export type TableBook = TableUnit & {
