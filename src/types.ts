@@ -1,8 +1,10 @@
 /* Reference */
+// Used to Reference context dependent items in TableBook Definition object
 export const ReferenceRegex = /^@.+$/;
 export type Reference = `@${string}`;
 
 /* Data Reference */
+// Used to Reference columns/subsets of columns
 export const SelfLiteral = 'self';
 export type Self = 'self';
 
@@ -60,7 +62,7 @@ export type HeaderStyle = Style & { partition?: Partition; };
 
 
 export type CustomTheme = {
-    inherits?: Reference; // Deep overriding (into styles and borders)
+    inherits?: Reference | Reference[]; // Deep overriding (into styles and borders)
     group?: HeaderStyle | Reference;
     header?: HeaderStyle | Reference;
     data?: Style | Reference;
@@ -68,9 +70,9 @@ export type CustomTheme = {
 
 const makeStandardTheme = (group: Color, header: Color, data: Color): CustomTheme => {
     return {
-        group: { fore: '#FFFFFF', back: group, form: { bold: true } },
-        header: { fore: '#FFFFFF', back: header, form: { bold: true } },
-        data: { fore: '#000000', back: data },
+        group: { back: group },
+        header: { back: header },
+        data: { back: data },
     };
 };
 
@@ -339,6 +341,7 @@ export type TableSheet = TableUnit & {
     rows: number;
 };
 
+// Definitions table allows reuse/inheritence of commonly used colors,styles,themes and types via References
 export type Definitions = {
     colors?: Record<string, Color>;
     styles?: Record<string, Style | HeaderStyle>;

@@ -81,7 +81,7 @@ const HeaderStyleReference = z.union([HeaderStyle, Reference]);
 const StyleReference = z.union([Style, Reference]);
 
 const CustomTheme: z.ZodType<CustomTheme> = z.object({
-    inherits: Reference.optional(),
+    inherits: z.union([Reference, z.array(Reference)]).optional(),
     group: HeaderStyleReference.optional(),
     header: HeaderStyleReference.optional(),
     data: StyleReference.optional(),
