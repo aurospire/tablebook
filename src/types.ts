@@ -1,5 +1,5 @@
 /* Reference */
-// Used to Reference context dependent items in TableBook Definition object
+// Used to Reference context dependent items (color,style,theme,type) defined in TableBook Definition object
 export const ReferenceRegex = /^@.+$/;
 export type Reference = `@${string}`;
 
@@ -27,9 +27,11 @@ export type RangeRowSelector = {
     end: PositionalRowSelector;
 };
 
+// Select a subrange of the Column
 export type RowSelector = PositionalRowSelector | RangeRowSelector;
 
-export type DataSelector = { column: ColumnSelector | SelfSelector; row: RowSelector | SelfSelector; } | SelfSelector;
+// No row means the entire Column. No horizontal (multi-column) selection! Selectors only selects a full or partial column, one of the constraints of tablebook
+export type DataSelector = { column: ColumnSelector | SelfSelector; row?: RowSelector | SelfSelector; } | SelfSelector;
 
 /* Styling */
 export const ColorRegex = /^#[A-Za-z0-9]{6}$/;

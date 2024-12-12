@@ -57,7 +57,7 @@ const DataSelector: z.ZodType<DataSelector> = z.union([
     SelfSelector,
     z.object({
         column: z.union([ColumnSelector, SelfSelector]),
-        row: z.union([RowSelector, SelfSelector]),
+        row: z.union([RowSelector, SelfSelector]).optional(),
     })
 ]);
 
