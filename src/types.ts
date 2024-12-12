@@ -131,7 +131,7 @@ export const StandardThemes = {
 
 export type StandardTheme = keyof typeof StandardThemes;
 
-export type Theme = StandardTheme | CustomTheme;
+export type Theme = CustomTheme | StandardTheme;
 
 
 /* Operators */
@@ -212,41 +212,7 @@ export type ConditionalStyle<Rule> = {
 };
 
 
-/* Data Types */
-export const TextTypeType = 'text';
-export type TextType = {
-    type: typeof TextTypeType;
-    expression?: Expression;
-    rules?: TextRule[];
-    styles?: ConditionalStyle<TextRule>[];
-};
-
-export const NumericTypeType = 'numeric';
-export type NumericType = {
-    type: typeof NumericTypeType;
-    expression?: Expression;
-    rules?: NumericRule[];
-    format?: NumericFormat;
-    styles?: ConditionalStyle<NumericRule>[];
-};
-
-export type EnumItem = string | { value: string; style?: Style | Reference; };
-
-export const EnumTypeType = 'enum';
-export type EnumType = {
-    type: typeof EnumTypeType;
-    values: EnumItem[];
-};
-
-export const LookupTypeType = 'lookup';
-export type LookupType = {
-    type: typeof LookupTypeType;
-    values: ColumnReference;
-};
-
-export type DataType = TextType | NumericType | EnumType | LookupType | Reference;
-
-/* Formats */
+/* Numeric Formats */
 export type DigitPlaceholder = {
     fixed?: number; /** '0' in NumericFormat */
     flex?: number;  /** '#' in NumericFormat */
@@ -300,6 +266,7 @@ export type DateFormatString = typeof DateFormats[keyof typeof DateFormats];
 
 export type TimeFormatString = typeof TimeFormats[keyof typeof TimeFormats];
 
+// If neither date or time is supplied, goes with ISODate
 export const TemporalFormatType = 'temporal';
 export type TemporalFormat = {
     type: typeof TemporalFormatType;
@@ -307,7 +274,46 @@ export type TemporalFormat = {
     time?: TimeFormatString;
 };
 
-export type NumericFormat = NumberFormat | PercentFormat | CurrencyFormat | TemporalFormat;
+export type NumericFormat =
+    | NumberFormat
+    | PercentFormat
+    | CurrencyFormat
+    | TemporalFormat;
+
+
+/* Data Types */
+export const TextTypeType = 'text';
+export type TextType = {
+    type: typeof TextTypeType;
+    expression?: Expression;
+    rules?: TextRule[];
+    styles?: ConditionalStyle<TextRule>[];
+};
+
+export const NumericTypeType = 'numeric';
+export type NumericType = {
+    type: typeof NumericTypeType;
+    expression?: Expression;
+    rules?: NumericRule[];
+    styles?: ConditionalStyle<NumericRule>[];
+    format?: NumericFormat;
+};
+
+export type EnumItem = string | { value: string; style?: Style | Reference; };
+
+export const EnumTypeType = 'enum';
+export type EnumType = {
+    type: typeof EnumTypeType;
+    values: EnumItem[];
+};
+
+export const LookupTypeType = 'lookup';
+export type LookupType = {
+    type: typeof LookupTypeType;
+    values: ColumnReference;
+};
+
+export type DataType = TextType | NumericType | EnumType | LookupType | Reference;
 
 
 /* Table Structures */

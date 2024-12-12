@@ -40,9 +40,7 @@ const DataReference: z.ZodType<DataReference> = z.union([
 ]);
 
 /* Styling */
-const Color: z.ZodType<Color> = z.custom(value => {
-    ColorRegex.test(value as string);
-});
+const Color: z.ZodType<Color> = z.custom(value => ColorRegex.test(value as string));
 
 const TextForm: z.ZodType<TextForm> = z.union([
     z.boolean(),
@@ -89,11 +87,10 @@ const CustomTheme: z.ZodType<CustomTheme> = z.object({
     data: StyleReference.optional(),
 });
 
-
-const StandardTheme: z.ZodType<StandardTheme> = z.enum(Object.values(StandardThemes) as any);
-
+const StandardTheme: z.ZodType<StandardTheme> = z.enum(Object.keys(StandardThemes) as any);
 
 const Theme: z.ZodType<Theme> = z.union([CustomTheme, StandardTheme]);
+
 
 /* Operators */
 const ComparisonOperator: z.ZodType<ComparisonOperator> = z.enum(ComparisonOperators);
@@ -149,19 +146,13 @@ const Expression: z.ZodType<Expression> = z.union([
 ]);
 
 
-
 /* Data Rules */
-const DateString: z.ZodType<DateString> = z.custom(value => {
-    DateStringRegex.test(value as string);
-});
+const DateString: z.ZodType<DateString> = z.custom(value => DateStringRegex.test(value as string));
 
-const TimeString: z.ZodType<TimeString> = z.custom(value => {
-    TimeStringRegex.test(value as string);
-});
+const TimeString: z.ZodType<TimeString> = z.custom(value => TimeStringRegex.test(value as string));
 
-const DateTimeString: z.ZodType<DateTimeString> = z.custom(value => {
-    DateTimeStringRegex.test(value as string);
-});
+const DateTimeString: z.ZodType<DateTimeString> = z.custom(value => DateTimeStringRegex.test(value as string));
+
 
 const Comparable: z.ZodType<Comparable> = z.union([
     z.number(),
@@ -217,47 +208,8 @@ const NumericConditionalStyle: z.ZodType<ConditionalStyle<NumericRule>> = z.obje
     style: StyleReference
 });
 
-/* Data Types */
-const TextType: z.ZodType<TextType> = z.object({
-    type: z.literal(TextTypeType),
-    expression: Expression.optional(),
-    rules: z.array(TextRule).optional(),
-    styles: z.array(TextConditionalStyle).optional()
-});
 
-const NumericType: z.ZodType<NumericType> = z.object({
-    type: z.literal(NumericTypeType),
-    expression: Expression.optional(),
-    rules: z.array(NumericRule).optional(),
-    styles: z.array(NumericConditionalStyle).optional()
-});
-
-const EnumItem: z.ZodType<EnumItem> = z.union([
-    z.string(),
-    z.object({
-        value: z.string(),
-        style: StyleReference.optional()
-    })
-]);
-
-const EnumType: z.ZodType<EnumType> = z.object({
-    type: z.literal(EnumTypeType),
-    values: z.array(EnumItem)
-});
-
-const LookupType: z.ZodType<LookupType> = z.object({
-    type: z.literal(LookupTypeType),
-    values: ColumnReference
-});
-
-const DataType: z.ZodType<DataType> = z.union([
-    TextType,
-    NumericType,
-    EnumType,
-    LookupType
-]);
-
-/* Formats */
+/* Numeric Format */
 const DigitPlaceholder: z.ZodType<DigitPlaceholder> = z.object({
     fixed: z.number().int().optional(),
     flex: z.number().int().optional(),
@@ -290,6 +242,7 @@ const DateFormatString: z.ZodType<DateFormatString> = z.enum(Object.values(DateF
 
 const TimeFormatString: z.ZodType<TimeFormatString> = z.enum(Object.values(TimeFormats) as any);
 
+// Empty Temporal is simply an ISODate
 const TemporalFormat: z.ZodType<TemporalFormat> = z.object({
     type: z.literal(TemporalFormatType),
     date: DateFormatString.optional(),
@@ -304,6 +257,48 @@ const NumericFormat: z.ZodType<NumericFormat> = z.union([
 ]);
 
 
+/* Data Types */
+const TextType: z.ZodType<TextType> = z.object({
+    type: z.literal(TextTypeType),
+    expression: Expression.optional(),
+    rules: z.array(TextRule).optional(),
+    styles: z.array(TextConditionalStyle).optional()
+});
+
+const NumericType: z.ZodType<NumericType> = z.object({
+    type: z.literal(NumericTypeType),
+    expression: Expression.optional(),
+    rules: z.array(NumericRule).optional(),
+    styles: z.array(NumericConditionalStyle).optional(),
+    format: NumericFormat.optional(),
+});
+
+const EnumItem: z.ZodType<EnumItem> = z.union([
+    z.string(),
+    z.object({
+        value: z.string(),
+        style: StyleReference.optional()
+    })
+]);
+
+const EnumType: z.ZodType<EnumType> = z.object({
+    type: z.literal(EnumTypeType),
+    values: z.array(EnumItem)
+});
+
+const LookupType: z.ZodType<LookupType> = z.object({
+    type: z.literal(LookupTypeType),
+    values: ColumnReference
+});
+
+const DataType: z.ZodType<DataType> = z.union([
+    TextType,
+    NumericType,
+    EnumType,
+    LookupType,
+    Reference
+]);
+
 /* Table Structures */
 const TableUnit: z.ZodType<TableUnit> = z.object({
     name: z.string().regex(TableUnitNameRegex),
@@ -317,19 +312,19 @@ const TableColumn: z.ZodType<TableColumn> = TableUnit.and(z.object({
 }));
 
 const TableGroup: z.ZodType<TableGroup> = TableUnit.and(z.object({
-    columns: z.array(TableColumn)
+    columns: z.array(TableColumn).min(1)
 }));
 
 const TableSheet: z.ZodType<TableSheet> = TableUnit.and(z.object({
-    groups: z.array(TableGroup),
-    rows: z.number().int()
+    groups: z.array(TableGroup).min(1),
+    rows: z.number().int().positive()
 }));
 
 const Definitions: z.ZodType<Definitions> = z.object({
-    colors: z.record(z.string(), Color).optional(),
-    styles: z.record(z.string(), z.union([Style, HeaderStyle])).optional(),
-    themes: z.record(z.string(), Theme).optional(),
-    types: z.record(z.string(), DataType).optional(),
+    colors: z.record(z.string(), Color).default({}),
+    styles: z.record(z.string(), z.union([Style, HeaderStyle])).default({}),
+    themes: z.record(z.string(), Theme).default({}),
+    types: z.record(z.string(), DataType).default({}),
 });
 
 const TableBook: z.ZodType<TableBook> = TableUnit.and(z.object({
