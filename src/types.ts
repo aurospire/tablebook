@@ -3,33 +3,33 @@
 export const ReferenceRegex = /^@.+$/;
 export type Reference = `@${string}`;
 
-/* Data Reference */
+/* Data Selector */
 // Used to Reference columns/subsets of columns
 export const SelfLiteral = 'self';
-export type Self = 'self';
+export type SelfSelector = 'self';
 
-export type ColumnReference = {
+export type ColumnSelector = {
     table?: string; // If Missing, same Table
     group?: string; // If Missing, same Group
     column: string;
 };
 
-export const PositionalRowReferenceTypes = ['index', 'offset'] as const;
-export type PositionalRowReference = {
-    type: typeof PositionalRowReferenceTypes[number];
+export const PositionalRowSelectorTypes = ['index', 'offset'] as const;
+export type PositionalRowSelector = {
+    type: typeof PositionalRowSelectorTypes[number];
     value: number;
 };
 
-export const RangeRowReferenceType = 'range';
-export type RangeRowReference = {
-    type: typeof RangeRowReferenceType;
-    start: PositionalRowReference;
-    end: PositionalRowReference;
+export const RangeRowSelectorType = 'range';
+export type RangeRowSelector = {
+    type: typeof RangeRowSelectorType;
+    start: PositionalRowSelector;
+    end: PositionalRowSelector;
 };
 
-export type RowReference = PositionalRowReference | RangeRowReference;
+export type RowSelector = PositionalRowSelector | RangeRowSelector;
 
-export type DataReference = { column: ColumnReference | Self; row: RowReference | Self; } | Self;
+export type DataSelector = { column: ColumnSelector | SelfSelector; row: RowSelector | SelfSelector; } | SelfSelector;
 
 /* Styling */
 export const ColorRegex = /^#[A-Za-z0-9]{6}$/;
@@ -160,7 +160,7 @@ export const LiteralExpressionType = 'literal';
 export type LiteralExpression = { type: typeof LiteralExpressionType; value: string | number | boolean; };
 
 export const DataExpressionType = 'data';
-export type DataExpression = { type: typeof DataExpressionType; from: DataReference; };
+export type DataExpression = { type: typeof DataExpressionType; from: DataSelector; };
 
 export type SelfExpression = { type: typeof SelfLiteral; };
 
@@ -312,7 +312,7 @@ export type EnumType = {
 export const LookupTypeType = 'lookup';
 export type LookupType = {
     type: typeof LookupTypeType;
-    values: ColumnReference;
+    values: ColumnSelector;
 };
 
 export type DataType = TextType | NumericType | EnumType | LookupType | Reference;

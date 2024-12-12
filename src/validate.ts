@@ -1,5 +1,27 @@
 import { z } from 'zod';
-import { BetweenRule, BetweenRuleType, Border, BorderType, BorderTypes, Color, ColorRegex, ColumnReference, Comparable, ComparisonOperator, ComparisonOperators, ComparisonRule, CompoundExpression, CompoundExpressionType, ConditionalStyle, CurrencyFormat, CurrencyFormatType, CurrencySymbolPositions, CustomRule, CustomRuleType, CustomTheme, DataExpression, DataExpressionType, DataReference, DataType, DateFormats, DateFormatString, DateString, DateStringRegex, DateTimeString, DateTimeStringRegex, Definitions, DigitPlaceholder, EnumItem, EnumType, EnumTypeType, Expression, FunctionExpression, FunctionExpressionType, HeaderStyle, IntegrativeOperator, IntegrativeOperators, LiteralExpression, LiteralExpressionType, LookupType, LookupTypeType, MatchRule, MatchRuleTypes, NegatedExpression, NegatedExpressionType, NegativeFormats, NumberFormat, NumberFormatType, NumericFormat, NumericRule, NumericType, NumericTypeType, Operator, Partition, PercentFormat, PercentFormatType, PositionalRowReference, PositionalRowReferenceTypes, RangeRowReference, RangeRowReferenceType, Reference, ReferenceRegex, RowReference, Self, SelfExpression, SelfLiteral, StandardTheme, StandardThemes, Style, TableBook, TableColumn, TableGroup, TableSheet, TableUnit, TableUnitNameRegex, TemporalFormat, TemporalFormatType, TextForm, TextRule, TextType, TextTypeType, Theme, TimeFormats, TimeFormatString, TimeString, TimeStringRegex } from './types';
+import {
+    BetweenRule, BetweenRuleType, Border, BorderType, BorderTypes,
+    Color, ColorRegex, ColumnSelector, Comparable, ComparisonOperator,
+    ComparisonOperators, ComparisonRule, CompoundExpression, CompoundExpressionType,
+    ConditionalStyle, CurrencyFormat, CurrencyFormatType, CurrencySymbolPositions,
+    CustomRule, CustomRuleType, CustomTheme, DataExpression, DataExpressionType,
+    DataSelector, DataType, DateFormats, DateFormatString, DateString,
+    DateStringRegex, DateTimeString, DateTimeStringRegex, Definitions,
+    DigitPlaceholder, EnumItem, EnumType, EnumTypeType, Expression,
+    FunctionExpression, FunctionExpressionType, HeaderStyle,
+    IntegrativeOperator, IntegrativeOperators, LiteralExpression,
+    LiteralExpressionType, LookupType, LookupTypeType, MatchRule,
+    MatchRuleTypes, NegatedExpression, NegatedExpressionType,
+    NegativeFormats, NumberFormat, NumberFormatType, NumericFormat,
+    NumericRule, NumericType, NumericTypeType, Operator,
+    Partition, PercentFormat, PercentFormatType, PositionalRowSelector,
+    PositionalRowSelectorTypes, RangeRowSelector, RangeRowSelectorType,
+    Reference, ReferenceRegex, RowSelector, SelfExpression, SelfLiteral,
+    SelfSelector, StandardTheme, StandardThemes, Style, TableBook, TableColumn,
+    TableGroup, TableSheet, TableUnit, TableUnitNameRegex, TemporalFormat,
+    TemporalFormatType, TextForm, TextRule, TextType, TextTypeType, Theme,
+    TimeFormats, TimeFormatString, TimeString, TimeStringRegex
+} from './types';
 
 // Note: Manually doing validation instead of inferring types from these to keep types clean.
 // I'm also ok with it using Object.value as any to extract const Object values
@@ -10,32 +32,32 @@ import { BetweenRule, BetweenRuleType, Border, BorderType, BorderTypes, Color, C
 const Reference: z.ZodType<Reference> = z.custom<Reference>(value => ReferenceRegex.test(value as string));
 
 /* Data Reference */
-const Self: z.ZodType<Self> = z.literal(SelfLiteral);
+const SelfSelector: z.ZodType<SelfSelector> = z.literal(SelfLiteral);
 
-const ColumnReference: z.ZodType<ColumnReference> = z.object({
+const ColumnSelector: z.ZodType<ColumnSelector> = z.object({
     table: z.string().optional(),
     group: z.string().optional(),
     column: z.string()
 });
 
-const PositionalRowReference: z.ZodType<PositionalRowReference> = z.object({
-    type: z.enum(PositionalRowReferenceTypes),
+const PositionalRowSelector: z.ZodType<PositionalRowSelector> = z.object({
+    type: z.enum(PositionalRowSelectorTypes),
     value: z.number()
 });
 
-const RangeRowReference: z.ZodType<RangeRowReference> = z.object({
-    type: z.literal(RangeRowReferenceType),
-    start: PositionalRowReference,
-    end: PositionalRowReference
+const RangeRowSelector: z.ZodType<RangeRowSelector> = z.object({
+    type: z.literal(RangeRowSelectorType),
+    start: PositionalRowSelector,
+    end: PositionalRowSelector
 });
 
-const RowReference: z.ZodType<RowReference> = z.union([PositionalRowReference, RangeRowReference]);
+const RowSelector: z.ZodType<RowSelector> = z.union([PositionalRowSelector, RangeRowSelector]);
 
-const DataReference: z.ZodType<DataReference> = z.union([
-    Self,
+const DataSelector: z.ZodType<DataSelector> = z.union([
+    SelfSelector,
     z.object({
-        column: z.union([ColumnReference, Self]),
-        row: z.union([RowReference, Self]),
+        column: z.union([ColumnSelector, SelfSelector]),
+        row: z.union([RowSelector, SelfSelector]),
     })
 ]);
 
@@ -129,11 +151,11 @@ const LiteralExpression: z.ZodType<LiteralExpression> = z.object({
 
 const DataExpression: z.ZodType<DataExpression> = z.object({
     type: z.literal(DataExpressionType),
-    from: DataReference
+    from: DataSelector
 });
 
 const SelfExpression: z.ZodType<SelfExpression> = z.object({
-    type: Self
+    type: SelfSelector
 });
 
 const Expression: z.ZodType<Expression> = z.union([
@@ -288,7 +310,7 @@ const EnumType: z.ZodType<EnumType> = z.object({
 
 const LookupType: z.ZodType<LookupType> = z.object({
     type: z.literal(LookupTypeType),
-    values: ColumnReference
+    values: ColumnSelector
 });
 
 const DataType: z.ZodType<DataType> = z.union([
