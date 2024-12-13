@@ -21,9 +21,9 @@ export type ColumnSelector = {
 };
 
 // Defines the types of positional row selection: absolute index or relative offset to the current row.
-export const PositionalRowSelectorTypes = ['index', 'offset'] as const;
-export type PositionalRowSelector = {
-    type: typeof PositionalRowSelectorTypes[number];
+export const UnitRowSelectorTypes = ['index', 'offset'] as const;
+export type UnitRowSelector = {
+    type: typeof UnitRowSelectorTypes[number];
     value: number;  // The row index or relative offset for selection.
 };
 
@@ -31,12 +31,12 @@ export type PositionalRowSelector = {
 export const RangeRowSelectorType = 'range';
 export type RangeRowSelector = {
     type: typeof RangeRowSelectorType;
-    start: PositionalRowSelector;   // Starting row position of the range.
-    end: PositionalRowSelector;     // Ending row position of the range.
+    start: UnitRowSelector;   // Starting row position of the range.
+    end: UnitRowSelector;     // Ending row position of the range.
 };
 
 // Targets rows within a column, either as a single position, range, or self-reference.
-export type RowSelector = PositionalRowSelector | RangeRowSelector | SelfSelector;
+export type RowSelector = UnitRowSelector | RangeRowSelector | SelfSelector;
 
 // Combines column and row targeting to select data within the table paradigm.
 export type DataSelector = {
@@ -171,7 +171,7 @@ export type LiteralExpressionArgument = { type: typeof LiteralExpressionArgument
 
 export type ExpressionArgument = SelectorExpressionArgument | LiteralExpressionArgument;
 
-s
+
 export const CompoundExpressionType = 'compound';
 export type CompoundExpression = { type: typeof CompoundExpressionType; with: Operator; left: Expression; right: Expression; };
 
@@ -201,12 +201,12 @@ export type Formula = {
     on: Expression | Reference;
 };
 
+export const FormulaTemplateParameterTypes = ['literal', 'unit', 'range', 'any'] as const;
 
-export const FormulaTemplateParameterTypes = [SelectorExpressionArgumentType, LiteralExpressionArgumentType] as const;
+export type FormulaTemplateParameterType = typeof FormulaTemplateParameterTypes[number];
 
 export type FormulaTemplate = {
-    // This enforces the params that are expected. Should this just be a list of names that are required?
-    params: Record<string, typeof FormulaTemplateParameterTypes>;
+    params: Record<string, FormulaTemplateParameterType | FormulaTemplateParameterType[]>;
     on: Expression;
 };
 
@@ -385,7 +385,7 @@ export type Definitions = {
     styles?: Record<string, Style | HeaderStyle>;
     themes?: Record<string, Theme>; // Includes Standard Themes by default, overriding them by name not allowed
     types?: Record<string, DataType>;
-    formulas: Record<string, FormulaTemplate>;
+    formulas?: Record<string, FormulaTemplate>;
 };
 
 export type TableBook = TableUnit & {
