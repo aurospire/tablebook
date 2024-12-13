@@ -7,7 +7,7 @@ export type Reference = `@${string}`;
 // Selectors are used to target data in the constrained table paradigm, 
 // focusing on table-group-column structures. Rows and columns are selected
 // contextually, supporting operations like positional row targeting or column references.
- 
+
 
 // Represents the current row or column relative to the cell in question.
 export const SelfLiteral = 'self';
@@ -39,7 +39,7 @@ export type RangeRowSelector = {
 export type RowSelector = PositionalRowSelector | RangeRowSelector | SelfSelector;
 
 // Combines column and row targeting to select data within the table paradigm.
-export type DataSelector = { 
+export type DataSelector = {
     column: ColumnSelector | SelfSelector;  // Specifies the target column or self-reference.
     row?: RowSelector | SelfSelector;       // Specifies the target row(s) or self-reference.
 } | SelfSelector;
@@ -161,6 +161,17 @@ export type Operator = ComparisonOperator | IntegrativeOperator;
 
 
 /* Expressions */
+export type LiteralType = string | number | boolean;
+
+export const SelectorExpressionArgumentType = 'selector';
+export type SelectorExpressionArgument = { type: typeof SelectorExpressionArgumentType; from: DataSelector; };
+
+export const LiteralExpressionArgumentType = 'literal';
+export type LiteralExpressionArgument = { type: typeof LiteralExpressionArgumentType; value: LiteralType; };
+
+export type ExpressionArgument = SelectorExpressionArgument | LiteralExpressionArgument;
+
+s
 export const CompoundExpressionType = 'compound';
 export type CompoundExpression = { type: typeof CompoundExpressionType; with: Operator; left: Expression; right: Expression; };
 
@@ -173,18 +184,31 @@ export type FunctionExpression = { type: typeof FunctionExpressionType; name: st
 export const LiteralExpressionType = 'literal';
 export type LiteralExpression = { type: typeof LiteralExpressionType; value: string | number | boolean; };
 
-export const DataExpressionType = 'data';
-export type DataExpression = { type: typeof DataExpressionType; from: DataSelector; };
-
-export type SelfExpression = { type: typeof SelfLiteral; };
+// Reference to an Argument
+export const ReferenceExpressionType = 'ref';
+export type ReferenceExpression = { type: typeof ReferenceExpressionType; to: string; };
 
 export type Expression =
     | CompoundExpression
     | NegatedExpression
     | FunctionExpression
     | LiteralExpression
-    | DataExpression
-    | SelfExpression;
+    ;
+
+// if on is a Reference, the args have to match the params of the formula Definition
+export type Formula = {
+    args?: Record<string, ExpressionArgument>,
+    on: Expression | Reference;
+};
+
+
+export const FormulaTemplateParameterTypes = [SelectorExpressionArgumentType, LiteralExpressionArgumentType] as const;
+
+export type FormulaTemplate = {
+    // This enforces the params that are expected. Should this just be a list of names that are required?
+    params: Record<string, typeof FormulaTemplateParameterTypes>;
+    on: Expression;
+};
 
 
 /* Data Rules */
@@ -214,7 +238,7 @@ export const MatchRuleTypes = ['contains', 'begins', 'ends'] as const;
 export type MatchRule = { type: typeof MatchRuleTypes[number]; value: string; };
 
 export const CustomRuleType = 'custom';
-export type CustomRule = { type: typeof CustomRuleType; expression: Expression; };
+export type CustomRule = { type: typeof CustomRuleType; formula: Formula; };
 
 
 export type NumericRule = ComparisonRule<Comparable> | BetweenRule<Comparable> | CustomRule;
@@ -301,7 +325,7 @@ export type NumericFormat =
 export const TextTypeType = 'text';
 export type TextType = {
     type: typeof TextTypeType;
-    expression?: Expression;
+    formula?: Formula;
     rules?: TextRule[];
     styles?: ConditionalStyle<TextRule>[];
 };
@@ -309,7 +333,7 @@ export type TextType = {
 export const NumericTypeType = 'numeric';
 export type NumericType = {
     type: typeof NumericTypeType;
-    expression?: Expression;
+    formula?: Formula;
     rules?: NumericRule[];
     styles?: ConditionalStyle<NumericRule>[];
     format?: NumericFormat;
@@ -361,6 +385,7 @@ export type Definitions = {
     styles?: Record<string, Style | HeaderStyle>;
     themes?: Record<string, Theme>; // Includes Standard Themes by default, overriding them by name not allowed
     types?: Record<string, DataType>;
+    formulas: Record<string, FormulaTemplate>;
 };
 
 export type TableBook = TableUnit & {
