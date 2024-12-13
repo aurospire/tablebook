@@ -41,7 +41,7 @@ export type RowSelector = UnitRowSelector | RangeRowSelector | SelfSelector;
 // Combines column and row targeting to select data within the table paradigm.
 export type DataSelector = {
     column: ColumnSelector | SelfSelector;  // Specifies the target column or self-reference.
-    row?: RowSelector | SelfSelector;       // Specifies the target row(s) or self-reference.
+    row?: RowSelector | SelfSelector;       // Specifies the target row(s) or self-reference. if missing, is the entire column
 } | SelfSelector;
 
 
@@ -201,7 +201,7 @@ export type Formula = {
     on: Expression | Reference;
 };
 
-export const FormulaTemplateParameterTypes = ['literal', 'unit', 'range', 'any'] as const;
+export const FormulaTemplateParameterTypes = ['literal', 'unit', 'range', 'selector', 'any'] as const;
 
 export type FormulaTemplateParameterType = typeof FormulaTemplateParameterTypes[number];
 
