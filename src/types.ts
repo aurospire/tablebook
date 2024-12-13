@@ -4,34 +4,46 @@ export const ReferenceRegex = /^@.+$/;
 export type Reference = `@${string}`;
 
 /* Data Selector */
-// Used to Reference columns/subsets of columns
+// Selectors are used to target data in the constrained table paradigm, 
+// focusing on table-group-column structures. Rows and columns are selected
+// contextually, supporting operations like positional row targeting or column references.
+ 
+
+// Represents the current row or column relative to the cell in question.
 export const SelfLiteral = 'self';
 export type SelfSelector = 'self';
 
+// Identifies a column by optionally specifying its table, group, and name.
 export type ColumnSelector = {
-    table?: string; // If Missing, same Table
-    group?: string; // If Missing, same Group
-    column: string;
+    table?: string; // Target table; defaults to the current table if omitted.
+    group?: string; // Target group; defaults to the current group if omitted.
+    column: string; // Name of the column.
 };
 
+// Defines the types of positional row selection: absolute index or relative offset to the current row.
 export const PositionalRowSelectorTypes = ['index', 'offset'] as const;
 export type PositionalRowSelector = {
     type: typeof PositionalRowSelectorTypes[number];
-    value: number;
+    value: number;  // The row index or relative offset for selection.
 };
 
+// Specifies a range of rows within a column using start and end positions.
 export const RangeRowSelectorType = 'range';
 export type RangeRowSelector = {
     type: typeof RangeRowSelectorType;
-    start: PositionalRowSelector;
-    end: PositionalRowSelector;
+    start: PositionalRowSelector;   // Starting row position of the range.
+    end: PositionalRowSelector;     // Ending row position of the range.
 };
 
-// Select a subrange of the Column
-export type RowSelector = PositionalRowSelector | RangeRowSelector;
+// Targets rows within a column, either as a single position, range, or self-reference.
+export type RowSelector = PositionalRowSelector | RangeRowSelector | SelfSelector;
 
-// No row means the entire Column. No horizontal (multi-column) selection! Selectors only selects a full or partial column, one of the constraints of tablebook
-export type DataSelector = { column: ColumnSelector | SelfSelector; row?: RowSelector | SelfSelector; } | SelfSelector;
+// Combines column and row targeting to select data within the table paradigm.
+export type DataSelector = { 
+    column: ColumnSelector | SelfSelector;  // Specifies the target column or self-reference.
+    row?: RowSelector | SelfSelector;       // Specifies the target row(s) or self-reference.
+} | SelfSelector;
+
 
 /* Styling */
 export const ColorRegex = /^#[A-Za-z0-9]{6}$/;
