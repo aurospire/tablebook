@@ -262,37 +262,80 @@ export type CurrencyFormat = BaseNumberFormat<typeof CurrencyFormatType> & {
     position?: typeof CurrencySymbolPositions[number];
 };
 
-export const DateFormats = Object.freeze({
-    'ISODate': 'YYYY-MM-DD',
-    'SlashedDate': 'MM/DD/YYYY',
-    'EuropeanDate': 'DD/MM/YYYY',
-    'LongDate': 'dddd, MMMM D, YYYY',
-    'ShortLongDate': 'ddd, MMM D, YYYY',
-    'MonthDayYear': 'MMM DD, YYYY',
-    'DayMonthYear': 'DD MMM YYYY',
-} as const);
+export const UnitLengths = ['short', 'long'] as const;
+export type UnitLength = typeof UnitLengths[number];
 
-export const TimeFormats = Object.freeze({
-    '24HourTime': 'HH:mm',
-    '12HourTime': 'h:mm AM/PM',
-    '24HourTimeWithSeconds': 'HH:mm:ss',
-    '12HourTimeWithSeconds': 'h:mm:ss AM/PM',
-    '24HourTimeWithTenths': 'HH:mm:ss.S',
-    '24HourTimeWithHundredths': 'HH:mm:ss.SS',
-    '24HourTimeWithMilliseconds': 'HH:mm:ss.SSS',
-} as const);
-
-export type DateFormatString = typeof DateFormats[keyof typeof DateFormats];
-
-export type TimeFormatString = typeof TimeFormats[keyof typeof TimeFormats];
-
-// If neither date or time is supplied, goes with ISODate
-export const TemporalFormatType = 'temporal';
-export type TemporalFormat = {
-    type: typeof TemporalFormatType;
-    date?: DateFormatString;
-    time?: TimeFormatString;
+export const NumberDateFormatType = 'numberdate';
+export const NumberDateFormatOrder = ['YMD', 'MDY', 'DMY'] as const; // Default: YMD (Y-M-D or M/D/Y or D.M.Y)
+export type NumberDateFormat = {
+    type: typeof NumberDateFormatType;
+    year?: UnitLength;                                      // Year configuration (e.g., 2025 or 25)
+    month?: UnitLength;                                     // Month configuration (e.g., 01 or 1)
+    day?: UnitLength;                                       // Day configuration (e.g., 01 or 1)
+    order?: typeof NumberDateFormatOrder[number];           // Order of date components
 };
+
+export const TextDateFormatType = 'textdate';
+export const TextDateFormatOrder = ['DM', 'MD'] as const;     // Default: DM (D M, or M D)
+export type TextDateFormat = {
+    type: typeof TextDateFormatType;
+    weekday?: UnitLength;                                 // Weekday name (e.g., Mon/Monday)
+    month?: UnitLength;                                   // Month as words (e.g., Mar/March)
+    year?: UnitLength;                                    // Year configuration
+    day?: UnitLength;                                     // Day configuration (e.g., 1 or 01)
+    order?: typeof TextDateFormatOrder[number];           // MD (Month, Day) or DM (Day Month)
+};
+
+
+export const StandardDateFormats = {
+    // Numeric Date Formats
+    ISODate: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'YMD' },
+    ShortUSDate: { type: 'numberdate', year: 'short', month: 'short', day: 'short', order: 'MDY' },
+    LongUSDate: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'MDY' }, 
+    EuroDate: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'DMY' },
+
+    // Text Date Formats
+    LongTextDate: { type: 'textdate', weekday: 'long', month: 'long', day: 'short', year: 'long', order: 'MD' },
+    ShortTextDate: { type: 'textdate', weekday: 'short', month: 'short', day: 'short', year: 'short', order: 'DM' },
+} as const satisfies Record<string, TextDateFormat | NumberDateFormat>;
+
+
+export type DateFormat = TextDateFormat | NumberDateFormat | keyof typeof StandardDateFormats;
+
+export const HourFormats = ['standard', 'military'] as const;
+export const NumberTimeFormatType = 'time';
+export type NumberTimeFormat = {
+    type: typeof NumberTimeFormatType;
+    format: typeof HourFormats[number];              // Time format (standard or military)
+    hours?: UnitLength;                             // Hours configuration (e.g., 5 or 05)
+    minutes?: UnitLength;                           // Minutes configuration (e.g., 5 or 05)
+    seconds?: UnitLength;                           // Seconds configuration (e.g., 5 or 05)
+    milliseconds?: 1 | 2 | 3;                       // Optional precision level
+};
+
+export const StandardTimeFormats = {
+    // Time Formats
+    ShortStandardTime: { type: 'time', format: 'standard', hours: 'short', minutes: 'short', seconds: 'short' },
+    ShortMilitaryTime: { type: 'time', format: 'military', hours: 'short', minutes: 'short', seconds: 'short' },
+    LongStandardTime: { type: 'time', format: 'standard', hours: 'long', minutes: 'long', seconds: 'long' },
+    LongMilitaryTime: { type: 'time', format: 'military', hours: 'long', minutes: 'long', seconds: 'long' },
+
+} as const satisfies Record<string, NumberTimeFormat>;
+
+export type TimeFormat = NumberTimeFormat | keyof typeof StandardTimeFormats;
+
+export const DateTimeFormatType = 'datetime';
+export type DateTimeFormat = {
+    type: typeof DateTimeFormatType;
+    date: DateFormat;
+    time: TimeFormat;
+};
+
+export type TemporalFormat =
+    | DateFormat
+    | TimeFormat
+    | DateTimeFormat
+    ;
 
 export type NumericFormat =
     | NumberFormat

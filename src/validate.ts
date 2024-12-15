@@ -4,23 +4,42 @@ import {
     Color, ColorRegex, ColumnSelector, Comparable, ComparisonOperator,
     ComparisonOperators, ComparisonRule, CompoundExpression, CompoundExpressionType,
     ConditionalStyle, CurrencyFormat, CurrencyFormatType, CurrencySymbolPositions,
-    CustomRule, CustomRuleType, CustomTheme, SelectorExpression, SelectorExpressionType,
-    DataSelector, DataType, DateFormats, DateFormatString, DateString,
-    DateStringRegex, DateTimeString, DateTimeStringRegex, Definitions,
+    CustomRule, CustomRuleType, CustomTheme,
+    DataSelector, DataType,
+    DateFormat,
+    DateString,
+    DateStringRegex, DateTimeFormat, DateTimeFormatType, DateTimeString, DateTimeStringRegex, Definitions,
     DigitPlaceholder, EnumItem, EnumType, EnumTypeType, Expression,
     FunctionExpression, FunctionExpressionType, HeaderStyle,
+    HourFormats,
     IntegrativeOperator, IntegrativeOperators, LiteralExpression,
     LiteralExpressionType, LookupType, LookupTypeType, MatchRule,
     MatchRuleTypes, NegatedExpression, NegatedExpressionType,
-    NegativeFormats, NumberFormat, NumberFormatType, NumericFormat,
+    NegativeFormats,
+    NumberDateFormat,
+    NumberDateFormatOrder,
+    NumberDateFormatType,
+    NumberFormat, NumberFormatType, NumberTimeFormat, NumberTimeFormatType, NumericFormat,
     NumericRule, NumericType, NumericTypeType, Operator,
-    Partition, PercentFormat, PercentFormatType, UnitRowSelector,
-    UnitRowSelectorTypes, RangeRowSelector, RangeRowSelectorType,
-    Reference, ReferenceRegex, RowSelector, SelfExpression, SelfLiteral,
-    SelfSelector, StandardTheme, StandardThemes, Style, TableBook, TableColumn,
+    Partition, PercentFormat, PercentFormatType,
+    RangeRowSelector, RangeRowSelectorType,
+    Reference, ReferenceRegex, RowSelector,
+    SelectorExpression, SelectorExpressionType,
+    SelfExpression, SelfLiteral,
+    SelfSelector,
+    StandardDateFormats,
+    StandardTheme, StandardThemes, StandardTimeFormats, Style, TableBook, TableColumn,
     TableGroup, TableSheet, TableUnit, TableUnitNameRegex, TemporalFormat,
-    TemporalFormatType, TextForm, TextRule, TextType, TextTypeType, Theme,
-    TimeFormats, TimeFormatString, TimeString, TimeStringRegex
+    TextDateFormat,
+    TextDateFormatOrder,
+    TextDateFormatType,
+    TextForm, TextRule, TextType, TextTypeType, Theme,
+    TimeFormat,
+    TimeString, TimeStringRegex,
+    UnitLength,
+    UnitLengths,
+    UnitRowSelector,
+    UnitRowSelectorTypes
 } from './types';
 
 // Note: Manually doing validation instead of inferring types from these to keep types clean.
@@ -259,16 +278,60 @@ const CurrencyFormat: z.ZodType<CurrencyFormat> = makeNumberFormat(CurrencyForma
 }));
 
 
-const DateFormatString: z.ZodType<DateFormatString> = z.enum(Object.values(DateFormats) as any);
+const UnitLength: z.ZodType<UnitLength> = z.enum(UnitLengths);
 
-const TimeFormatString: z.ZodType<TimeFormatString> = z.enum(Object.values(TimeFormats) as any);
-
-// Empty Temporal is simply an ISODate
-const TemporalFormat: z.ZodType<TemporalFormat> = z.object({
-    type: z.literal(TemporalFormatType),
-    date: DateFormatString.optional(),
-    time: TimeFormatString.optional(),
+const NumberDateFormat: z.ZodType<NumberDateFormat> = z.object({
+   type: z.literal(NumberDateFormatType),
+   year: UnitLength.optional(),
+   month: UnitLength.optional(),
+   day: UnitLength.optional(),
+   order: z.enum(NumberDateFormatOrder).optional(),
 });
+
+const TextDateFormat: z.ZodType<TextDateFormat> = z.object({
+   type: z.literal(TextDateFormatType),
+   weekday: UnitLength.optional(),
+   month: UnitLength.optional(),
+   year: UnitLength.optional(),
+   day: UnitLength.optional(),
+   order: z.enum(TextDateFormatOrder).optional(),
+});
+
+const StandardDateFormat: z.ZodType<keyof typeof StandardDateFormats> =  z.enum(Object.keys(StandardDateFormats) as any)
+
+const DateFormat: z.ZodType<DateFormat> = z.union([
+   TextDateFormat,
+   NumberDateFormat,
+   StandardDateFormat
+]);
+
+const NumberTimeFormat: z.ZodType<NumberTimeFormat> = z.object({
+   type: z.literal(NumberTimeFormatType),
+   format: z.enum(HourFormats),
+   hours: UnitLength.optional(),
+   minutes: UnitLength.optional(),
+   seconds: UnitLength.optional(),
+   milliseconds: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
+});
+
+const StandardTimeFormat: z.ZodType<keyof typeof StandardTimeFormats> =  z.enum(Object.keys(StandardDateFormats) as any)
+
+const TimeFormat: z.ZodType<TimeFormat> = z.union([
+   NumberTimeFormat,
+   StandardTimeFormat
+]);
+
+const DateTimeFormat: z.ZodType<DateTimeFormat> = z.object({
+   type: z.literal(DateTimeFormatType),
+   date: DateFormat,
+   time: TimeFormat,
+});
+
+const TemporalFormat: z.ZodType<TemporalFormat> = z.union([
+   DateFormat,
+   TimeFormat,
+   DateTimeFormat
+]);
 
 const NumericFormat: z.ZodType<NumericFormat> = z.union([
     NumberFormat,
