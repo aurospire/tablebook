@@ -4,7 +4,7 @@ import {
     Color, ColorRegex, ColumnSelector, Comparable, ComparisonOperator,
     ComparisonOperators, ComparisonRule, CompoundExpression, CompoundExpressionType,
     ConditionalStyle, CurrencyFormat, CurrencyFormatType, CurrencySymbolPositions,
-    CustomRule, CustomRuleType, CustomTheme, DataExpression, DataExpressionType,
+    CustomRule, CustomRuleType, CustomTheme, SelectorExpression, SelectorExpressionType,
     DataSelector, DataType, DateFormats, DateFormatString, DateString,
     DateStringRegex, DateTimeString, DateTimeStringRegex, Definitions,
     DigitPlaceholder, EnumItem, EnumType, EnumTypeType, Expression,
@@ -14,8 +14,8 @@ import {
     MatchRuleTypes, NegatedExpression, NegatedExpressionType,
     NegativeFormats, NumberFormat, NumberFormatType, NumericFormat,
     NumericRule, NumericType, NumericTypeType, Operator,
-    Partition, PercentFormat, PercentFormatType, PositionalRowSelector,
-    PositionalRowSelectorTypes, RangeRowSelector, RangeRowSelectorType,
+    Partition, PercentFormat, PercentFormatType, UnitRowSelector,
+    UnitRowSelectorTypes, RangeRowSelector, RangeRowSelectorType,
     Reference, ReferenceRegex, RowSelector, SelfExpression, SelfLiteral,
     SelfSelector, StandardTheme, StandardThemes, Style, TableBook, TableColumn,
     TableGroup, TableSheet, TableUnit, TableUnitNameRegex, TemporalFormat,
@@ -40,18 +40,18 @@ const ColumnSelector: z.ZodType<ColumnSelector> = z.object({
     column: z.string()
 });
 
-const PositionalRowSelector: z.ZodType<PositionalRowSelector> = z.object({
-    type: z.enum(PositionalRowSelectorTypes),
+const UnitRowSelector: z.ZodType<UnitRowSelector> = z.object({
+    type: z.enum(UnitRowSelectorTypes),
     value: z.number()
 });
 
 const RangeRowSelector: z.ZodType<RangeRowSelector> = z.object({
     type: z.literal(RangeRowSelectorType),
-    start: PositionalRowSelector,
-    end: PositionalRowSelector
+    from: UnitRowSelector,
+    to: UnitRowSelector
 });
 
-const RowSelector: z.ZodType<RowSelector> = z.union([PositionalRowSelector, RangeRowSelector]);
+const RowSelector: z.ZodType<RowSelector> = z.union([UnitRowSelector, RangeRowSelector]);
 
 const DataSelector: z.ZodType<DataSelector> = z.union([
     SelfSelector,
@@ -83,9 +83,8 @@ const Style: z.ZodType<Style> = z.object({
 const BorderType: z.ZodType<BorderType> = z.enum(BorderTypes);
 
 const Border: z.ZodType<Border> = z.object({
+    type: BorderType,
     color: ColorReference.optional(),
-    width: z.number().int().optional(),
-    type: BorderType.optional()
 });
 
 const Partition: z.ZodType<Partition> = z.object({
@@ -149,8 +148,8 @@ const LiteralExpression: z.ZodType<LiteralExpression> = z.object({
     value: z.union([z.string(), z.number(), z.boolean()])
 });
 
-const DataExpression: z.ZodType<DataExpression> = z.object({
-    type: z.literal(DataExpressionType),
+const SelectorExpression: z.ZodType<SelectorExpression> = z.object({
+    type: z.literal(SelectorExpressionType),
     from: DataSelector
 });
 
@@ -163,7 +162,7 @@ const Expression: z.ZodType<Expression> = z.union([
     NegatedExpression,
     FunctionExpression,
     LiteralExpression,
-    DataExpression,
+    SelectorExpression,
     SelfExpression
 ]);
 

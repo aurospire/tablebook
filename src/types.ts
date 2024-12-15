@@ -3,46 +3,51 @@
 export const ReferenceRegex = /^@.+$/;
 export type Reference = `@${string}`;
 
+
 /* Data Selector */
-// Selectors are used to target data in the constrained table paradigm, 
-// focusing on table-group-column structures. Rows and columns are selected
-// contextually, supporting operations like positional row targeting or column references.
+// Selectors are used to target data within a single column of a table.
+// They define relationships between columns and rows relative to an element in the table paradigm.
+// An element represents the intersection of a column and a row, without implying a grid-like structure.
+// Selection is column-based; multi-column or horizontal selection is not supported.
 
-
-// Represents the current row or column relative to the cell in question.
+// Refers to the current element in the scope where it is used.
 export const SelfLiteral = 'self';
 export type SelfSelector = 'self';
 
-// Identifies a column by optionally specifying its table, group, and name.
+// Identifies a specific column by name, optionally specifying its table and group.
+// Defaults to the element's table and group if not provided.
 export type ColumnSelector = {
-    table?: string; // Target table; defaults to the current table if omitted.
-    group?: string; // Target group; defaults to the current group if omitted.
-    column: string; // Name of the column.
+    table?: string; // The table containing the column; defaults to the element's table.
+    group?: string; // The group containing the column; defaults to the element's group.
+    column: string; // The name of the column (required).
 };
 
-// Defines the types of positional row selection: absolute index or relative offset to the current row.
+// Targets a single row in a column using absolute or relative indexing.
 export const UnitRowSelectorTypes = ['index', 'offset'] as const;
 export type UnitRowSelector = {
-    type: typeof UnitRowSelectorTypes[number];
-    value: number;  // The row index or relative offset for selection.
+    type: typeof UnitRowSelectorTypes[number]; // 'index' for absolute or 'offset' for relative positioning.
+    value: number;  // The absolute index or offset value.
 };
 
-// Specifies a range of rows within a column using start and end positions.
+// Targets a range of rows within a column using two endpoints.
+// The `from` and `to` endpoints can be in any order; the compiler determines the correct range.
 export const RangeRowSelectorType = 'range';
 export type RangeRowSelector = {
-    type: typeof RangeRowSelectorType;
-    start: UnitRowSelector;   // Starting row position of the range.
-    end: UnitRowSelector;     // Ending row position of the range.
+    type: typeof RangeRowSelectorType; // Specifies that this selector targets a range.
+    from: UnitRowSelector;  // One boundary of the range.
+    to: UnitRowSelector;    // The other boundary of the range.
 };
 
-// Targets rows within a column, either as a single position, range, or self-reference.
+// Targets rows in a column using a single position, a range, or `self` for the element's row.
 export type RowSelector = UnitRowSelector | RangeRowSelector | SelfSelector;
 
-// Combines column and row targeting to select data within the table paradigm.
+// Combines column and row selection to target data within a table.
+// Selects the entire column by default; limits to specific rows if `row` is provided.
 export type DataSelector = {
-    column: ColumnSelector | SelfSelector;  // Specifies the target column or self-reference.
-    row?: RowSelector | SelfSelector;       // Specifies the target row(s) or self-reference. if missing, is the entire column
-} | SelfSelector;
+    column: ColumnSelector | SelfSelector;  // The target column, specified explicitly or as the element's column (`self`).
+    row?: RowSelector | SelfSelector;       // Optional filter for rows; defaults to the entire column if not provided.
+} | SelfSelector; // Refers to the entire element, including its column and row.
+
 
 
 /* Styling */
@@ -57,14 +62,13 @@ export type Style = {
     form?: TextForm; // defaults to false
 };
 
-export const BorderTypes = ['solid', 'dotted', 'dashed'] as const;
+export const BorderTypes = ['none', 'thin', 'medium', 'thick', 'dotted', 'dashed', 'double'] as const;
 
 export type BorderType = typeof BorderTypes[number];
 
 export type Border = {
-    color?: Color | Reference; // defaults to black
-    width?: number; // defaults to 1
-    type?: BorderType; // defaults to solid
+    type: BorderType;
+    color?: Color | Reference;  // defaults to black    
 };
 
 export type Partition = {
@@ -161,17 +165,6 @@ export type Operator = ComparisonOperator | IntegrativeOperator;
 
 
 /* Expressions */
-export type LiteralType = string | number | boolean;
-
-export const SelectorExpressionArgumentType = 'selector';
-export type SelectorExpressionArgument = { type: typeof SelectorExpressionArgumentType; from: DataSelector; };
-
-export const LiteralExpressionArgumentType = 'literal';
-export type LiteralExpressionArgument = { type: typeof LiteralExpressionArgumentType; value: LiteralType; };
-
-export type ExpressionArgument = SelectorExpressionArgument | LiteralExpressionArgument;
-
-
 export const CompoundExpressionType = 'compound';
 export type CompoundExpression = { type: typeof CompoundExpressionType; with: Operator; left: Expression; right: Expression; };
 
@@ -184,31 +177,18 @@ export type FunctionExpression = { type: typeof FunctionExpressionType; name: st
 export const LiteralExpressionType = 'literal';
 export type LiteralExpression = { type: typeof LiteralExpressionType; value: string | number | boolean; };
 
-// Reference to an Argument
-export const ReferenceExpressionType = 'ref';
-export type ReferenceExpression = { type: typeof ReferenceExpressionType; to: string; };
+export const SelectorExpressionType = 'selector';
+export type SelectorExpression = { type: typeof SelectorExpressionType; from: DataSelector; };
+
+export type SelfExpression = { type: typeof SelfLiteral; };
 
 export type Expression =
     | CompoundExpression
     | NegatedExpression
     | FunctionExpression
     | LiteralExpression
-    ;
-
-// if on is a Reference, the args have to match the params of the formula Definition
-export type Formula = {
-    args?: Record<string, ExpressionArgument>,
-    on: Expression | Reference;
-};
-
-export const FormulaTemplateParameterTypes = ['literal', 'unit', 'range', 'selector', 'any'] as const;
-
-export type FormulaTemplateParameterType = typeof FormulaTemplateParameterTypes[number];
-
-export type FormulaTemplate = {
-    params: Record<string, FormulaTemplateParameterType | FormulaTemplateParameterType[]>;
-    on: Expression;
-};
+    | SelectorExpression
+    | SelfExpression;
 
 
 /* Data Rules */
@@ -238,7 +218,7 @@ export const MatchRuleTypes = ['contains', 'begins', 'ends'] as const;
 export type MatchRule = { type: typeof MatchRuleTypes[number]; value: string; };
 
 export const CustomRuleType = 'custom';
-export type CustomRule = { type: typeof CustomRuleType; formula: Formula; };
+export type CustomRule = { type: typeof CustomRuleType; expression: Expression; };
 
 
 export type NumericRule = ComparisonRule<Comparable> | BetweenRule<Comparable> | CustomRule;
@@ -325,7 +305,7 @@ export type NumericFormat =
 export const TextTypeType = 'text';
 export type TextType = {
     type: typeof TextTypeType;
-    formula?: Formula;
+    expression?: Expression;
     rules?: TextRule[];
     styles?: ConditionalStyle<TextRule>[];
 };
@@ -333,7 +313,7 @@ export type TextType = {
 export const NumericTypeType = 'numeric';
 export type NumericType = {
     type: typeof NumericTypeType;
-    formula?: Formula;
+    expression?: Expression;
     rules?: NumericRule[];
     styles?: ConditionalStyle<NumericRule>[];
     format?: NumericFormat;
@@ -385,7 +365,6 @@ export type Definitions = {
     styles?: Record<string, Style | HeaderStyle>;
     themes?: Record<string, Theme>; // Includes Standard Themes by default, overriding them by name not allowed
     types?: Record<string, DataType>;
-    formulas?: Record<string, FormulaTemplate>;
 };
 
 export type TableBook = TableUnit & {
