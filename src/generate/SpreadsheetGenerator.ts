@@ -1,4 +1,4 @@
-import { BorderType, Color, ComparisonOperator, NumericFormat, BetweenOperator, MatchOperators, ComparisonOperators } from "./types";
+import { BorderType, Color, ComparisonOperator, NumericFormat, BetweenOperator, MatchOperators, ComparisonOperators } from "../types/types";
 
 export type SheetColor = {
     r: number; g: number; b: number; hex: Color;
