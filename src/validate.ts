@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import {
-    BetweenRule, BetweenRuleType, Border, BorderType, BorderTypes,
+    BetweenRule, BetweenOperator, Border, BorderType, BorderTypes,
     Color, ColorRegex, ColumnSelector, Comparable, ComparisonOperator,
     ComparisonOperators, ComparisonRule, CompoundExpression, CompoundExpressionType,
     ConditionalStyle, CurrencyFormat, CurrencyFormatType, CurrencySymbolPositions,
@@ -14,7 +14,7 @@ import {
     HourFormats,
     IntegrativeOperator, IntegrativeOperators, LiteralExpression,
     LiteralExpressionType, LookupType, LookupTypeType, MatchRule,
-    MatchRuleTypes, NegatedExpression, NegatedExpressionType,
+    MatchOperators, NegatedExpression, NegatedExpressionType,
     NegativeFormats,
     NumberDateFormat,
     NumberDateFormatOrder,
@@ -208,7 +208,7 @@ const makeValueRules = <C extends Comparable>(c: z.ZodType<C>) => {
     }) as z.ZodType<ComparisonRule<C>>;
 
     const between = z.object({
-        type: z.literal(BetweenRuleType),
+        type: z.literal(BetweenOperator),
         low: c,
         high: c
     }) as z.ZodType<BetweenRule<C>>;
@@ -217,7 +217,7 @@ const makeValueRules = <C extends Comparable>(c: z.ZodType<C>) => {
 };
 
 const MatchRule: z.ZodType<MatchRule> = z.object({
-    type: z.enum(MatchRuleTypes),
+    type: z.enum(MatchOperators),
     value: z.string()
 });
 

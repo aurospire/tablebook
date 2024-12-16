@@ -209,13 +209,13 @@ export type Comparable = number | DateString | TimeString | DateTimeString;
 
 export type ComparisonRule<T extends Comparable> = { type: ComparisonOperator; to: T; };
 
-export const BetweenRuleType = 'between';
-export type BetweenRule<T extends Comparable> = { type: typeof BetweenRuleType; low: T; high: T; };
+export const BetweenOperator = 'between';
+export type BetweenRule<T extends Comparable> = { type: typeof BetweenOperator; low: T; high: T; };
 
 
 
-export const MatchRuleTypes = ['contains', 'begins', 'ends'] as const;
-export type MatchRule = { type: typeof MatchRuleTypes[number]; value: string; };
+export const MatchOperators = ['contains', 'begins', 'ends'] as const;
+export type MatchRule = { type: typeof MatchOperators[number]; value: string; };
 
 export const CustomRuleType = 'custom';
 export type CustomRule = { type: typeof CustomRuleType; expression: Expression; };
@@ -291,7 +291,7 @@ export const StandardDateFormats = {
     // Numeric Date Formats
     ISODate: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'YMD' },
     ShortUSDate: { type: 'numberdate', year: 'short', month: 'short', day: 'short', order: 'MDY' },
-    LongUSDate: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'MDY' }, 
+    LongUSDate: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'MDY' },
     EuroDate: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'DMY' },
 
     // Text Date Formats
