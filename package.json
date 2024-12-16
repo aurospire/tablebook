@@ -30,6 +30,8 @@
         "vigil": "nodemon -e ts,js,tsx,jsx,json --watch src --watch 'package*.json' --watch test --exec 'tsc -p . && jest --config test/jest.config.ts || exit 1'"
     },
     "dependencies": {
+        "exceljs": "^4.4.0",
+        "googleapis": "^144.0.0",
         "zod": "^3.24.1"
     },
     "devDependencies": {
