@@ -1,5 +1,6 @@
 import { v } from 'varcor';
-import { GoogleSheet } from './util/GoogleSheet';
+import { GoogleSheet } from './util/sheets/GoogleSheet';
+import { Color } from './util/Color';
 
 const main = async () => {
 
@@ -21,9 +22,13 @@ const main = async () => {
 
     console.log(await sheet.getSheetIds());
 
-    // const number = await sheet.reset();
+    await sheet.setTitle('New Title!');
 
-    // console.log(number, await sheet.getSheetIds());
+    await sheet.addSheet({
+        color: Color.fromHex('#990022'),
+        rows: 10,
+        columns: 3,
+    });
 };
 
 

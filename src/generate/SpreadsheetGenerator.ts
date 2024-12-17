@@ -1,4 +1,4 @@
-import { BorderType, HexColor, ComparisonOperator, NumericFormat, BetweenOperator, MatchOperators, ComparisonOperators } from "../types/types";
+import { BorderType, ColorHex, ComparisonOperator, NumericFormat, BetweenOperator, MatchOperators, ComparisonOperators } from "../types/types";
 import { Color } from "../util/Color";
 
 // Basic style configuration for a cell or range
@@ -128,13 +128,13 @@ export type SheetConditionalFormat = { condition: SheetCondition; style: SheetSt
 
 // Core generator interface for platform implementations
 export interface SpreadsheetGenerator {
-    setTitle(name: string): Promise<void>;
+    setTitle(title: string): Promise<void>;
 
-    addSheet(name: string, rows: number, columns: number): Promise<number>;
+    addSheet(title: string, rows: number, columns: number): Promise<number>;
 
     addGroup(
         sheet: number,
-        name: string,
+        title: string,
         columnStart: number,
         columnCount: number,
         style?: SheetStyle,
@@ -143,7 +143,7 @@ export interface SpreadsheetGenerator {
 
     addColumn(
         sheet: number,
-        name: string,
+        title: string,
         columnIndex: number,
         config: SheetColumnConfig
     ): Promise<void>;

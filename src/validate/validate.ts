@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import {
-    BetweenRule, BetweenOperator, Border, BorderType, BorderTypes,
-    HexColor, HexColorRegex, ColumnSelector, Comparable, ComparisonOperator,
+    BetweenOperator,
+    BetweenRule,
+    Border, BorderType, BorderTypes,
+    Color, ColorHex, ColorObject,
+    ColumnSelector, Comparable, ComparisonOperator,
     ComparisonOperators, ComparisonRule, CompoundExpression, CompoundExpressionType,
     ConditionalStyle, CurrencyFormat, CurrencyFormatType, CurrencySymbolPositions,
     CustomRule, CustomRuleType, CustomTheme,
@@ -9,9 +12,12 @@ import {
     DateTimeFormat, DateTimeFormatType, DateTimeString, DateTimeStringRegex, Definitions,
     DigitPlaceholder, EnumItem, EnumType, EnumTypeType, Expression,
     FunctionExpression, FunctionExpressionType, HeaderStyle,
+    HexColorRegex,
     HourFormats, IntegrativeOperator, IntegrativeOperators, LiteralExpression,
-    LiteralExpressionType, LookupType, LookupTypeType, MatchRule,
-    MatchOperators, NegatedExpression, NegatedExpressionType,
+    LiteralExpressionType, LookupType, LookupTypeType,
+    MatchOperators,
+    MatchRule,
+    NegatedExpression, NegatedExpressionType,
     NegativeFormats, NumberDateFormat, NumberDateFormatOrder, NumberDateFormatType,
     NumberFormat, NumberFormatType, NumberTimeFormat, NumberTimeFormatType, NumericFormat,
     NumericRule, NumericType, NumericTypeType, Operator,
@@ -67,7 +73,14 @@ const DataSelector: z.ZodType<DataSelector> = z.union([
 ]);
 
 /* Styling */
-const Color: z.ZodType<HexColor> = z.custom(value => HexColorRegex.test(value as string));
+const ColorHex: z.ZodType<ColorHex> = z.custom(value => HexColorRegex.test(value as string));
+
+const SubColor = z.number().min(0).max(255);
+
+const ColorObject: z.ZodType<ColorObject> = z.object({ red: SubColor, blue: SubColor, green: SubColor });
+
+const Color: z.ZodType<Color> = z.union([ColorHex, ColorObject]);
+
 
 const TextForm: z.ZodType<TextForm> = z.union([
     z.boolean(),

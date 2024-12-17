@@ -52,13 +52,36 @@ export type DataSelector = {
 
 /* Styling */
 export const HexColorRegex = /^#[A-Za-z0-9]{6}$/;
-export type HexColor = `#${string}`;
+export type ColorHex = `#${string}`;
+
+export type ColorObject = { red: number; green: number; blue: number; };
+
+export type Color = ColorHex | ColorObject;
+
+const hexify = (value: number, digits: number): string => {
+    return value.toString(16).padStart(digits, '0');
+};
+
+export const Colors = Object.freeze({
+    toHex(color: ColorObject): ColorHex {
+        return `#${hexify(color.red, 2)}${hexify(color.green, 2)}${hexify(color.blue, 2)}`;
+    },
+    toObject(hex: ColorHex): ColorObject {
+        const red = Number.parseInt(hex.substring(1, 3), 16);
+        const green = Number.parseInt(hex.substring(3, 5), 16);
+        const blue = Number.parseInt(hex.substring(5, 7), 16);
+
+        console.log({ red, green, blue });
+        return { red, green, blue };
+    }
+});
+
 
 export type TextForm = boolean | { bold?: boolean; italic?: boolean; };
 
 export type Style = {
-    fore?: HexColor | Reference; // defaults to black
-    back?: HexColor | Reference; // defaults to white
+    fore?: Color | Reference; // defaults to black
+    back?: Color | Reference; // defaults to white
     form?: TextForm; // defaults to false
 };
 
@@ -68,7 +91,7 @@ export type BorderType = typeof BorderTypes[number];
 
 export type Border = {
     type: BorderType;
-    color?: HexColor | Reference;  // defaults to black    
+    color?: Color | Reference;  // defaults to black    
 };
 
 export type Partition = {
@@ -81,17 +104,18 @@ export type HeaderStyle = Style & { partition?: Partition; };
 
 export type CustomTheme = {
     inherits?: Reference | Reference[]; // Deep overriding (into styles and borders)
-    tab?: HexColor | Reference;
+    tab?: Color | Reference;
     group?: HeaderStyle | Reference;
     header?: HeaderStyle | Reference;
     data?: Style | Reference;
 };
 
-const makeStandardTheme = (group: HexColor, header: HexColor, data: HexColor): CustomTheme => {
+const makeStandardTheme = (darkest: Color, dark: Color, normal: Color, lightest: Color ): CustomTheme => {
     return {
-        group: { back: group },
-        header: { back: header },
-        data: { back: data },
+        tab: normal,
+        group: { back: darkest },
+        header: { back: dark },
+        data: { back: lightest },
     };
 };
 
@@ -129,25 +153,25 @@ export const StandardThemes = {
     // purple:         makeStandardTheme('#20124D', '#351C75', '#D9D2E9'),
     // gray:           makeStandardTheme('#3b3b3b', '#656565', '#F2F2F2'),
 
-    redberry: makeStandardTheme('#5B0F00', '#85200C', '#E6B8AF'),
-    red: makeStandardTheme('#660000', '#990000', '#F4CCCC'),
-    coral: makeStandardTheme('#652b2b', '#af4a4a', '#ffd7d7'),
-    bronze: makeStandardTheme('#5D4037', '#895d4d', '#D7CCC8'),
-    orange: makeStandardTheme('#783F04', '#B45F06', '#FCE5CD'),
-    rust: makeStandardTheme('#8B3103', '#B54D18', '#F5DEB3'),
-    yellow: makeStandardTheme('#7F6000', '#BF9000', '#FFF2CC'),
-    green: makeStandardTheme('#274E13', '#38761D', '#D9EAD3'),
-    moss: makeStandardTheme('#1E4D2B', '#3A7A47', '#D4E4D4'),
-    sage: makeStandardTheme('#38471f', '#596f34', '#D5E8D4'),
-    slate: makeStandardTheme('#223939', '#2f4f4f', '#E0E6E6'),
-    cyan: makeStandardTheme('#0C343D', '#134F5C', '#D0E0E3'),
-    cornflowerblue: makeStandardTheme('#1C4587', '#1155CC', '#C9DAF8'),
-    blue: makeStandardTheme('#073763', '#0B5394', '#CFE2F3'),
-    lavender: makeStandardTheme('#3f3677', '#5f51b7', '#E6E6FA'),
-    plum: makeStandardTheme('#4E1A45', '#6C3483', '#E8DAEF'),
-    magenta: makeStandardTheme('#4C1130', '#65183E', '#B3A0A8'),
-    purple: makeStandardTheme('#20124D', '#351C75', '#D9D2E9'),
-    gray: makeStandardTheme('#3b3b3b', '#656565', '#F2F2F2'),
+    redberry:       makeStandardTheme('#5B0F00', '#85200C', '#B54531', '#E6B8AF'),
+    red:            makeStandardTheme('#660000', '#990000', '#CC3333', '#F4CCCC'),
+    coral:          makeStandardTheme('#652b2b', '#af4a4a', '#d47777', '#ffd7d7'),
+    bronze:         makeStandardTheme('#5D4037', '#895d4d', '#B17F6D', '#D7CCC8'),
+    orange:         makeStandardTheme('#783F04', '#B45F06', '#E67E0D', '#FCE5CD'),
+    rust:           makeStandardTheme('#8B3103', '#B54D18', '#D66830', '#F5DEB3'),
+    yellow:         makeStandardTheme('#7F6000', '#BF9000', '#E6B517', '#FFF2CC'),
+    green:          makeStandardTheme('#274E13', '#38761D', '#4F9C28', '#D9EAD3'),
+    moss:           makeStandardTheme('#1E4D2B', '#3A7A47', '#5BA56B', '#D4E4D4'),
+    sage:           makeStandardTheme('#38471f', '#596f34', '#7A944A', '#D5E8D4'),
+    slate:          makeStandardTheme('#223939', '#2f4f4f', '#446464', '#E0E6E6'),
+    cyan:           makeStandardTheme('#0C343D', '#134F5C', '#1B697A', '#D0E0E3'),
+    cornflowerblue: makeStandardTheme('#1C4587', '#1155CC', '#3377DD', '#C9DAF8'),
+    blue:           makeStandardTheme('#073763', '#0B5394', '#1976D2', '#CFE2F3'),
+    lavender:       makeStandardTheme('#3f3677', '#5f51b7', '#8070D8', '#E6E6FA'),
+    plum:           makeStandardTheme('#4E1A45', '#6C3483', '#8F4BAB', '#E8DAEF'),
+    magenta:        makeStandardTheme('#4C1130', '#65183E', '#8F2657', '#B3A0A8'),
+    purple:         makeStandardTheme('#20124D', '#351C75', '#4C2BA0', '#D9D2E9'),
+    gray:           makeStandardTheme('#3b3b3b', '#656565', '#8C8C8C', '#F2F2F2'),
 } as const;
 
 export type StandardTheme = keyof typeof StandardThemes;
@@ -405,7 +429,7 @@ export type TableSheet = TableUnit & {
 
 // Definitions table allows reuse/inheritence of commonly used colors,styles,themes and types via References
 export type Definitions = {
-    colors?: Record<string, HexColor>;
+    colors?: Record<string, Color>;
     styles?: Record<string, Style | HeaderStyle>;
     themes?: Record<string, Theme>; // Includes Standard Themes by default, overriding them by name not allowed
     types?: Record<string, DataType>;
