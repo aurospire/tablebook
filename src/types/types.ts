@@ -51,14 +51,14 @@ export type DataSelector = {
 
 
 /* Styling */
-export const ColorRegex = /^#[A-Za-z0-9]{6}$/;
-export type Color = `#${string}`;
+export const HexColorRegex = /^#[A-Za-z0-9]{6}$/;
+export type HexColor = `#${string}`;
 
 export type TextForm = boolean | { bold?: boolean; italic?: boolean; };
 
 export type Style = {
-    fore?: Color | Reference; // defaults to black
-    back?: Color | Reference; // defaults to white
+    fore?: HexColor | Reference; // defaults to black
+    back?: HexColor | Reference; // defaults to white
     form?: TextForm; // defaults to false
 };
 
@@ -68,7 +68,7 @@ export type BorderType = typeof BorderTypes[number];
 
 export type Border = {
     type: BorderType;
-    color?: Color | Reference;  // defaults to black    
+    color?: HexColor | Reference;  // defaults to black    
 };
 
 export type Partition = {
@@ -81,12 +81,13 @@ export type HeaderStyle = Style & { partition?: Partition; };
 
 export type CustomTheme = {
     inherits?: Reference | Reference[]; // Deep overriding (into styles and borders)
+    tab?: HexColor | Reference;
     group?: HeaderStyle | Reference;
     header?: HeaderStyle | Reference;
     data?: Style | Reference;
 };
 
-const makeStandardTheme = (group: Color, header: Color, data: Color): CustomTheme => {
+const makeStandardTheme = (group: HexColor, header: HexColor, data: HexColor): CustomTheme => {
     return {
         group: { back: group },
         header: { back: header },
@@ -404,7 +405,7 @@ export type TableSheet = TableUnit & {
 
 // Definitions table allows reuse/inheritence of commonly used colors,styles,themes and types via References
 export type Definitions = {
-    colors?: Record<string, Color>;
+    colors?: Record<string, HexColor>;
     styles?: Record<string, Style | HeaderStyle>;
     themes?: Record<string, Theme>; // Includes Standard Themes by default, overriding them by name not allowed
     types?: Record<string, DataType>;

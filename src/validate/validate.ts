@@ -1,45 +1,31 @@
 import { z } from 'zod';
 import {
     BetweenRule, BetweenOperator, Border, BorderType, BorderTypes,
-    Color, ColorRegex, ColumnSelector, Comparable, ComparisonOperator,
+    HexColor, HexColorRegex, ColumnSelector, Comparable, ComparisonOperator,
     ComparisonOperators, ComparisonRule, CompoundExpression, CompoundExpressionType,
     ConditionalStyle, CurrencyFormat, CurrencyFormatType, CurrencySymbolPositions,
     CustomRule, CustomRuleType, CustomTheme,
-    DataSelector, DataType,
-    DateFormat,
-    DateString,
-    DateStringRegex, DateTimeFormat, DateTimeFormatType, DateTimeString, DateTimeStringRegex, Definitions,
+    DataSelector, DataType, DateFormat, DateString, DateStringRegex,
+    DateTimeFormat, DateTimeFormatType, DateTimeString, DateTimeStringRegex, Definitions,
     DigitPlaceholder, EnumItem, EnumType, EnumTypeType, Expression,
     FunctionExpression, FunctionExpressionType, HeaderStyle,
-    HourFormats,
-    IntegrativeOperator, IntegrativeOperators, LiteralExpression,
+    HourFormats, IntegrativeOperator, IntegrativeOperators, LiteralExpression,
     LiteralExpressionType, LookupType, LookupTypeType, MatchRule,
     MatchOperators, NegatedExpression, NegatedExpressionType,
-    NegativeFormats,
-    NumberDateFormat,
-    NumberDateFormatOrder,
-    NumberDateFormatType,
+    NegativeFormats, NumberDateFormat, NumberDateFormatOrder, NumberDateFormatType,
     NumberFormat, NumberFormatType, NumberTimeFormat, NumberTimeFormatType, NumericFormat,
     NumericRule, NumericType, NumericTypeType, Operator,
     Partition, PercentFormat, PercentFormatType,
     RangeRowSelector, RangeRowSelectorType,
     Reference, ReferenceRegex, RowSelector,
     SelectorExpression, SelectorExpressionType,
-    SelfExpression, SelfLiteral,
-    SelfSelector,
-    StandardDateFormats,
+    SelfExpression, SelfLiteral, SelfSelector, StandardDateFormats,
     StandardTheme, StandardThemes, StandardTimeFormats, Style, TableBook, TableColumn,
     TableGroup, TableSheet, TableUnit, TableUnitNameRegex, TemporalFormat,
-    TextDateFormat,
-    TextDateFormatOrder,
-    TextDateFormatType,
+    TextDateFormat, TextDateFormatOrder, TextDateFormatType,
     TextForm, TextRule, TextType, TextTypeType, Theme,
-    TimeFormat,
-    TimeString, TimeStringRegex,
-    UnitLength,
-    UnitLengths,
-    UnitRowSelector,
-    UnitRowSelectorTypes
+    TimeFormat, TimeString, TimeStringRegex,
+    UnitLength, UnitLengths, UnitRowSelector, UnitRowSelectorTypes
 } from '../types/types';
 
 // Note: Manually doing validation instead of inferring types from these to keep types clean.
@@ -81,7 +67,7 @@ const DataSelector: z.ZodType<DataSelector> = z.union([
 ]);
 
 /* Styling */
-const Color: z.ZodType<Color> = z.custom(value => ColorRegex.test(value as string));
+const Color: z.ZodType<HexColor> = z.custom(value => HexColorRegex.test(value as string));
 
 const TextForm: z.ZodType<TextForm> = z.union([
     z.boolean(),
@@ -281,56 +267,56 @@ const CurrencyFormat: z.ZodType<CurrencyFormat> = makeNumberFormat(CurrencyForma
 const UnitLength: z.ZodType<UnitLength> = z.enum(UnitLengths);
 
 const NumberDateFormat: z.ZodType<NumberDateFormat> = z.object({
-   type: z.literal(NumberDateFormatType),
-   year: UnitLength.optional(),
-   month: UnitLength.optional(),
-   day: UnitLength.optional(),
-   order: z.enum(NumberDateFormatOrder).optional(),
+    type: z.literal(NumberDateFormatType),
+    year: UnitLength.optional(),
+    month: UnitLength.optional(),
+    day: UnitLength.optional(),
+    order: z.enum(NumberDateFormatOrder).optional(),
 });
 
 const TextDateFormat: z.ZodType<TextDateFormat> = z.object({
-   type: z.literal(TextDateFormatType),
-   weekday: UnitLength.optional(),
-   month: UnitLength.optional(),
-   year: UnitLength.optional(),
-   day: UnitLength.optional(),
-   order: z.enum(TextDateFormatOrder).optional(),
+    type: z.literal(TextDateFormatType),
+    weekday: UnitLength.optional(),
+    month: UnitLength.optional(),
+    year: UnitLength.optional(),
+    day: UnitLength.optional(),
+    order: z.enum(TextDateFormatOrder).optional(),
 });
 
-const StandardDateFormat: z.ZodType<keyof typeof StandardDateFormats> =  z.enum(Object.keys(StandardDateFormats) as any)
+const StandardDateFormat: z.ZodType<keyof typeof StandardDateFormats> = z.enum(Object.keys(StandardDateFormats) as any);
 
 const DateFormat: z.ZodType<DateFormat> = z.union([
-   TextDateFormat,
-   NumberDateFormat,
-   StandardDateFormat
+    TextDateFormat,
+    NumberDateFormat,
+    StandardDateFormat
 ]);
 
 const NumberTimeFormat: z.ZodType<NumberTimeFormat> = z.object({
-   type: z.literal(NumberTimeFormatType),
-   format: z.enum(HourFormats),
-   hours: UnitLength.optional(),
-   minutes: UnitLength.optional(),
-   seconds: UnitLength.optional(),
-   milliseconds: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
+    type: z.literal(NumberTimeFormatType),
+    format: z.enum(HourFormats),
+    hours: UnitLength.optional(),
+    minutes: UnitLength.optional(),
+    seconds: UnitLength.optional(),
+    milliseconds: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
 });
 
-const StandardTimeFormat: z.ZodType<keyof typeof StandardTimeFormats> =  z.enum(Object.keys(StandardDateFormats) as any)
+const StandardTimeFormat: z.ZodType<keyof typeof StandardTimeFormats> = z.enum(Object.keys(StandardDateFormats) as any);
 
 const TimeFormat: z.ZodType<TimeFormat> = z.union([
-   NumberTimeFormat,
-   StandardTimeFormat
+    NumberTimeFormat,
+    StandardTimeFormat
 ]);
 
 const DateTimeFormat: z.ZodType<DateTimeFormat> = z.object({
-   type: z.literal(DateTimeFormatType),
-   date: DateFormat,
-   time: TimeFormat,
+    type: z.literal(DateTimeFormatType),
+    date: DateFormat,
+    time: TimeFormat,
 });
 
 const TemporalFormat: z.ZodType<TemporalFormat> = z.union([
-   DateFormat,
-   TimeFormat,
-   DateTimeFormat
+    DateFormat,
+    TimeFormat,
+    DateTimeFormat
 ]);
 
 const NumericFormat: z.ZodType<NumericFormat> = z.union([
