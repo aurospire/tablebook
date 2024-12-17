@@ -1,4 +1,4 @@
-import { Color } from "../Color";
+import { ColorObject, Colors } from "../../types/types";
 import { SheetsRequest, SheetsAddSheetReply, SheetsApi, SheetsReply } from "./SheetsTypes";
 
 export type SheetsReplyProcessor<Reply = SheetsReply> = (reply: Reply | undefined) => void;
@@ -8,9 +8,11 @@ export type SheetsAddSheetOptions = {
     title?: string;
     rows?: number;
     columns?: number;
-    color?: Color;
+    color?: ColorObject;
 };
 
+
+const toWeighted = (color: ColorObject | undefined) => color ? Colors.toWeighted(color) : undefined;
 
 export class SheetsRequester {
     #requests: SheetsRequest[];
@@ -35,6 +37,15 @@ export class SheetsRequester {
         );
     }
 
+    setTitle(title: string) {
+        return this.do({
+            updateSpreadsheetProperties: {
+                properties: { title },
+                fields: 'title',
+            }
+        });
+    }
+
     addSheet(options: SheetsAddSheetOptions, process?: SheetsReplyProcessor<SheetsAddSheetReply>) {
         return this.do(
             {
@@ -42,7 +53,7 @@ export class SheetsRequester {
                     properties: {
                         sheetId: options.id,
                         title: options.title,
-                        tabColor: options.color,
+                        tabColor: toWeighted(options.color),
                         gridProperties: { columnCount: options.columns, rowCount: options.rows }
                     }
                 }

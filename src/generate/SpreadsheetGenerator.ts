@@ -1,10 +1,9 @@
-import { BorderType, ColorHex, ComparisonOperator, NumericFormat, BetweenOperator, MatchOperators, ComparisonOperators } from "../types/types";
-import { Color } from "../util/Color";
+import { BetweenOperator, BorderType, ColorObject, ComparisonOperators, MatchOperators, NumericFormat } from "../types/types";
 
 // Basic style configuration for a cell or range
 export type SheetStyle = {
-    fore: Color;
-    back: Color;
+    fore: ColorObject;
+    back: ColorObject;
     bold: boolean;
     italic: boolean;
 };
@@ -12,7 +11,7 @@ export type SheetStyle = {
 // Border configuration for a cell or range
 export type SheetBorder = {
     type: BorderType;
-    color: Color;
+    color: ColorObject;
 };
 
 // Border configuration for groups and headers

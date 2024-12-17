@@ -54,12 +54,7 @@ export class GoogleSheet {
     }
 
     async setTitle(title: string): Promise<void> {
-        await this.modify(r => r.do({
-            updateSpreadsheetProperties: {
-                properties: { title },
-                fields: 'title',
-            }
-        }));
+        await this.modify(r => r.setTitle(title));
     }
 
     async addSheet(options: SheetsAddSheetOptions = {}): Promise<number | undefined> {
@@ -74,10 +69,10 @@ export class GoogleSheet {
         await this.modify(r => r.dropSheets(ids));
     }
 
-    async reset(): Promise<number> {
+    async reset(ideal: number = 1000): Promise<number> {
         const ids = await this.getSheetIds();
 
-        const newId = Math.max(...ids, 999) + 1;
+        const newId = ids.includes(ideal) ? Math.max(...ids, 999) + 1 : ideal;
 
         await this.modify(
             r => r

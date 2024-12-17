@@ -63,16 +63,21 @@ const hexify = (value: number, digits: number): string => {
 };
 
 export const Colors = Object.freeze({
-    toHex(color: ColorObject): ColorHex {
-        return `#${hexify(color.red, 2)}${hexify(color.green, 2)}${hexify(color.blue, 2)}`;
+    toHex(object: ColorObject): ColorHex {
+        return `#${hexify(object.red, 2)}${hexify(object.green, 2)}${hexify(object.blue, 2)}`;
     },
     toObject(hex: ColorHex): ColorObject {
         const red = Number.parseInt(hex.substring(1, 3), 16);
         const green = Number.parseInt(hex.substring(3, 5), 16);
         const blue = Number.parseInt(hex.substring(5, 7), 16);
-
-        console.log({ red, green, blue });
         return { red, green, blue };
+    },
+    toWeighted(object: ColorObject): ColorObject {
+        return {
+            red: object.red / 255,
+            green: object.green / 255,
+            blue: object.blue / 255,
+        };
     }
 });
 
@@ -110,7 +115,7 @@ export type CustomTheme = {
     data?: Style | Reference;
 };
 
-const makeStandardTheme = (darkest: Color, dark: Color, normal: Color, lightest: Color ): CustomTheme => {
+const makeStandardTheme = (darkest: Color, dark: Color, normal: Color, lightest: Color): CustomTheme => {
     return {
         tab: normal,
         group: { back: darkest },
@@ -153,25 +158,25 @@ export const StandardThemes = {
     // purple:         makeStandardTheme('#20124D', '#351C75', '#D9D2E9'),
     // gray:           makeStandardTheme('#3b3b3b', '#656565', '#F2F2F2'),
 
-    redberry:       makeStandardTheme('#5B0F00', '#85200C', '#B54531', '#E6B8AF'),
-    red:            makeStandardTheme('#660000', '#990000', '#CC3333', '#F4CCCC'),
-    coral:          makeStandardTheme('#652b2b', '#af4a4a', '#d47777', '#ffd7d7'),
-    bronze:         makeStandardTheme('#5D4037', '#895d4d', '#B17F6D', '#D7CCC8'),
-    orange:         makeStandardTheme('#783F04', '#B45F06', '#E67E0D', '#FCE5CD'),
-    rust:           makeStandardTheme('#8B3103', '#B54D18', '#D66830', '#F5DEB3'),
-    yellow:         makeStandardTheme('#7F6000', '#BF9000', '#E6B517', '#FFF2CC'),
-    green:          makeStandardTheme('#274E13', '#38761D', '#4F9C28', '#D9EAD3'),
-    moss:           makeStandardTheme('#1E4D2B', '#3A7A47', '#5BA56B', '#D4E4D4'),
-    sage:           makeStandardTheme('#38471f', '#596f34', '#7A944A', '#D5E8D4'),
-    slate:          makeStandardTheme('#223939', '#2f4f4f', '#446464', '#E0E6E6'),
-    cyan:           makeStandardTheme('#0C343D', '#134F5C', '#1B697A', '#D0E0E3'),
+    redberry: makeStandardTheme('#5B0F00', '#85200C', '#B54531', '#E6B8AF'),
+    red: makeStandardTheme('#660000', '#990000', '#CC3333', '#F4CCCC'),
+    coral: makeStandardTheme('#652b2b', '#af4a4a', '#d47777', '#ffd7d7'),
+    bronze: makeStandardTheme('#5D4037', '#895d4d', '#B17F6D', '#D7CCC8'),
+    orange: makeStandardTheme('#783F04', '#B45F06', '#E67E0D', '#FCE5CD'),
+    rust: makeStandardTheme('#8B3103', '#B54D18', '#D66830', '#F5DEB3'),
+    yellow: makeStandardTheme('#7F6000', '#BF9000', '#E6B517', '#FFF2CC'),
+    green: makeStandardTheme('#274E13', '#38761D', '#4F9C28', '#D9EAD3'),
+    moss: makeStandardTheme('#1E4D2B', '#3A7A47', '#5BA56B', '#D4E4D4'),
+    sage: makeStandardTheme('#38471f', '#596f34', '#7A944A', '#D5E8D4'),
+    slate: makeStandardTheme('#223939', '#2f4f4f', '#446464', '#E0E6E6'),
+    cyan: makeStandardTheme('#0C343D', '#134F5C', '#1B697A', '#D0E0E3'),
     cornflowerblue: makeStandardTheme('#1C4587', '#1155CC', '#3377DD', '#C9DAF8'),
-    blue:           makeStandardTheme('#073763', '#0B5394', '#1976D2', '#CFE2F3'),
-    lavender:       makeStandardTheme('#3f3677', '#5f51b7', '#8070D8', '#E6E6FA'),
-    plum:           makeStandardTheme('#4E1A45', '#6C3483', '#8F4BAB', '#E8DAEF'),
-    magenta:        makeStandardTheme('#4C1130', '#65183E', '#8F2657', '#B3A0A8'),
-    purple:         makeStandardTheme('#20124D', '#351C75', '#4C2BA0', '#D9D2E9'),
-    gray:           makeStandardTheme('#3b3b3b', '#656565', '#8C8C8C', '#F2F2F2'),
+    blue: makeStandardTheme('#073763', '#0B5394', '#1976D2', '#CFE2F3'),
+    lavender: makeStandardTheme('#3f3677', '#5f51b7', '#8070D8', '#E6E6FA'),
+    plum: makeStandardTheme('#4E1A45', '#6C3483', '#8F4BAB', '#E8DAEF'),
+    magenta: makeStandardTheme('#4C1130', '#65183E', '#8F2657', '#B3A0A8'),
+    purple: makeStandardTheme('#20124D', '#351C75', '#4C2BA0', '#D9D2E9'),
+    gray: makeStandardTheme('#3b3b3b', '#656565', '#8C8C8C', '#F2F2F2'),
 } as const;
 
 export type StandardTheme = keyof typeof StandardThemes;
