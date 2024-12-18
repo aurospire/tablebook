@@ -1,7 +1,7 @@
 import { sheets_v4 } from "@googleapis/sheets";
 import { SheetBorder, SheetBorderSet } from "../SheetBorder";
 import { BorderType, ColorObject, Colors } from "../../tables/types";
-import { SheetCellAlignment, SheetCellProperties, SheetCellType, SheetCellWrap, SheetRange } from "../SheetCell";
+import { nullSheetCellFormat, SheetCellAlignment, SheetCellFormat, SheetCellProperties, SheetCellType, SheetCellValue, SheetCellWrap, SheetRange } from "../SheetCell";
 import { GoogleAddSheetReply, GoogleApi, GoogleReply, GoogleRequest } from "./GoogleTypes";
 
 export type GoogleReplyProcessor<Reply = GoogleReply> = (reply: Reply | undefined) => void;
@@ -42,7 +42,7 @@ const toGridRange = (sheetId: number, range: SheetRange): sheets_v4.Schema$GridR
     endRowIndex: range.end.row
 });
 
-const getExtendedValue = (value?: SheetCellProperties['value']): sheets_v4.Schema$ExtendedValue | undefined => {
+const getExtendedValue = (value?: SheetCellProperties['value']): GoogleCellValue | undefined => {
     switch (typeof value) {
         case 'string':
             return { stringValue: value };
@@ -88,103 +88,103 @@ const GoogleCellType = {
     datetime: 'DATE_TIME',
 } satisfies Record<SheetCellType, string>;
 
-type GoogleCellData = sheets_v4.Schema$CellData;
+type GoogleCellValue = sheets_v4.Schema$ExtendedValue;
+type GoogleCellFormat = sheets_v4.Schema$CellFormat;
+type GoogleTextFormat = sheets_v4.Schema$TextFormat;
+type GoogleNumberFormat = sheets_v4.Schema$NumberFormat;
 
-const toCellData = (props: SheetCellProperties): { data: GoogleCellData, fields: string; } => {
-    const fields: string[] = [];
 
-    let data: GoogleCellData = {};
-
-    let format: sheets_v4.Schema$CellFormat | undefined;
-
-    let textFormat: sheets_v4.Schema$TextFormat | undefined;
-
-    let numberFormat: sheets_v4.Schema$NumberFormat | undefined;
-
-    if (props.value !== undefined) {
-        if (props.value !== null)
-            data.userEnteredValue = getExtendedValue(props.value);
+const toCellValue = (value: SheetCellProperties['value'], fields: string[]): GoogleCellValue | undefined => {
+    if (value !== undefined) {
         fields.push('userEnteredValue');
+        if (value !== null)
+            return getExtendedValue(value);
     }
-
-    if (props.back !== undefined) {
-        if (props.back !== null) {
-            format ??= {};
-            format.backgroundColorStyle = toWeightedColorStyle(props.back);
-        }
-        fields.push('userEnteredFormat.backgroundColorStyle');
-    }
-
-    if (props.fore !== undefined) {
-        if (props.fore !== null) {
-            textFormat ??= {};
-            textFormat.foregroundColorStyle = toWeightedColorStyle(props.fore);
-        }
-        fields.push('userEnteredFormat.textFormat.foregroundColorStyle');
-    }
-
-    if (props.bold !== undefined) {
-        if (props.bold !== null) {
-            textFormat ??= {};
-            textFormat.bold = props.bold;
-        }
-        fields.push('userEnteredFormat.textFormat.bold');
-    }
-
-    if (props.italic !== undefined) {
-        if (props.italic !== null) {
-            textFormat ??= {};
-            textFormat.italic = props.italic;
-        }
-        fields.push('userEnteredFormat.textFormat.italic');
-    }
-
-
-    if (props.horizontal !== undefined) {
-        if (props.horizontal !== null) {
-            format ??= {};
-            format.horizontalAlignment = GoogleHorizontalAlignment[props.horizontal];
-        }
-        fields.push('userEnteredFormat.horizontalAlignment');
-    }
-
-    if (props.vertical !== undefined) {
-        if (props.vertical !== null) {
-            format ??= {};
-            format.verticalAlignment = GoogleVerticalAlignment[props.vertical];
-        }
-        fields.push('userEnteredFormat.verticalAlignment');
-    }
-
-    if (props.wrap !== undefined) {
-        if (props.wrap !== null) {
-            format ??= {};
-            format.wrapStrategy = GoogleWrap[props.wrap];
-        }
-        fields.push('userEnteredFormat.wrapStrategy');
-    }
-
-    if (props.type !== undefined || props.format !== undefined) {
-        if (props.type !== null || props.format !== null) {
-            numberFormat ??= {};
-            numberFormat.type = props.type ? GoogleCellType[props.type] : GoogleCellType.text;
-            numberFormat.pattern = props.format ? props.format : '';
-        }
-
-        fields.push('userEnteredFormat.numberFormat.type');
-        fields.push('userEnteredFormat.numberFormat.pattern');
-    }
-
-
-    if (textFormat || numberFormat)
-        format = { ...(format ?? {}), textFormat, numberFormat };
-
-    if (format)
-        data = { ...(data ?? {}), userEnteredFormat: format };
-
-    return { data, fields: fields.join(',') };
 };
 
+const toCellFormat = (format: SheetCellProperties['format'], fields: string[]): GoogleCellFormat | undefined => {
+    let dataFormat: GoogleCellFormat | undefined;
+
+    let textFormat: GoogleTextFormat | undefined;
+
+    let numberFormat: GoogleNumberFormat | undefined;
+
+    format = format === null ? nullSheetCellFormat : format;
+
+    if (format) {
+        if (format.back !== undefined) {
+            fields.push('userEnteredFormat.backgroundColorStyle');
+            if (format.back !== null) {
+                dataFormat ??= {};
+                dataFormat.backgroundColorStyle = toWeightedColorStyle(format.back);
+            }
+        }
+
+        if (format.fore !== undefined) {
+            fields.push('userEnteredFormat.textFormat.foregroundColorStyle');
+            if (format.fore !== null) {
+                textFormat ??= {};
+                textFormat.foregroundColorStyle = toWeightedColorStyle(format.fore);
+            }
+        }
+
+        if (format.bold !== undefined) {
+            fields.push('userEnteredFormat.textFormat.bold');
+            if (format.bold !== null) {
+                textFormat ??= {};
+                textFormat.bold = format.bold;
+            }
+        }
+
+        if (format.italic !== undefined) {
+            fields.push('userEnteredFormat.textFormat.italic');
+            if (format.italic !== null) {
+                textFormat ??= {};
+                textFormat.italic = format.italic;
+            }
+        }
+
+
+        if (format.horizontal !== undefined) {
+            fields.push('userEnteredFormat.horizontalAlignment');
+            if (format.horizontal !== null) {
+                dataFormat ??= {};
+                dataFormat.horizontalAlignment = GoogleHorizontalAlignment[format.horizontal];
+            }
+        }
+
+        if (format.vertical !== undefined) {
+            fields.push('userEnteredFormat.verticalAlignment');
+            if (format.vertical !== null) {
+                dataFormat ??= {};
+                dataFormat.verticalAlignment = GoogleVerticalAlignment[format.vertical];
+            }
+        }
+
+        if (format.wrap !== undefined) {
+            fields.push('userEnteredFormat.wrapStrategy');
+            if (format.wrap !== null) {
+                dataFormat ??= {};
+                dataFormat.wrapStrategy = GoogleWrap[format.wrap];
+            }
+        }
+
+        if (format.type !== undefined || format.pattern !== undefined) {
+            fields.push('userEnteredFormat.numberFormat.type');
+            fields.push('userEnteredFormat.numberFormat.pattern');
+            if (format.type !== null || format.pattern !== null) {
+                numberFormat ??= {};
+                numberFormat.type = format.type ? GoogleCellType[format.type] : GoogleCellType.text;
+                numberFormat.pattern = format.pattern ? format.pattern : '';
+            }
+        }
+    }
+
+    if (textFormat || numberFormat)
+        dataFormat = { ...(dataFormat ?? {}), textFormat, numberFormat };
+
+    return dataFormat;
+};
 
 
 export class GoogleRequester {
@@ -209,7 +209,7 @@ export class GoogleRequester {
         );
     }
 
-    setTitle(title: string, process?: GoogleReplyProcessor) {
+    setTitle(title: string, process?: GoogleReplyProcessor): GoogleRequester {
         return this.do({
             updateSpreadsheetProperties: {
                 properties: { title },
@@ -218,7 +218,7 @@ export class GoogleRequester {
         }, process);
     }
 
-    addSheet(options: GoogleAddSheetOptions, process?: (reply?: GoogleAddSheetReply, id?: number) => void) {
+    addSheet(options: GoogleAddSheetOptions, process?: (reply?: GoogleAddSheetReply, id?: number) => void): GoogleRequester {
         return this.do(
             {
                 addSheet: {
@@ -234,15 +234,15 @@ export class GoogleRequester {
         );
     }
 
-    dropSheets(ids: number | number[], process?: GoogleReplyProcessor) {
+    dropSheets(ids: number | number[], process?: GoogleReplyProcessor): GoogleRequester {
         return this.do((Array.isArray(ids) ? ids : [ids]).map(id => ({ deleteSheet: { sheetId: id } }), process));
     }
 
-    mergeCells(sheetId: number, range: SheetRange, process?: GoogleReplyProcessor) {
+    mergeCells(sheetId: number, range: SheetRange, process?: GoogleReplyProcessor): GoogleRequester {
         return this.do({ mergeCells: { range: toGridRange(sheetId, range) } }, process);
     }
 
-    setBorder(sheetId: number, range: SheetRange, borders: SheetBorderSet, process?: GoogleReplyProcessor) {
+    setBorder(sheetId: number, range: SheetRange, borders: SheetBorderSet, process?: GoogleReplyProcessor): GoogleRequester {
         return this.do({
             updateBorders: {
                 range: toGridRange(sheetId, range),
@@ -254,18 +254,26 @@ export class GoogleRequester {
         }, process);
     }
 
-    updateCell(sheedId: number, col: number, row: number, props: SheetCellProperties, process?: GoogleReplyProcessor) {
-        const { data, fields } = toCellData(props);
+    updateCell(sheedId: number, col: number, row: number, props: SheetCellProperties, process?: GoogleReplyProcessor): GoogleRequester {
+        const fields: string[] = [];
+        const value = toCellValue(props.value, fields);
+        const format = toCellFormat(props.format, fields);
 
-        return this.do({
-            updateCells: {
-                start: { sheetId: sheedId, columnIndex: col, rowIndex: row },
-                rows: [{
-                    values: [data]
-                }],
-                fields: fields
-            }
-        });
+        if (fields.length)
+            return this.do({
+                updateCells: {
+                    start: { sheetId: sheedId, columnIndex: col, rowIndex: row },
+                    rows: [{
+                        values: [{
+                            userEnteredValue: value,
+                            userEnteredFormat: format
+                        }]
+                    }],
+                    fields: fields.join('.')
+                }
+            });
+
+        return this;
     }
 
     async run(api: GoogleApi, id: string) {

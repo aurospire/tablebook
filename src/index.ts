@@ -40,8 +40,8 @@ const main = async () => {
             right: { color: Colors.toObject('#8800AA'), type: 'double' },
         }));
 
-        await sheet.modify(r => r.updateCell(id, 3, 3, { value: 10, bold: true, fore: Colors.toObject('#990022') }));
-        await sheet.modify(r => r.updateCell(id, 3, 3, { value: { formula: '10+22' }, format: 'YYYY' }));
+        await sheet.modify(r => r.updateCell(id, 3, 3, { value: 10, format: { bold: true, fore: Colors.toObject('#990022') } }));
+        await sheet.modify(r => r.updateCell(id, 3, 3, { value: { formula: '10+22' }, format: { pattern: 'YYYY' } }));
     }
 };
 

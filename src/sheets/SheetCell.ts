@@ -13,15 +13,16 @@ export const SheetRange = Object.freeze({
 
 export type SheetCellFormula = { formula: string; };
 
+export type SheetCellValue = string | number | boolean | SheetCellFormula;
+
+
 export type SheetCellAlignment = 'start' | 'middle' | 'end';
 
 export type SheetCellWrap = 'overflow' | 'clip' | 'wrap';
 
 export type SheetCellType = 'text' | 'number' | 'percent' | 'currency' | 'date' | 'time' | 'datetime';
 
-export type SheetCellProperties = {
-    value?: string | number | boolean | SheetCellFormula | null;
-
+export type SheetCellFormat = {
     back?: ColorObject | null;
     fore?: ColorObject | null;
 
@@ -33,5 +34,12 @@ export type SheetCellProperties = {
     wrap?: SheetCellWrap | null;
 
     type?: SheetCellType | null;
-    format?: string | null;
+    pattern?: string | null;
+};
+
+export const nullSheetCellFormat = { back: null, fore: null, bold: null, italic: null, horizontal: null, vertical: null, wrap: null, type: null, pattern: null };
+
+export type SheetCellProperties = {
+    value?: SheetCellValue | null;
+    format?: SheetCellFormat | null;
 };
