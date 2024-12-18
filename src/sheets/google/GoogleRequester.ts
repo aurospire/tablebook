@@ -164,21 +164,17 @@ const toCellData = (props: SheetCellProperties): { data: GoogleCellData, fields:
         fields.push('userEnteredFormat.wrapStrategy');
     }
 
-    if (props.type !== undefined) {
-        if (props.type !== null) {
+    if (props.type !== undefined || props.format !== undefined) {
+        if (props.type !== null || props.format !== null) {
             numberFormat ??= {};
-            numberFormat.type = GoogleCellType[props.type];
+            numberFormat.type = props.type ? GoogleCellType[props.type] : GoogleCellType.text;
+            numberFormat.pattern = props.format ? props.format : '';
         }
-        fields.push('userEnteredFormat.numberFormat.type');
-    }
 
-    if (props.format !== undefined) {
-        if (props.format !== null) {
-            numberFormat ??= {};
-            numberFormat.pattern = props.format;
-        }
+        fields.push('userEnteredFormat.numberFormat.type');
         fields.push('userEnteredFormat.numberFormat.pattern');
     }
+
 
     if (textFormat || numberFormat)
         format = { ...(format ?? {}), textFormat, numberFormat };

@@ -41,7 +41,7 @@ const main = async () => {
         }));
 
         await sheet.modify(r => r.updateCell(id, 3, 3, { value: 10, bold: true, fore: Colors.toObject('#990022') }));
-        await sheet.modify(r => r.updateCell(id, 3, 3, { value: { formula: '10+22' } }));
+        await sheet.modify(r => r.updateCell(id, 3, 3, { value: { formula: '10+22' }, format: 'YYYY' }));
     }
 };
 
