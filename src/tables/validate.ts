@@ -32,7 +32,7 @@ import {
     TextForm, TextRule, TextType, TextTypeType, Theme,
     TimeFormat, TimeString, TimeStringRegex,
     UnitLength, UnitLengths, UnitRowSelector, UnitRowSelectorTypes
-} from '../tables/types';
+} from './types';
 
 // Note: Manually doing validation instead of inferring types from these to keep types clean.
 // I'm also ok with it using Object.value as any to extract const Object values

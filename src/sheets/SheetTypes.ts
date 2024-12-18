@@ -3,38 +3,22 @@ import { SheetBorder } from "./SheetBorder";
 import { SheetStyle } from "./SheetStyle";
 
 
-// Border configuration for groups and headers
-
 export type SheetBorderConfig = {
     beneath?: SheetBorder;
     between?: SheetBorder;
 };
-// Style and border configuration for headers
 
 export type SheetHeaderConfig = {
     style: SheetStyle;
     borders?: SheetBorderConfig;
 };
-const aCode = 'A'.charCodeAt(0);
 
-export const columnToLetter = (column: number): string => {
-    let result = '';
-    do {
-        const digit = column % 26;
-        column = (column / 26) | 0;
-        result = String.fromCharCode(aCode + digit) + result;
-    } while (column > 0);
-
-    return result;
-};
-// Formula chunks are just literal pieces that can be concatenated
 
 export type SheetFormulaChunk = string | number;
 // Creates a formula generator function that takes a row and returns the complete formula
 
 export type SheetFormulaGenerator = (row: number) => string;
 // Combined configuration for a column
-
 
 
 export type SheetColumnConfig = {

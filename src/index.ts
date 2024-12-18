@@ -20,27 +20,26 @@ const main = async () => {
     // console.log(results);
 
     const sheet = await GoogleSheet.open(vars.email, vars.key, vars.sheetid);
+
     await sheet.reset();
+
+
     const id = await sheet.addSheet({
         color: Colors.toObject('#990022'),
         rows: 10,
         columns: 10,
     });
 
-    if (id)
+    if (id) {
         sheet.modify(r => r.mergeCells(id, SheetRange.box(3, 3, 3, 3)));
 
-    return;
-    //await sheet.reset(); return;
-    console.log(await sheet.getSheetIds());
-
-    await sheet.setTitle('New Title!');
-
-    await sheet.addSheet({
-        color: Colors.toObject('#990022'),
-        rows: 10,
-        columns: 3,
-    });
+        sheet.modify(r => r.setBorder(id, SheetRange.box(3, 3, 3, 3,), {
+            top: { color: Colors.toObject('#ab2010'), type: 'dashed' },
+            bottom: { color: Colors.toObject('#008800'), type: 'thick' },
+            left: { color: Colors.toObject('#990022'), type: 'dotted' },
+            right: { color: Colors.toObject('#8800AA'), type: 'double' },
+        }));
+    }
 };
 
 

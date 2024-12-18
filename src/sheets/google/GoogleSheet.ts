@@ -1,5 +1,5 @@
 import { auth, sheets } from '@googleapis/sheets';
-import { GoogleAddSheetOptions, GoogleRequester } from './SheetsRequester';
+import { GoogleAddSheetOptions, GoogleRequester } from './GoogleRequester';
 import { GoogleApi } from './GoogleTypes';
 
 export class GoogleSheet {
