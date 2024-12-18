@@ -31,14 +31,17 @@ const main = async () => {
     });
 
     if (id) {
-        sheet.modify(r => r.mergeCells(id, SheetRange.box(3, 3, 3, 3)));
+        await sheet.modify(r => r.mergeCells(id, SheetRange.box(3, 3, 3, 3)));
 
-        sheet.modify(r => r.setBorder(id, SheetRange.box(3, 3, 3, 3,), {
+        await sheet.modify(r => r.setBorder(id, SheetRange.box(3, 3, 3, 3,), {
             top: { color: Colors.toObject('#ab2010'), type: 'dashed' },
             bottom: { color: Colors.toObject('#008800'), type: 'thick' },
             left: { color: Colors.toObject('#990022'), type: 'dotted' },
             right: { color: Colors.toObject('#8800AA'), type: 'double' },
         }));
+
+        await sheet.modify(r => r.updateCell(id, 3, 3, { value: 10, bold: true, fore: Colors.toObject('#990022'), preserve: true }));
+        await sheet.modify(r => r.updateCell(id, 3, 3, { value:  {formula:'10+22'}, preserve: true }));
     }
 };
 

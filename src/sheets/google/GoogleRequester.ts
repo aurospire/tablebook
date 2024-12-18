@@ -1,7 +1,7 @@
 import { sheets_v4 } from "@googleapis/sheets";
 import { SheetBorder, SheetBorderSet } from "../SheetBorder";
 import { BorderType, ColorObject, Colors } from "../../tables/types";
-import { SheetRange } from "../SheetCell";
+import { SheetCellAlignment, SheetCellProperties, SheetCellType, SheetCellWrap, SheetRange } from "../SheetCell";
 import { GoogleAddSheetReply, GoogleApi, GoogleReply, GoogleRequest } from "./GoogleTypes";
 
 export type GoogleReplyProcessor<Reply = GoogleReply> = (reply: Reply | undefined) => void;
@@ -27,11 +27,12 @@ const GoogleBorderMap = {
 const toSheetsBorder = (border: SheetBorder | undefined): sheets_v4.Schema$Border | undefined => {
     return border ? {
         style: GoogleBorderMap[border.type],
-        colorStyle: { rgbColor: toWeightedColor(border.color) },
+        colorStyle: toWeightedColorStyle(border.color),
     } : undefined;
 };
 
-const toWeightedColor = (color: ColorObject | undefined) => color ? Colors.toWeighted(color) : undefined;
+const toWeightedColorStyle = (color: ColorObject | undefined): sheets_v4.Schema$ColorStyle | undefined =>
+    color ? { rgbColor: Colors.toWeighted(color) } : undefined;
 
 const toGridRange = (sheetId: number, range: SheetRange): sheets_v4.Schema$GridRange => ({
     sheetId,
@@ -41,8 +42,136 @@ const toGridRange = (sheetId: number, range: SheetRange): sheets_v4.Schema$GridR
     endRowIndex: range.end.row
 });
 
+const getExtendedValue = (value?: SheetCellProperties['value']): sheets_v4.Schema$ExtendedValue | undefined => {
+    switch (typeof value) {
+        case 'string':
+            return { stringValue: value };
+        case 'number':
+            return { numberValue: value };
+        case 'boolean':
+            return { boolValue: value };
+        default: {
+            if (value && 'formula' in value) {
+                const formula = value.formula;
+                return { formulaValue: formula[0] === '=' ? formula : '=' + formula };
+            }
+        }
+    }
+};
 
-//addGroup(sheetId: number, title: string, columnStart: number, columnCount: number, style ?: SheetStyle, borders ?: SheetBorderConfig): Promise<void>;
+const GoogleHorizontalAlignment = {
+    start: 'LEFT',
+    middle: 'CENTER',
+    end: 'RIGHT'
+} satisfies Record<SheetCellAlignment, string>;
+
+const GoogleVerticalAlignment = {
+    start: 'TOP',
+    middle: 'MIDDLE',
+    end: 'BOTTOM'
+} satisfies Record<SheetCellAlignment, string>;
+
+const GoogleWrap = {
+    overflow: 'OVERFLOW_CELL',
+    clip: 'CLIP',
+    wrap: 'WRAP'
+} satisfies Record<SheetCellWrap, string>;
+
+
+const GoogleCellType = {
+    text: 'TEXT',
+    number: 'NUMBER',
+    percent: 'PERCENT',
+    currency: 'CURRENCY',
+    date: 'DATE',
+    time: 'TIME',
+    datetime: 'DATE_TIME',
+} satisfies Record<SheetCellType, string>;
+
+type GoogleCellData = sheets_v4.Schema$CellData;
+
+const toCellData = (props: SheetCellProperties): { data: GoogleCellData, fields: string; } => {
+    const preserve = props.preserve ?? false;
+
+    const fields: string[] = [];
+
+    let data: GoogleCellData = {};
+
+    let format: sheets_v4.Schema$CellFormat | undefined;
+
+    let textFormat: sheets_v4.Schema$TextFormat | undefined;
+
+    let numberFormat: sheets_v4.Schema$NumberFormat | undefined;
+
+    if (props.value !== undefined) {
+        data.userEnteredValue = getExtendedValue(props.value);
+        if (preserve) fields.push('userEnteredValue');
+    }
+
+    if (props.back !== undefined) {
+        format ??= {};
+        format.backgroundColorStyle = toWeightedColorStyle(props.back);
+        if (preserve) fields.push('userEnteredFormat.backgroundColorStyle');
+    }
+
+    if (props.fore !== undefined) {
+        textFormat ??= {};
+        textFormat.foregroundColorStyle = toWeightedColorStyle(props.fore);
+        if (preserve) fields.push('userEnteredFormat.textFormat.foregroundColorStyle');
+    }
+
+    if (props.bold !== undefined) {
+        textFormat ??= {};
+        textFormat.bold = props.bold;
+        if (preserve) fields.push('userEnteredFormat.textFormat.bold');
+    }
+
+    if (props.italic !== undefined) {
+        textFormat ??= {};
+        textFormat.italic = props.italic;
+        if (preserve) fields.push('userEnteredFormat.textFormat.italic');
+    }
+
+
+    if (props.horizontal !== undefined) {
+        format ??= {};
+        format.horizontalAlignment = GoogleHorizontalAlignment[props.horizontal];
+        if (preserve) fields.push('userEnteredFormat.horizontalAlignment');
+    }
+
+    if (props.vertical !== undefined) {
+        format ??= {};
+        format.verticalAlignment = GoogleVerticalAlignment[props.vertical];
+        if (preserve) fields.push('userEnteredFormat.verticalAlignment');
+    }
+
+    if (props.wrap !== undefined) {
+        format ??= {};
+        format.wrapStrategy = GoogleWrap[props.wrap];
+        if (preserve) fields.push('userEnteredFormat.wrapStrategy');
+    }
+
+    if (props.type !== undefined) {
+        numberFormat ??= {};
+        numberFormat.type = GoogleCellType[props.type];
+        if (preserve) fields.push('userEnteredFormat.numberFormat.type');
+    }
+
+    if (props.format !== undefined) {
+        numberFormat ??= {};
+        numberFormat.pattern = props.format;
+        if (preserve) fields.push('userEnteredFormat.numberFormat.pattern');
+    }
+
+    if (textFormat || numberFormat)
+        format = { ...(format ?? {}), textFormat, numberFormat };
+
+    if (format)
+        data = { ...(data ?? {}), userEnteredFormat: format };
+
+    return { data, fields: preserve ? fields.join(',') : '*' };
+};
+
 
 
 export class GoogleRequester {
@@ -83,7 +212,7 @@ export class GoogleRequester {
                     properties: {
                         sheetId: options.id,
                         title: options.title,
-                        tabColor: toWeightedColor(options.color),
+                        tabColorStyle: toWeightedColorStyle(options.color),
                         gridProperties: { columnCount: options.columns, rowCount: options.rows }
                     }
                 }
@@ -112,12 +241,18 @@ export class GoogleRequester {
         }, process);
     }
 
-    setCellText(sheedId: number, col: number, row: number, value: string, process?: GoogleReplyProcessor) {
+    updateCell(sheedId: number, col: number, row: number, props: SheetCellProperties, process?: GoogleReplyProcessor) {
+        const { data, fields } = toCellData(props);
 
-    }
-
-    setRangeData(sheedId: number, range: SheetRange, data: string[][], process?: GoogleReplyProcessor) {
-
+        return this.do({
+            updateCells: {
+                start: { sheetId: sheedId, columnIndex: col, rowIndex: row },
+                rows: [{
+                    values: [data]
+                }],
+                fields: fields
+            }
+        });
     }
 
     async run(api: GoogleApi, id: string) {
