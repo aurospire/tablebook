@@ -1,12 +1,12 @@
 import { auth, sheets } from '@googleapis/sheets';
-import { SheetsAddSheetOptions, SheetsRequester } from './SheetsRequester';
-import { SheetsApi } from './SheetsTypes';
+import { GoogleAddSheetOptions, GoogleRequester } from './SheetsRequester';
+import { GoogleApi } from './GoogleTypes';
 
 export class GoogleSheet {
-    #api: SheetsApi;
+    #api: GoogleApi;
     #id: string;
 
-    constructor(api: SheetsApi, id: string) {
+    constructor(api: GoogleApi, id: string) {
         this.#api = api;
         this.#id = id;
     }
@@ -28,7 +28,7 @@ export class GoogleSheet {
         return new GoogleSheet(api, id);
     }
 
-    get api(): SheetsApi { return this.#api; }
+    get api(): GoogleApi { return this.#api; }
 
     get id(): string { return this.#id; }
 
@@ -46,9 +46,9 @@ export class GoogleSheet {
     }
 
     // Modify
-    async modify(requester: SheetsRequester | ((requester: SheetsRequester) => SheetsRequester)) {
+    async modify(requester: GoogleRequester | ((requester: GoogleRequester) => GoogleRequester)) {
         if (typeof requester === 'function')
-            requester = requester(new SheetsRequester());
+            requester = requester(new GoogleRequester());
 
         return await requester.run(this.#api, this.#id);
     }
@@ -57,7 +57,7 @@ export class GoogleSheet {
         await this.modify(r => r.setTitle(title));
     }
 
-    async addSheet(options: SheetsAddSheetOptions = {}): Promise<number | undefined> {
+    async addSheet(options: GoogleAddSheetOptions = {}): Promise<number | undefined> {
         let resultId: number | undefined;
 
         await this.modify(r => r.addSheet(options, reply => resultId = reply?.properties?.sheetId ?? undefined));

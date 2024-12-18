@@ -1,12 +1,12 @@
 import { sheets_v4 } from "@googleapis/sheets";
-import { SheetBorder, SheetBorderSet } from "../SheetTypes";
+import { SheetBorder, SheetBorderSet } from "../SheetBorder";
 import { BorderType, ColorObject, Colors } from "../../tables/types";
 import { SheetRange } from "../SheetCell";
-import { SheetsAddSheetReply, SheetsApi, SheetsReply, SheetsRequest } from "./SheetsTypes";
+import { GoogleAddSheetReply, GoogleApi, GoogleReply, GoogleRequest } from "./GoogleTypes";
 
-export type SheetsReplyProcessor<Reply = SheetsReply> = (reply: Reply | undefined) => void;
+export type GoogleReplyProcessor<Reply = GoogleReply> = (reply: Reply | undefined) => void;
 
-export type SheetsAddSheetOptions = {
+export type GoogleAddSheetOptions = {
     id?: number;
     title?: string;
     rows?: number;
@@ -14,8 +14,7 @@ export type SheetsAddSheetOptions = {
     color?: ColorObject;
 };
 
-
-const SheetsBorderMap = {
+const GoogleBorderMap = {
     none: 'NONE',
     thin: 'SOLID',
     medium: 'SOLID_MEDIUM',
@@ -27,7 +26,7 @@ const SheetsBorderMap = {
 
 const toSheetsBorder = (border: SheetBorder | undefined): sheets_v4.Schema$Border | undefined => {
     return border ? {
-        style: SheetsBorderMap[border.type],
+        style: GoogleBorderMap[border.type],
         colorStyle: { rgbColor: toWeightedColor(border.color) },
     } : undefined;
 };
@@ -46,24 +45,24 @@ const toGridRange = (sheetId: number, range: SheetRange): sheets_v4.Schema$GridR
 //addGroup(sheetId: number, title: string, columnStart: number, columnCount: number, style ?: SheetStyle, borders ?: SheetBorderConfig): Promise<void>;
 
 
-export class SheetsRequester {
-    #requests: SheetsRequest[];
-    #processors: SheetsReplyProcessor[];
+export class GoogleRequester {
+    #requests: GoogleRequest[];
+    #processors: GoogleReplyProcessor[];
 
-    constructor(requests: SheetsRequest[] = [], processors: SheetsReplyProcessor[] = []) {
+    constructor(requests: GoogleRequest[] = [], processors: GoogleReplyProcessor[] = []) {
         this.#requests = requests;
         this.#processors = processors;
     }
 
-    do(request: SheetsRequest, process?: SheetsReplyProcessor) {
-        return new SheetsRequester(
+    do(request: GoogleRequest, process?: GoogleReplyProcessor) {
+        return new GoogleRequester(
             [...this.#requests, request],
             [...this.#processors, process ?? (() => { })]
         );
     }
 
-    #doBatch(requests: SheetsRequest[]) {
-        return new SheetsRequester(
+    #doBatch(requests: GoogleRequest[]) {
+        return new GoogleRequester(
             [...this.#requests, ...requests],
             [...this.#processors, ...Array(requests.length).fill(() => { })]
         );
@@ -78,7 +77,7 @@ export class SheetsRequester {
         });
     }
 
-    addSheet(options: SheetsAddSheetOptions, process?: (reply?: SheetsAddSheetReply, id?: number) => void) {
+    addSheet(options: GoogleAddSheetOptions, process?: (reply?: GoogleAddSheetReply, id?: number) => void) {
         return this.do(
             {
                 addSheet: {
@@ -116,7 +115,7 @@ export class SheetsRequester {
         });
     }
 
-    async run(api: SheetsApi, id: string) {
+    async run(api: GoogleApi, id: string) {
         const result = await api.spreadsheets.batchUpdate({
             spreadsheetId: id,
             requestBody: {

@@ -1,26 +1,8 @@
-import { ColorObject, BorderType, NumericFormat, ComparisonOperators, BetweenOperator, MatchOperators } from "../tables/types";
+import { NumericFormat, ComparisonOperators, BetweenOperator, MatchOperators } from "../tables/types";
+import { SheetBorder } from "./SheetBorder";
+import { SheetStyle } from "./SheetStyle";
 
-// Basic style configuration for a cell or range
 
-export type SheetStyle = {
-    fore: ColorObject;
-    back: ColorObject;
-    bold: boolean;
-    italic: boolean;
-};
-// Border configuration for a cell or range
-
-export type SheetBorder = {
-    type: BorderType;
-    color: ColorObject;
-};
-
-export type SheetBorderSet = {
-    top?: SheetBorder;
-    bottom?: SheetBorder;
-    left?: SheetBorder;
-    right?: SheetBorder;
-};
 // Border configuration for groups and headers
 
 export type SheetBorderConfig = {
