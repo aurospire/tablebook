@@ -54,27 +54,26 @@ export class GoogleRequester {
         this.#processors = processors;
     }
 
-    do(request: GoogleRequest, process?: GoogleReplyProcessor) {
+    do(requests: GoogleRequest | GoogleRequest[], process?: GoogleReplyProcessor) {
+        process ??= () => { };
+
+        const newRequests = Array.isArray(requests) ? requests : [requests];
+
+        const newProcessors = Array.isArray(requests) ? Array(requests.length).fill(process) : [process];
+
         return new GoogleRequester(
-            [...this.#requests, request],
-            [...this.#processors, process ?? (() => { })]
+            [...this.#requests, ...newRequests],
+            [...this.#processors, ...newProcessors]
         );
     }
 
-    #doBatch(requests: GoogleRequest[]) {
-        return new GoogleRequester(
-            [...this.#requests, ...requests],
-            [...this.#processors, ...Array(requests.length).fill(() => { })]
-        );
-    }
-
-    setTitle(title: string) {
+    setTitle(title: string, process?: GoogleReplyProcessor) {
         return this.do({
             updateSpreadsheetProperties: {
                 properties: { title },
                 fields: 'title',
             }
-        });
+        }, process);
     }
 
     addSheet(options: GoogleAddSheetOptions, process?: (reply?: GoogleAddSheetReply, id?: number) => void) {
@@ -93,17 +92,15 @@ export class GoogleRequester {
         );
     }
 
-    dropSheets(ids: number | number[]) {
-        return Array.isArray(ids)
-            ? this.#doBatch((ids).map(id => ({ deleteSheet: { sheetId: id } })))
-            : this.do({ deleteSheet: { sheetId: ids } });
+    dropSheets(ids: number | number[], process?: GoogleReplyProcessor) {
+        return this.do((Array.isArray(ids) ? ids : [ids]).map(id => ({ deleteSheet: { sheetId: id } }), process));
     }
 
-    mergeCells(sheetId: number, range: SheetRange) {
-        return this.do({ mergeCells: { range: toGridRange(sheetId, range) } });
+    mergeCells(sheetId: number, range: SheetRange, process?: GoogleReplyProcessor) {
+        return this.do({ mergeCells: { range: toGridRange(sheetId, range) } }, process);
     }
 
-    setBorder(sheetId: number, range: SheetRange, borders: SheetBorderSet) {
+    setBorder(sheetId: number, range: SheetRange, borders: SheetBorderSet, process?: GoogleReplyProcessor) {
         return this.do({
             updateBorders: {
                 range: toGridRange(sheetId, range),
@@ -112,7 +109,15 @@ export class GoogleRequester {
                 left: toSheetsBorder(borders.left),
                 right: toSheetsBorder(borders.right),
             }
-        });
+        }, process);
+    }
+
+    setCellText(sheedId: number, col: number, row: number, value: string, process?: GoogleReplyProcessor) {
+
+    }
+
+    setRangeData(sheedId: number, range: SheetRange, data: string[][], process?: GoogleReplyProcessor) {
+
     }
 
     async run(api: GoogleApi, id: string) {
