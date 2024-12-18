@@ -1,6 +1,8 @@
-import { ColorObject, Colors } from "../../types/types";
-import { Range } from "../Cell";
-import { SheetsRequest, SheetsAddSheetReply, SheetsApi, SheetsReply } from "./SheetsTypes";
+import { sheets_v4 } from "@googleapis/sheets";
+import { SheetBorder, SheetBorderSet } from "../SheetTypes";
+import { BorderType, ColorObject, Colors } from "../../tables/types";
+import { SheetRange } from "../SheetCell";
+import { SheetsAddSheetReply, SheetsApi, SheetsReply, SheetsRequest } from "./SheetsTypes";
 
 export type SheetsReplyProcessor<Reply = SheetsReply> = (reply: Reply | undefined) => void;
 
@@ -13,7 +15,33 @@ export type SheetsAddSheetOptions = {
 };
 
 
-const toWeighted = (color: ColorObject | undefined) => color ? Colors.toWeighted(color) : undefined;
+const SheetsBorderMap = {
+    none: 'NONE',
+    thin: 'SOLID',
+    medium: 'SOLID_MEDIUM',
+    thick: 'SOLID_THICK',
+    dotted: 'DOTTED',
+    dashed: 'DASHED',
+    double: 'DOUBLE',
+} as const satisfies Record<BorderType, string>;
+
+const toSheetsBorder = (border: SheetBorder | undefined): sheets_v4.Schema$Border | undefined => {
+    return border ? {
+        style: SheetsBorderMap[border.type],
+        colorStyle: { rgbColor: toWeightedColor(border.color) },
+    } : undefined;
+};
+
+const toWeightedColor = (color: ColorObject | undefined) => color ? Colors.toWeighted(color) : undefined;
+
+const toGridRange = (sheetId: number, range: SheetRange): sheets_v4.Schema$GridRange => ({
+    sheetId,
+    startColumnIndex: range.start.col,
+    endColumnIndex: range.end.col,
+    startRowIndex: range.start.row,
+    endRowIndex: range.end.row
+});
+
 
 //addGroup(sheetId: number, title: string, columnStart: number, columnCount: number, style ?: SheetStyle, borders ?: SheetBorderConfig): Promise<void>;
 
@@ -57,7 +85,7 @@ export class SheetsRequester {
                     properties: {
                         sheetId: options.id,
                         title: options.title,
-                        tabColor: toWeighted(options.color),
+                        tabColor: toWeightedColor(options.color),
                         gridProperties: { columnCount: options.columns, rowCount: options.rows }
                     }
                 }
@@ -72,16 +100,18 @@ export class SheetsRequester {
             : this.do({ deleteSheet: { sheetId: ids } });
     }
 
-    mergeCells(sheetId: number, range: Range) {
+    mergeCells(sheetId: number, range: SheetRange) {
+        return this.do({ mergeCells: { range: toGridRange(sheetId, range) } });
+    }
+
+    setBorder(sheetId: number, range: SheetRange, borders: SheetBorderSet) {
         return this.do({
-            mergeCells: {
-                range: {
-                    sheetId,
-                    startColumnIndex: range.start.col,
-                    endColumnIndex: range.end.col,
-                    startRowIndex: range.start.row,
-                    endRowIndex: range.end.row
-                }
+            updateBorders: {
+                range: toGridRange(sheetId, range),
+                top: toSheetsBorder(borders.top),
+                bottom: toSheetsBorder(borders.bottom),
+                left: toSheetsBorder(borders.left),
+                right: toSheetsBorder(borders.right),
             }
         });
     }

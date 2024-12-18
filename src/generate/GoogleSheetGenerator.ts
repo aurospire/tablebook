@@ -1,5 +1,6 @@
-import { GoogleSheet } from "../util/sheets/GoogleSheet";
-import { SheetBorderConfig, SheetColumnConfig, SheetStyle, SpreadsheetGenerator } from "./SpreadsheetGenerator";
+import { GoogleSheet } from "../sheets/google/GoogleSheet";
+import { SpreadsheetGenerator } from "./SpreadsheetGenerator";
+import { SheetBorderConfig, SheetColumnConfig, SheetStyle } from "../sheets/SheetTypes";
 
 export class GoogleSheetGenerator implements SpreadsheetGenerator {
     #sheet: GoogleSheet;

@@ -1,7 +1,7 @@
 import { v } from 'varcor';
-import { GoogleSheet } from './util/sheets/GoogleSheet';
-import { Colors } from './types/types';
-import { Range } from './util/Cell';
+import { GoogleSheet } from './sheets/google/GoogleSheet';
+import { Colors } from './tables/types';
+import { SheetRange } from './sheets/SheetCell';
 
 const main = async () => {
 
@@ -28,7 +28,7 @@ const main = async () => {
     });
 
     if (id)
-        sheet.modify(r => r.mergeCells(id, Range.row(0, 3, 3)));
+        sheet.modify(r => r.mergeCells(id, SheetRange.box(3, 3, 3, 3)));
 
     return;
     //await sheet.reset(); return;
