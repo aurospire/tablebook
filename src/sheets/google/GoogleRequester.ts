@@ -91,8 +91,6 @@ const GoogleCellType = {
 type GoogleCellData = sheets_v4.Schema$CellData;
 
 const toCellData = (props: SheetCellProperties): { data: GoogleCellData, fields: string; } => {
-    const preserve = props.preserve ?? false;
-
     const fields: string[] = [];
 
     let data: GoogleCellData = {};
@@ -104,63 +102,82 @@ const toCellData = (props: SheetCellProperties): { data: GoogleCellData, fields:
     let numberFormat: sheets_v4.Schema$NumberFormat | undefined;
 
     if (props.value !== undefined) {
-        data.userEnteredValue = getExtendedValue(props.value);
-        if (preserve) fields.push('userEnteredValue');
+        if (props.value !== null)
+            data.userEnteredValue = getExtendedValue(props.value);
+        fields.push('userEnteredValue');
     }
 
     if (props.back !== undefined) {
-        format ??= {};
-        format.backgroundColorStyle = toWeightedColorStyle(props.back);
-        if (preserve) fields.push('userEnteredFormat.backgroundColorStyle');
+        if (props.back !== null) {
+            format ??= {};
+            format.backgroundColorStyle = toWeightedColorStyle(props.back);
+        }
+        fields.push('userEnteredFormat.backgroundColorStyle');
     }
 
     if (props.fore !== undefined) {
-        textFormat ??= {};
-        textFormat.foregroundColorStyle = toWeightedColorStyle(props.fore);
-        if (preserve) fields.push('userEnteredFormat.textFormat.foregroundColorStyle');
+        if (props.fore !== null) {
+            textFormat ??= {};
+            textFormat.foregroundColorStyle = toWeightedColorStyle(props.fore);
+        }
+        fields.push('userEnteredFormat.textFormat.foregroundColorStyle');
     }
 
     if (props.bold !== undefined) {
-        textFormat ??= {};
-        textFormat.bold = props.bold;
-        if (preserve) fields.push('userEnteredFormat.textFormat.bold');
+        if (props.bold !== null) {
+            textFormat ??= {};
+            textFormat.bold = props.bold;
+        }
+        fields.push('userEnteredFormat.textFormat.bold');
     }
 
     if (props.italic !== undefined) {
-        textFormat ??= {};
-        textFormat.italic = props.italic;
-        if (preserve) fields.push('userEnteredFormat.textFormat.italic');
+        if (props.italic !== null) {
+            textFormat ??= {};
+            textFormat.italic = props.italic;
+        }
+        fields.push('userEnteredFormat.textFormat.italic');
     }
 
 
     if (props.horizontal !== undefined) {
-        format ??= {};
-        format.horizontalAlignment = GoogleHorizontalAlignment[props.horizontal];
-        if (preserve) fields.push('userEnteredFormat.horizontalAlignment');
+        if (props.horizontal !== null) {
+            format ??= {};
+            format.horizontalAlignment = GoogleHorizontalAlignment[props.horizontal];
+        }
+        fields.push('userEnteredFormat.horizontalAlignment');
     }
 
     if (props.vertical !== undefined) {
-        format ??= {};
-        format.verticalAlignment = GoogleVerticalAlignment[props.vertical];
-        if (preserve) fields.push('userEnteredFormat.verticalAlignment');
+        if (props.vertical !== null) {
+            format ??= {};
+            format.verticalAlignment = GoogleVerticalAlignment[props.vertical];
+        }
+        fields.push('userEnteredFormat.verticalAlignment');
     }
 
     if (props.wrap !== undefined) {
-        format ??= {};
-        format.wrapStrategy = GoogleWrap[props.wrap];
-        if (preserve) fields.push('userEnteredFormat.wrapStrategy');
+        if (props.wrap !== null) {
+            format ??= {};
+            format.wrapStrategy = GoogleWrap[props.wrap];
+        }
+        fields.push('userEnteredFormat.wrapStrategy');
     }
 
     if (props.type !== undefined) {
-        numberFormat ??= {};
-        numberFormat.type = GoogleCellType[props.type];
-        if (preserve) fields.push('userEnteredFormat.numberFormat.type');
+        if (props.type !== null) {
+            numberFormat ??= {};
+            numberFormat.type = GoogleCellType[props.type];
+        }
+        fields.push('userEnteredFormat.numberFormat.type');
     }
 
     if (props.format !== undefined) {
-        numberFormat ??= {};
-        numberFormat.pattern = props.format;
-        if (preserve) fields.push('userEnteredFormat.numberFormat.pattern');
+        if (props.format !== null) {
+            numberFormat ??= {};
+            numberFormat.pattern = props.format;
+        }
+        fields.push('userEnteredFormat.numberFormat.pattern');
     }
 
     if (textFormat || numberFormat)
@@ -169,7 +186,7 @@ const toCellData = (props: SheetCellProperties): { data: GoogleCellData, fields:
     if (format)
         data = { ...(data ?? {}), userEnteredFormat: format };
 
-    return { data, fields: preserve ? fields.join(',') : '*' };
+    return { data, fields: fields.join(',') };
 };
 
 

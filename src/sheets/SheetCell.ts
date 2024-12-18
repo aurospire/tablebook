@@ -20,20 +20,18 @@ export type SheetCellWrap = 'overflow' | 'clip' | 'wrap';
 export type SheetCellType = 'text' | 'number' | 'percent' | 'currency' | 'date' | 'time' | 'datetime';
 
 export type SheetCellProperties = {
-    value?: string | number | boolean | SheetCellFormula;
+    value?: string | number | boolean | SheetCellFormula | null;
 
-    back?: ColorObject;
-    fore?: ColorObject;
+    back?: ColorObject | null;
+    fore?: ColorObject | null;
 
-    bold?: boolean;
-    italic?: boolean;
+    bold?: boolean | null;
+    italic?: boolean | null;
 
-    horizontal?: SheetCellAlignment;
-    vertical?: SheetCellAlignment;
-    wrap?: SheetCellWrap;
+    horizontal?: SheetCellAlignment | null;
+    vertical?: SheetCellAlignment | null;
+    wrap?: SheetCellWrap | null;
 
-    type?: SheetCellType;
-    format?: string;
-
-    preserve?: boolean;
+    type?: SheetCellType | null;
+    format?: string | null;
 };
