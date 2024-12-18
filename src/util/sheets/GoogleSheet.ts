@@ -1,6 +1,6 @@
 import { auth, sheets } from '@googleapis/sheets';
-import { SheetsApi } from './SheetsTypes';
 import { SheetsAddSheetOptions, SheetsRequester } from './SheetsRequester';
+import { SheetsApi } from './SheetsTypes';
 
 export class GoogleSheet {
     #api: SheetsApi;

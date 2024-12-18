@@ -132,7 +132,7 @@ export interface SpreadsheetGenerator {
     addSheet(title: string, rows: number, columns: number): Promise<number>;
 
     addGroup(
-        sheet: number,
+        sheetId: number,
         title: string,
         columnStart: number,
         columnCount: number,
@@ -141,7 +141,7 @@ export interface SpreadsheetGenerator {
     ): Promise<void>;
 
     addColumn(
-        sheet: number,
+        sheetId: number,
         title: string,
         columnIndex: number,
         config: SheetColumnConfig

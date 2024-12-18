@@ -1,4 +1,5 @@
 import { ColorObject, Colors } from "../../types/types";
+import { Range } from "../Cell";
 import { SheetsRequest, SheetsAddSheetReply, SheetsApi, SheetsReply } from "./SheetsTypes";
 
 export type SheetsReplyProcessor<Reply = SheetsReply> = (reply: Reply | undefined) => void;
@@ -13,6 +14,9 @@ export type SheetsAddSheetOptions = {
 
 
 const toWeighted = (color: ColorObject | undefined) => color ? Colors.toWeighted(color) : undefined;
+
+//addGroup(sheetId: number, title: string, columnStart: number, columnCount: number, style ?: SheetStyle, borders ?: SheetBorderConfig): Promise<void>;
+
 
 export class SheetsRequester {
     #requests: SheetsRequest[];
@@ -46,7 +50,7 @@ export class SheetsRequester {
         });
     }
 
-    addSheet(options: SheetsAddSheetOptions, process?: SheetsReplyProcessor<SheetsAddSheetReply>) {
+    addSheet(options: SheetsAddSheetOptions, process?: (reply?: SheetsAddSheetReply, id?: number) => void) {
         return this.do(
             {
                 addSheet: {
@@ -58,7 +62,7 @@ export class SheetsRequester {
                     }
                 }
             },
-            (reply) => { process?.(reply?.addSheet); }
+            (reply) => { process?.(reply?.addSheet, reply?.addSheet?.properties?.sheetId ?? undefined); }
         );
     }
 
@@ -66,6 +70,20 @@ export class SheetsRequester {
         return Array.isArray(ids)
             ? this.#doBatch((ids).map(id => ({ deleteSheet: { sheetId: id } })))
             : this.do({ deleteSheet: { sheetId: ids } });
+    }
+
+    mergeCells(sheetId: number, range: Range) {
+        return this.do({
+            mergeCells: {
+                range: {
+                    sheetId,
+                    startColumnIndex: range.start.col,
+                    endColumnIndex: range.end.col,
+                    startRowIndex: range.start.row,
+                    endRowIndex: range.end.row
+                }
+            }
+        });
     }
 
     async run(api: SheetsApi, id: string) {
@@ -81,6 +99,7 @@ export class SheetsRequester {
         for (let i = 0; i < this.#processors.length; i++)
             this.#processors[i](replies[i]);
 
+        console.log(result);
         return result;
     }
 }

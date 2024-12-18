@@ -1,6 +1,7 @@
 import { v } from 'varcor';
 import { GoogleSheet } from './util/sheets/GoogleSheet';
 import { Colors } from './types/types';
+import { Range } from './util/Cell';
 
 const main = async () => {
 
@@ -19,6 +20,16 @@ const main = async () => {
     // console.log(results);
 
     const sheet = await GoogleSheet.open(vars.email, vars.key, vars.sheetid);
+    await sheet.reset();
+    const id = await sheet.addSheet({
+        color: Colors.toObject('#990022'),
+        rows: 10,
+        columns: 10,
+    });
+
+    if (id)
+        sheet.modify(r => r.mergeCells(id, Range.row(0, 3, 3)));
+
     return;
     //await sheet.reset(); return;
     console.log(await sheet.getSheetIds());
