@@ -53,20 +53,12 @@ export class GoogleSheet {
         return await requester.run(this.#api, this.#id);
     }
 
-    async setTitle(title: string): Promise<void> {
-        await this.modify(r => r.setTitle(title));
-    }
-
     async addSheet(options: GoogleAddSheetOptions = {}): Promise<number | undefined> {
         let resultId: number | undefined;
 
         await this.modify(r => r.addSheet(options, reply => resultId = reply?.properties?.sheetId ?? undefined));
 
         return resultId;
-    }
-
-    async dropSheets(...ids: number[]): Promise<void> {
-        await this.modify(r => r.dropSheets(ids));
     }
 
     async reset(ideal: number = 1000): Promise<number> {

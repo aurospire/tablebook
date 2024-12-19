@@ -1,7 +1,7 @@
 import { ComparisonOperators, BetweenOperator, MatchOperators } from "../tables/types";
 import { SheetAddress, SheetRange } from "./SheetAddress";
 import { SheetCellFormula } from './SheetCellValue';
-import { SheetStyle } from './SheetCellFormat';
+import { SheetStyle } from './SheetCellProperties';
 
 export type SheetComparisonValue = number | string;
 
@@ -47,7 +47,5 @@ export type SheetCondition = SheetComparisonCondition |
     SheetEnumCondition |
     SheetLookupCondition |
     SheetFormulaCondition;
-
-
 
 export type SheetConditionalFormat = { condition: SheetCondition; style: SheetStyle; };

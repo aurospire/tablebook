@@ -15,3 +15,12 @@ export type GoogleAddSheetReply = sheets_v4.Schema$AddSheetResponse;
 export type GoogleLogin = { email: string; key: string; };
 
 export type GoogleSource = { api: GoogleApi; } | GoogleLogin;
+
+
+export type GoogleCellValue = sheets_v4.Schema$ExtendedValue;
+
+export type GoogleCellFormat = sheets_v4.Schema$CellFormat;
+
+export type GoogleTextFormat = sheets_v4.Schema$TextFormat;
+
+export type GoogleNumberFormat = sheets_v4.Schema$NumberFormat;

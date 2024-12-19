@@ -1,10 +1,10 @@
 import { sheets_v4 } from "@googleapis/sheets";
 import { inspect } from "util";
 import { BorderType, ColorObject, Colors } from "../../tables/types";
-import { GoogleAddSheetReply, GoogleApi, GoogleReply, GoogleRequest } from "./GoogleTypes";
-import { nullSheetCellProperties, SheetBorder, SheetBorderSet, SheetCellAlign, SheetCellProperties, SheetCellType, SheetCellWrap } from "../SheetCellFormat";
 import { SheetRange } from "../SheetAddress";
 import { SheetCell } from "../SheetCell";
+import { nullSheetCellProperties, SheetBorder, SheetBorderSet, SheetCellAlign, SheetCellType, SheetCellWrap } from "../SheetCellProperties";
+import { GoogleAddSheetReply, GoogleApi, GoogleCellFormat, GoogleCellValue, GoogleNumberFormat, GoogleReply, GoogleRequest, GoogleTextFormat } from "./GoogleTypes";
 
 export type GoogleReplyProcessor<Reply = GoogleReply> = (reply: Reply | undefined) => void;
 
@@ -87,11 +87,6 @@ const GoogleCellType = {
     time: 'TIME',
     datetime: 'DATE_TIME',
 } satisfies Record<SheetCellType, string>;
-
-type GoogleCellValue = sheets_v4.Schema$ExtendedValue;
-type GoogleCellFormat = sheets_v4.Schema$CellFormat;
-type GoogleTextFormat = sheets_v4.Schema$TextFormat;
-type GoogleNumberFormat = sheets_v4.Schema$NumberFormat;
 
 
 const toCellValue = (value: SheetCell['value'], fields: string[], col: number, row: number): GoogleCellValue | undefined => {
