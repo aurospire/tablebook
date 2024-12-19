@@ -1,6 +1,5 @@
-import { SheetBorderConfig } from "../sheets/SheetCondition";
+import { SheetBorderSet, SheetStyle } from "../sheets/SheetCellProperties";
 import { SheetColumnConfig } from "../sheets/SheetColumns";
-import { SheetStyle } from "../sheets/SheetStyle";
 
 // Core generator interface for platform implementations
 export interface SpreadsheetGenerator {
@@ -14,7 +13,7 @@ export interface SpreadsheetGenerator {
         columnStart: number,
         columnCount: number,
         style?: SheetStyle,
-        borders?: SheetBorderConfig
+        borders?: SheetBorderSet
     ): Promise<void>;
 
     addColumn(

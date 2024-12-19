@@ -1,8 +1,8 @@
 import { GoogleSheet } from "../sheets/google/GoogleSheet";
 import { SpreadsheetGenerator } from "./SpreadsheetGenerator";
-import { SheetBorderConfig } from "../sheets/SheetCondition";
 import { SheetColumnConfig } from "../sheets/SheetColumns";
-import { SheetStyle } from "../sheets/SheetStyle";
+import { SheetBorderSet, SheetStyle } from "../sheets/SheetCellProperties";
+
 
 export class GoogleSheetGenerator implements SpreadsheetGenerator {
     #sheet: GoogleSheet;
@@ -14,14 +14,14 @@ export class GoogleSheetGenerator implements SpreadsheetGenerator {
     get sheet(): GoogleSheet { return this.#sheet; }
 
     async setTitle(title: string): Promise<void> {
-        await this.sheet.setTitle(title);
+        throw new Error("Method not implemented.");
     }
 
     async addSheet(name: string, rows: number, columns: number): Promise<number> {
         throw new Error("Method not implemented.");
     }
 
-    async addGroup(sheet: number, name: string, columnStart: number, columnCount: number, style?: SheetStyle, borders?: SheetBorderConfig): Promise<void> {
+    async addGroup(sheet: number, name: string, columnStart: number, columnCount: number, style?: SheetStyle, borders?: SheetBorderSet): Promise<void> {
         throw new Error("Method not implemented.");
     }
 
