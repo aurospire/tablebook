@@ -1,4 +1,5 @@
-import { SheetBorderConfig, SheetColumnConfig } from "../sheets/SheetTypes";
+import { SheetBorderConfig } from "../sheets/SheetCondition";
+import { SheetColumnConfig } from "../sheets/SheetColumnConfig";
 import { SheetStyle } from "../sheets/SheetStyle";
 
 // Core generator interface for platform implementations

@@ -1,7 +1,8 @@
 import { sheets_v4 } from "@googleapis/sheets";
-import { SheetBorder, SheetBorderSet } from "../SheetBorder";
+import { inspect } from "util";
 import { BorderType, ColorObject, Colors } from "../../tables/types";
-import { nullSheetCellFormat, SheetCellAlignment, SheetCellFormat, SheetCellProperties, SheetCellType, SheetCellValue, SheetCellWrap, SheetRange } from "../SheetCell";
+import { nullSheetCellFormat, SheetCellAlignment, SheetCellProperties, SheetCellType, SheetCellWrap, SheetRange } from "../SheetCell";
+import { SheetBorder, SheetBorderSet } from "../SheetStyle";
 import { GoogleAddSheetReply, GoogleApi, GoogleReply, GoogleRequest } from "./GoogleTypes";
 
 export type GoogleReplyProcessor<Reply = GoogleReply> = (reply: Reply | undefined) => void;
@@ -37,12 +38,12 @@ const toWeightedColorStyle = (color: ColorObject | undefined): sheets_v4.Schema$
 const toGridRange = (sheetId: number, range: SheetRange): sheets_v4.Schema$GridRange => ({
     sheetId,
     startColumnIndex: range.start.col,
-    endColumnIndex: range.end.col,
+    endColumnIndex: range.end?.col,
     startRowIndex: range.start.row,
-    endRowIndex: range.end.row
+    endRowIndex: range.end?.row
 });
 
-const getExtendedValue = (value?: SheetCellProperties['value']): GoogleCellValue | undefined => {
+const getExtendedValue = (value: SheetCellProperties['value'], col: number, row: number): GoogleCellValue | undefined => {
     switch (typeof value) {
         case 'string':
             return { stringValue: value };
@@ -50,12 +51,10 @@ const getExtendedValue = (value?: SheetCellProperties['value']): GoogleCellValue
             return { numberValue: value };
         case 'boolean':
             return { boolValue: value };
-        default: {
-            if (value && 'formula' in value) {
-                const formula = value.formula;
-                return { formulaValue: formula[0] === '=' ? formula : '=' + formula };
-            }
-        }
+        case 'function':
+            const formula = value(col, row);
+            return { formulaValue: formula[0] === '=' ? formula : '=' + formula };
+
     }
 };
 
@@ -94,11 +93,11 @@ type GoogleTextFormat = sheets_v4.Schema$TextFormat;
 type GoogleNumberFormat = sheets_v4.Schema$NumberFormat;
 
 
-const toCellValue = (value: SheetCellProperties['value'], fields: string[]): GoogleCellValue | undefined => {
+const toCellValue = (value: SheetCellProperties['value'], fields: string[], col: number, row: number): GoogleCellValue | undefined => {
     if (value !== undefined) {
         fields.push('userEnteredValue');
         if (value !== null)
-            return getExtendedValue(value);
+            return getExtendedValue(value, col, row);
     }
 };
 
@@ -183,6 +182,7 @@ const toCellFormat = (format: SheetCellProperties['format'], fields: string[]): 
     if (textFormat || numberFormat)
         dataFormat = { ...(dataFormat ?? {}), textFormat, numberFormat };
 
+    console.log(inspect({ dataFormat, fields }, { depth: null, colors: true }));
     return dataFormat;
 };
 
@@ -256,7 +256,7 @@ export class GoogleRequester {
 
     updateCell(sheedId: number, col: number, row: number, props: SheetCellProperties, process?: GoogleReplyProcessor): GoogleRequester {
         const fields: string[] = [];
-        const value = toCellValue(props.value, fields);
+        const value = toCellValue(props.value, fields, col, row);
         const format = toCellFormat(props.format, fields);
 
         if (fields.length)
@@ -269,7 +269,7 @@ export class GoogleRequester {
                             userEnteredFormat: format
                         }]
                     }],
-                    fields: fields.join('.')
+                    fields: fields.join(',')
                 }
             });
 

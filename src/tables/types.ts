@@ -82,7 +82,9 @@ export const Colors = Object.freeze({
 });
 
 
-export type TextForm = boolean | { bold?: boolean; italic?: boolean; };
+export const TextFormShortcuts = ['n', 'b', 'i', 'bi'] as const;
+
+export type TextForm = { bold?: boolean; italic?: boolean; } | typeof TextFormShortcuts[number];
 
 export type Style = {
     fore?: Color | Reference; // defaults to black
@@ -125,39 +127,6 @@ const makeStandardTheme = (darkest: Color, dark: Color, normal: Color, lightest:
 };
 
 export const StandardThemes = {
-    // redberry:       makeStandardTheme('#5B0F00', '#85200C', '#E6B8AF'),
-    // red:            makeStandardTheme('#660000', '#990000', '#F4CCCC'),
-    // orange:         makeStandardTheme('#783F04', '#B45F06', '#FCE5CD'),
-    // terracotta:     makeStandardTheme('#602A15', '#8A4F3A', '#F3E0D7'),
-    // yellow:         makeStandardTheme('#7F6000', '#BF9000', '#FFF2CC'),
-    // green:          makeStandardTheme('#274E13', '#38761D', '#D9EAD3'),
-    // cyan:           makeStandardTheme('#0C343D', '#134F5C', '#D0E0E3'),
-    // cornflowerblue: makeStandardTheme('#1C4587', '#1155CC', '#C9DAF8'),
-    // blue:           makeStandardTheme('#073763', '#0B5394', '#CFE2F3'),
-    // purple:         makeStandardTheme('#20124D', '#351C75', '#D9D2E9'),
-    // magenta:        makeStandardTheme('#4C1130', '#65183E', '#B3A0A8'),
-    // gray:           makeStandardTheme('#4D4D4D', '#808080', '#F2F2F2'),
-
-    // redberry:       makeStandardTheme('#5B0F00', '#85200C', '#E6B8AF'),
-    // red:            makeStandardTheme('#660000', '#990000', '#F4CCCC'),
-    // coral:          makeStandardTheme('#652b2b', '#af4a4a', '#ffd7d7'),
-    // bronze:         makeStandardTheme('#5D4037', '#895d4d', '#D7CCC8'),
-    // orange:         makeStandardTheme('#783F04', '#B45F06', '#FCE5CD'),
-    // rust:           makeStandardTheme('#8B3103', '#B54D18', '#F5DEB3'),
-    // yellow:         makeStandardTheme('#7F6000', '#BF9000', '#FFF2CC'),
-    // green:          makeStandardTheme('#274E13', '#38761D', '#D9EAD3'),
-    // moss:           makeStandardTheme('#1E4D2B', '#3A7A47', '#D4E4D4'),
-    // sage:           makeStandardTheme('#38471f', '#596f34', '#D5E8D4'),
-    // slate:          makeStandardTheme('#223939', '#2f4f4f', '#E0E6E6'),
-    // cyan:           makeStandardTheme('#0C343D', '#134F5C', '#D0E0E3'),
-    // cornflowerblue: makeStandardTheme('#1C4587', '#1155CC', '#C9DAF8'),
-    // blue:           makeStandardTheme('#073763', '#0B5394', '#CFE2F3'),
-    // lavender:       makeStandardTheme('#3f3677', '#5f51b7', '#E6E6FA'),
-    // plum:           makeStandardTheme('#4E1A45', '#6C3483', '#E8DAEF'),
-    // magenta:        makeStandardTheme('#4C1130', '#65183E', '#B3A0A8'),
-    // purple:         makeStandardTheme('#20124D', '#351C75', '#D9D2E9'),
-    // gray:           makeStandardTheme('#3b3b3b', '#656565', '#F2F2F2'),
-
     redberry: makeStandardTheme('#5B0F00', '#85200C', '#B54531', '#E6B8AF'),
     red: makeStandardTheme('#660000', '#990000', '#CC3333', '#F4CCCC'),
     coral: makeStandardTheme('#652b2b', '#af4a4a', '#d47777', '#ffd7d7'),
@@ -410,7 +379,7 @@ export type DataType = TextType | NumericType | EnumType | LookupType | Referenc
 
 
 /* Table Structures */
-export const TableUnitNameRegex = /^[A-Z_](A-Za-z0-9_)*$/;
+export const TableUnitNameRegex = /^[A-Z](A-Za-z0-9)*$/;
 export type TableUnit = {
     name: string;
     theme?: Theme | Reference;

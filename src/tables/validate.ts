@@ -29,7 +29,7 @@ import {
     StandardTheme, StandardThemes, StandardTimeFormats, Style, TableBook, TableColumn,
     TableGroup, TableSheet, TableUnit, TableUnitNameRegex, TemporalFormat,
     TextDateFormat, TextDateFormatOrder, TextDateFormatType,
-    TextForm, TextRule, TextType, TextTypeType, Theme,
+    TextForm, TextFormShortcuts, TextRule, TextType, TextTypeType, Theme,
     TimeFormat, TimeString, TimeStringRegex,
     UnitLength, UnitLengths, UnitRowSelector, UnitRowSelectorTypes
 } from './types';
@@ -83,7 +83,7 @@ const Color: z.ZodType<Color> = z.union([ColorHex, ColorObject]);
 
 
 const TextForm: z.ZodType<TextForm> = z.union([
-    z.boolean(),
+    z.enum(TextFormShortcuts),
     z.object({
         bold: z.boolean().optional(),
         italic: z.boolean().optional()
