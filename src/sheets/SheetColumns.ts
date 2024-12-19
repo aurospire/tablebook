@@ -1,7 +1,17 @@
 import { NumericFormat } from "../tables/types";
-import { SheetCellFormula } from "./SheetAddress";
+import { SheetBorder, SheetStyle } from "./SheetCellFormat";
+import { SheetCellFormula } from "./SheetCellValue";
 import { SheetCondition, SheetConditionalFormat } from "./SheetCondition";
-import { SheetHeaderStyle, SheetStyle } from "./SheetStyle";
+
+export type SheetHeaderPartitions = {
+    beneath?: SheetBorder;
+    between?: SheetBorder;
+};
+
+export type SheetHeaderStyle = {
+    style: SheetStyle;
+    borders?: SheetHeaderPartitions;
+};
 
 export type SheetColumnConfig = {
     header: SheetHeaderStyle;
