@@ -1,7 +1,7 @@
 import { v } from 'varcor';
 import { GoogleSheet } from './sheets/google/GoogleSheet';
 import { Colors } from './tables/types';
-import { SheetRange } from './sheets/SheetCell';
+import { SheetRange } from './sheets/SheetAddress';
 
 const main = async () => {
 

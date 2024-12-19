@@ -1,9 +1,10 @@
 import { sheets_v4 } from "@googleapis/sheets";
 import { inspect } from "util";
 import { BorderType, ColorObject, Colors } from "../../tables/types";
-import { nullSheetCellFormat, SheetCellAlignment, SheetCellProperties, SheetCellType, SheetCellWrap, SheetRange } from "../SheetCell";
-import { SheetBorder, SheetBorderSet } from "../SheetStyle";
 import { GoogleAddSheetReply, GoogleApi, GoogleReply, GoogleRequest } from "./GoogleTypes";
+import { nullSheetCellProperties, SheetBorder, SheetBorderSet, SheetCellAlign, SheetCellProperties, SheetCellType, SheetCellWrap } from "../SheetCellFormat";
+import { SheetRange } from "../SheetAddress";
+import { SheetCell } from "../SheetCell";
 
 export type GoogleReplyProcessor<Reply = GoogleReply> = (reply: Reply | undefined) => void;
 
@@ -43,7 +44,7 @@ const toGridRange = (sheetId: number, range: SheetRange): sheets_v4.Schema$GridR
     endRowIndex: range.end?.row
 });
 
-const getExtendedValue = (value: SheetCellProperties['value'], col: number, row: number): GoogleCellValue | undefined => {
+const getExtendedValue = (value: SheetCell['value'], col: number, row: number): GoogleCellValue | undefined => {
     switch (typeof value) {
         case 'string':
             return { stringValue: value };
@@ -62,13 +63,13 @@ const GoogleHorizontalAlignment = {
     start: 'LEFT',
     middle: 'CENTER',
     end: 'RIGHT'
-} satisfies Record<SheetCellAlignment, string>;
+} satisfies Record<SheetCellAlign, string>;
 
 const GoogleVerticalAlignment = {
     start: 'TOP',
     middle: 'MIDDLE',
     end: 'BOTTOM'
-} satisfies Record<SheetCellAlignment, string>;
+} satisfies Record<SheetCellAlign, string>;
 
 const GoogleWrap = {
     overflow: 'OVERFLOW_CELL',
@@ -93,7 +94,7 @@ type GoogleTextFormat = sheets_v4.Schema$TextFormat;
 type GoogleNumberFormat = sheets_v4.Schema$NumberFormat;
 
 
-const toCellValue = (value: SheetCellProperties['value'], fields: string[], col: number, row: number): GoogleCellValue | undefined => {
+const toCellValue = (value: SheetCell['value'], fields: string[], col: number, row: number): GoogleCellValue | undefined => {
     if (value !== undefined) {
         fields.push('userEnteredValue');
         if (value !== null)
@@ -101,80 +102,80 @@ const toCellValue = (value: SheetCellProperties['value'], fields: string[], col:
     }
 };
 
-const toCellFormat = (format: SheetCellProperties['format'], fields: string[]): GoogleCellFormat | undefined => {
+const toCellFormat = (props: SheetCell['props'], fields: string[]): GoogleCellFormat | undefined => {
     let dataFormat: GoogleCellFormat | undefined;
 
     let textFormat: GoogleTextFormat | undefined;
 
     let numberFormat: GoogleNumberFormat | undefined;
 
-    format = format === null ? nullSheetCellFormat : format;
+    props = props === null ? nullSheetCellProperties : props;
 
-    if (format) {
-        if (format.back !== undefined) {
+    if (props) {
+        if (props.back !== undefined) {
             fields.push('userEnteredFormat.backgroundColorStyle');
-            if (format.back !== null) {
+            if (props.back !== null) {
                 dataFormat ??= {};
-                dataFormat.backgroundColorStyle = toWeightedColorStyle(format.back);
+                dataFormat.backgroundColorStyle = toWeightedColorStyle(props.back);
             }
         }
 
-        if (format.fore !== undefined) {
+        if (props.fore !== undefined) {
             fields.push('userEnteredFormat.textFormat.foregroundColorStyle');
-            if (format.fore !== null) {
+            if (props.fore !== null) {
                 textFormat ??= {};
-                textFormat.foregroundColorStyle = toWeightedColorStyle(format.fore);
+                textFormat.foregroundColorStyle = toWeightedColorStyle(props.fore);
             }
         }
 
-        if (format.bold !== undefined) {
+        if (props.bold !== undefined) {
             fields.push('userEnteredFormat.textFormat.bold');
-            if (format.bold !== null) {
+            if (props.bold !== null) {
                 textFormat ??= {};
-                textFormat.bold = format.bold;
+                textFormat.bold = props.bold;
             }
         }
 
-        if (format.italic !== undefined) {
+        if (props.italic !== undefined) {
             fields.push('userEnteredFormat.textFormat.italic');
-            if (format.italic !== null) {
+            if (props.italic !== null) {
                 textFormat ??= {};
-                textFormat.italic = format.italic;
+                textFormat.italic = props.italic;
             }
         }
 
 
-        if (format.horizontal !== undefined) {
+        if (props.horizontal !== undefined) {
             fields.push('userEnteredFormat.horizontalAlignment');
-            if (format.horizontal !== null) {
+            if (props.horizontal !== null) {
                 dataFormat ??= {};
-                dataFormat.horizontalAlignment = GoogleHorizontalAlignment[format.horizontal];
+                dataFormat.horizontalAlignment = GoogleHorizontalAlignment[props.horizontal];
             }
         }
 
-        if (format.vertical !== undefined) {
+        if (props.vertical !== undefined) {
             fields.push('userEnteredFormat.verticalAlignment');
-            if (format.vertical !== null) {
+            if (props.vertical !== null) {
                 dataFormat ??= {};
-                dataFormat.verticalAlignment = GoogleVerticalAlignment[format.vertical];
+                dataFormat.verticalAlignment = GoogleVerticalAlignment[props.vertical];
             }
         }
 
-        if (format.wrap !== undefined) {
+        if (props.wrap !== undefined) {
             fields.push('userEnteredFormat.wrapStrategy');
-            if (format.wrap !== null) {
+            if (props.wrap !== null) {
                 dataFormat ??= {};
-                dataFormat.wrapStrategy = GoogleWrap[format.wrap];
+                dataFormat.wrapStrategy = GoogleWrap[props.wrap];
             }
         }
 
-        if (format.type !== undefined || format.pattern !== undefined) {
+        if (props.type !== undefined || props.pattern !== undefined) {
             fields.push('userEnteredFormat.numberFormat.type');
             fields.push('userEnteredFormat.numberFormat.pattern');
-            if (format.type !== null || format.pattern !== null) {
+            if (props.type !== null || props.pattern !== null) {
                 numberFormat ??= {};
-                numberFormat.type = format.type ? GoogleCellType[format.type] : GoogleCellType.text;
-                numberFormat.pattern = format.pattern ? format.pattern : '';
+                numberFormat.type = props.type ? GoogleCellType[props.type] : GoogleCellType.text;
+                numberFormat.pattern = props.pattern ? props.pattern : '';
             }
         }
     }
@@ -250,14 +251,14 @@ export class GoogleRequester {
                 bottom: toSheetsBorder(borders.bottom),
                 left: toSheetsBorder(borders.left),
                 right: toSheetsBorder(borders.right),
-            }
+            }            
         }, process);
     }
 
-    updateCell(sheedId: number, col: number, row: number, props: SheetCellProperties, process?: GoogleReplyProcessor): GoogleRequester {
+    updateCell(sheedId: number, col: number, row: number, cell: SheetCell, process?: GoogleReplyProcessor): GoogleRequester {
         const fields: string[] = [];
-        const value = toCellValue(props.value, fields, col, row);
-        const format = toCellFormat(props.format, fields);
+        const value = toCellValue(cell.value, fields, col, row);
+        const format = toCellFormat(cell.props, fields);
 
         if (fields.length)
             return this.do({

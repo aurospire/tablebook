@@ -1,5 +1,5 @@
 import { NumericFormat } from "../tables/types";
-import { SheetCellFormula } from "./SheetCell";
+import { SheetCellFormula } from "./SheetAddress";
 import { SheetCondition, SheetConditionalFormat } from "./SheetCondition";
 import { SheetHeaderStyle, SheetStyle } from "./SheetStyle";
 
