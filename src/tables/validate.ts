@@ -3,7 +3,8 @@ import {
     BetweenOperator,
     BetweenRule,
     Border, BorderType, BorderTypes,
-    Color, ColorHex, ColorObject,
+    Color,
+    ColorRegex,
     ColumnSelector, Comparable, ComparisonOperator,
     ComparisonOperators, ComparisonRule, CompoundExpression, CompoundExpressionType,
     ConditionalStyle, CurrencyFormat, CurrencyFormatType, CurrencySymbolPositions,
@@ -12,7 +13,6 @@ import {
     DateTimeFormat, DateTimeFormatType, DateTimeString, DateTimeStringRegex, Definitions,
     DigitPlaceholder, EnumItem, EnumType, EnumTypeType, Expression,
     FunctionExpression, FunctionExpressionType, HeaderStyle,
-    HexColorRegex,
     HourFormats, IntegrativeOperator, IntegrativeOperators, LiteralExpression,
     LiteralExpressionType, LookupType, LookupTypeType,
     MatchOperators,
@@ -73,14 +73,7 @@ const DataSelector: z.ZodType<DataSelector> = z.union([
 ]);
 
 /* Styling */
-const ColorHex: z.ZodType<ColorHex> = z.custom(value => HexColorRegex.test(value as string));
-
-const SubColor = z.number().min(0).max(255);
-
-const ColorObject: z.ZodType<ColorObject> = z.object({ red: SubColor, blue: SubColor, green: SubColor });
-
-const Color: z.ZodType<Color> = z.union([ColorHex, ColorObject]);
-
+const Color: z.ZodType<Color> = z.custom(value => ColorRegex.test(value as string));
 
 const TextForm: z.ZodType<TextForm> = z.union([
     z.enum(TextFormShortcuts),

@@ -1,7 +1,7 @@
 import { v } from 'varcor';
 import { GoogleSheet } from './sheets/google/GoogleSheet';
-import { Colors } from './tables/types';
 import { SheetRange } from './sheets/SheetAddress';
+import { Colors } from './util/Color';
 
 const main = async () => {
 
@@ -40,8 +40,8 @@ const main = async () => {
             right: { color: Colors.toObject('#8800AA'), type: 'double' },
         }));
 
-        await sheet.modify(r => r.updateCell(id, 3, 3, { value: 10, format: { bold: true, fore: Colors.toObject('#990022') } }));
-        await sheet.modify(r => r.updateCell(id, 3, 3, { value: () => '10+22', format: { pattern: 'YYYY' } }));
+        await sheet.modify(r => r.updateCell(id, 3, 3, { value: 10, props: { bold: true, fore: Colors.toObject('#990022') } }));
+        await sheet.modify(r => r.updateCell(id, 3, 3, { value: () => '10+22', props: { pattern: 'YYYY' } }));
     }
 };
 

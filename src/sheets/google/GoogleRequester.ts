@@ -1,10 +1,11 @@
 import { sheets_v4 } from "@googleapis/sheets";
 import { inspect } from "util";
-import { BorderType, ColorObject, Colors } from "../../tables/types";
+import { ColorObject, Colors } from "../../util/Color";
 import { SheetRange } from "../SheetAddress";
 import { SheetCell } from "../SheetCell";
 import { nullSheetCellProperties, SheetBorder, SheetBorderSet, SheetCellAlign, SheetCellType, SheetCellWrap } from "../SheetCellProperties";
 import { GoogleAddSheetReply, GoogleApi, GoogleCellFormat, GoogleCellValue, GoogleNumberFormat, GoogleReply, GoogleRequest, GoogleTextFormat } from "./GoogleTypes";
+import { BorderType } from "../../tables/types";
 
 export type GoogleReplyProcessor<Reply = GoogleReply> = (reply: Reply | undefined) => void;
 
