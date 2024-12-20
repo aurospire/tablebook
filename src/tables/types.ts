@@ -102,25 +102,43 @@ const makeStandardTheme = (darkest: Color, dark: Color, normal: Color, lightest:
 };
 
 export const StandardThemes = {
-    redberry: makeStandardTheme('#5B0F00', '#85200C', '#B54531', '#E6B8AF'),
-    red: makeStandardTheme('#660000', '#990000', '#CC3333', '#F4CCCC'),
-    coral: makeStandardTheme('#652b2b', '#af4a4a', '#d47777', '#ffd7d7'),
-    bronze: makeStandardTheme('#5D4037', '#895d4d', '#B17F6D', '#D7CCC8'),
-    orange: makeStandardTheme('#783F04', '#B45F06', '#E67E0D', '#FCE5CD'),
-    rust: makeStandardTheme('#8B3103', '#B54D18', '#D66830', '#F5DEB3'),
-    yellow: makeStandardTheme('#7F6000', '#BF9000', '#E6B517', '#FFF2CC'),
-    green: makeStandardTheme('#274E13', '#38761D', '#4F9C28', '#D9EAD3'),
-    moss: makeStandardTheme('#1E4D2B', '#3A7A47', '#5BA56B', '#D4E4D4'),
-    sage: makeStandardTheme('#38471f', '#596f34', '#7A944A', '#D5E8D4'),
-    slate: makeStandardTheme('#223939', '#2f4f4f', '#446464', '#E0E6E6'),
-    cyan: makeStandardTheme('#0C343D', '#134F5C', '#1B697A', '#D0E0E3'),
-    cornflowerblue: makeStandardTheme('#1C4587', '#1155CC', '#3377DD', '#C9DAF8'),
-    blue: makeStandardTheme('#073763', '#0B5394', '#1976D2', '#CFE2F3'),
-    lavender: makeStandardTheme('#3f3677', '#5f51b7', '#8070D8', '#E6E6FA'),
-    plum: makeStandardTheme('#4E1A45', '#6C3483', '#8F4BAB', '#E8DAEF'),
-    magenta: makeStandardTheme('#4C1130', '#65183E', '#8F2657', '#B3A0A8'),
-    purple: makeStandardTheme('#20124D', '#351C75', '#4C2BA0', '#D9D2E9'),
-    gray: makeStandardTheme('#3b3b3b', '#656565', '#8C8C8C', '#F2F2F2'),
+        // Reds
+        cranberry: makeStandardTheme('#5B0F10', '#791A15', '#A32E30', '#F4C2B5'), // Deep maroon with a berry undertone
+        red: makeStandardTheme('#660000', '#880000', '#C32222', '#F8C5C5'), // Classic and bold crimson red
+        coral: makeStandardTheme('#762F2F', '#AF4A4A', '#D36868', '#FFE0DC'), // Warm reddish-pink inspired by coral
+        terracotta: makeStandardTheme('#713F2D', '#9C5F4E', '#C87561', '#FAD9CE'), // Earthy, pottery-inspired orange
+
+        // Oranges and Yellows
+        rust: makeStandardTheme('#8B3103', '#B54D18', '#D65C2B', '#F7D5BC'), // Fiery, weathered orange-brown
+        orange: makeStandardTheme('#783F04', '#B45F06', '#E6751A', '#FDD9BC'), // Vibrant and warm orange tones
+        yellow: makeStandardTheme('#856500', '#BF9000', '#E6AC1E', '#FFF2C4'), // Bright, golden yellow
+
+        // Greens
+        green: makeStandardTheme('#294E13', '#38761D', '#4B9022', '#D6E8CE'), // Classic forest green
+        moss: makeStandardTheme('#1E4D2B', '#3A7A47', '#519563', '#D4E8D1'), // Cool, earthy green
+        sage: makeStandardTheme('#38471F', '#596F34', '#788F4A', '#DCEADF'), // Muted, calming green
+        
+        // Blues
+        teal: makeStandardTheme('#004548', '#006E6E', '#008F8F', '#D1F0EC'), // Vibrant, deep aquatic teal
+        slate: makeStandardTheme('#2A4545', '#366060', '#507878', '#DEE8E8'), // Muted gray-blue
+        cyan: makeStandardTheme('#0C343D', '#134F5C', '#1B657A', '#CBE5E8'), // Crisp, fresh cyan
+        blue: makeStandardTheme('#073763', '#0B5394', '#1763B8', '#CEE2F0'), // Deep, classic royal blue
+        azure: makeStandardTheme('#123A75', '#1E5BAA', '#2D70C8', '#D0E2F4'), // Bright, clean azure blue
+        skyblue: makeStandardTheme('#004080', '#0066CC', '#2E8FEA', '#D0E6F8'), // Light, airy sky blue
+
+        // Purples and Magentas
+        purple: makeStandardTheme('#20124D', '#351C75', '#483CA4', '#D5D0E3'), // Rich, elegant purple
+        lavender: makeStandardTheme('#3F3677', '#5F51B7', '#776CCF', '#DAD5F2'), // Soft, muted lavender
+        plum: makeStandardTheme('#4E1A45', '#6C3483', '#8E4FA8', '#E7D0EA'), // Warm, luxurious plum
+        magenta: makeStandardTheme('#541436', '#6D1C44', '#912651', '#F3D4DE'), // Bold, vibrant magenta
+        rose: makeStandardTheme('#682F42', '#8D4659', '#A85475', '#F5D4DC'), // Soft, romantic rose pink
+
+        // Neutrals
+        sand: makeStandardTheme('#6A5D47', '#8C755D', '#B5937A', '#EDE0D2'), // Warm sandy tones
+        bronze: makeStandardTheme('#5D4037', '#895D4D', '#A6705F', '#EAD6C7'), // Soft metallic bronze
+        taupe: makeStandardTheme('#483C32', '#6B5D4F', '#857667', '#E5DBD1'), // Warm, understated taupe
+        gray: makeStandardTheme('#3B3B3B', '#656565', '#7E7E7E', '#E8E8E8'), // Neutral grays
+        charcoal: makeStandardTheme('#2A2A2A', '#4D4D4D', '#676767', '#E2E2E2'), // Deep, bold charcoal
 } as const;
 
 export type StandardTheme = keyof typeof StandardThemes;
