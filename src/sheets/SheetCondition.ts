@@ -1,7 +1,7 @@
 import { ComparisonOperators, BetweenOperator, MatchOperators } from "../tables/types";
 import { SheetPosition , SheetRange } from "./SheetPosition";
 import { SheetCellFormula } from './SheetCellValue';
-import { SheetStyle } from './SheetCellProperties';
+import { SheetStyle } from './SheetData';
 
 export type SheetComparisonValue = number | string;
 

@@ -1,6 +1,6 @@
 import { v } from 'varcor';
 import { GoogleSheet } from './sheets/google/GoogleSheet';
-import { SheetRange } from './sheets/SheetPosition';
+import { SheetPosition, SheetRange } from './sheets/SheetPosition';
 import { Colors } from './util/Color';
 
 const main = async () => {
@@ -40,8 +40,10 @@ const main = async () => {
             right: { color: Colors.toObject('#8800AA'), type: 'double' },
         }));
 
-        await sheet.modify(r => r.updateCells(id, SheetRange.cell(3, 3), { value: 10, props: { bold: true, fore: Colors.toObject('#990022') } }));
-        await sheet.modify(r => r.updateCells(id, SheetRange.cell(3, 3), { value: () => '10+22', props: { pattern: 'YYYY' } }));
+        await sheet.modify(r => r.updateCells(id, SheetRange.cell(3, 3), { value: 10, bold: true, fore: Colors.toObject('#990022') }));
+        await sheet.modify(r => r.updateCells(id, SheetRange.cell(3, 3), { value: () => '10+22', pattern: 'YYYY' }));
+
+        await sheet.modify(r => r.updateCells(id, SheetRange.region(1, 1, 2, 2), { back: Colors.toObject('#333333') }));
     }
 };
 
