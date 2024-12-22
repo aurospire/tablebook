@@ -1,8 +1,8 @@
-export type SheetPosition = { col: number; row: number, };
+export type SheetPosition<T = number> = { col: T; row: T, };
 
-export const SheetPosition = (col: number, row: number) => ({ col, row });
+export const SheetPosition = <T>(col: T, row: T): SheetPosition<T> => ({ col, row });
 
-export type SheetRange = { start: SheetPosition, end?: Partial<SheetPosition>; };
+export type SheetRange<T = number> = { start: SheetPosition<T>, end?: Partial<SheetPosition<T>>; };
 
 export const SheetRange = Object.freeze({
     cell: (col: number, row: number): SheetRange => ({

@@ -41,7 +41,7 @@ const main = async () => {
         }));
 
         await sheet.modify(r => r.updateCells(id, SheetRange.cell(3, 3), { value: 10, bold: true, fore: Colors.toObject('#990022') }));
-        await sheet.modify(r => r.updateCells(id, SheetRange.cell(3, 3), { value: () => '10+22', pattern: 'YYYY' }));
+        await sheet.modify(r => r.updateCells(id, SheetRange.cell(3, 3), { value: true, pattern: 'YYYY' }));
 
         await sheet.modify(r => r.updateCells(id, SheetRange.region(1, 1, 2, 2), { back: Colors.toObject('#333333') }));
     }

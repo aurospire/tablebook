@@ -1,6 +1,5 @@
-import { ComparisonOperators, BetweenOperator, MatchOperators } from "../tables/types";
-import { SheetPosition , SheetRange } from "./SheetPosition";
-import { SheetCellFormula } from './SheetCellValue';
+import { ComparisonOperators, BetweenOperator, MatchOperators, Expression } from "../tables/types";
+import { SheetPosition, SheetRange } from "./SheetPosition";
 import { SheetStyle } from './SheetData';
 
 export type SheetComparisonValue = number | string;
@@ -33,12 +32,12 @@ export type SheetEnumCondition = {
 export type SheetLookupCondition = {
     type: 'lookup';
     sheet: string;
-    range: SheetRange | SheetPosition ;
+    range: SheetRange | SheetPosition;
 };
 
 export type SheetFormulaCondition = {
     type: 'formula';
-    from: SheetCellFormula;
+    from: Expression<SheetRange>;
 };
 
 export type SheetCondition =

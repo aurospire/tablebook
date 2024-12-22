@@ -136,19 +136,19 @@ const Operator: z.ZodType<Operator> = z.union([
 
 
 /* Expressions */
-const CompoundExpression: z.ZodType<CompoundExpression> = z.object({
+const CompoundExpression: z.ZodType<CompoundExpression<DataSelector>> = z.object({
     type: z.literal(CompoundExpressionType),
     with: Operator,
     left: z.lazy(() => Expression),
     right: z.lazy(() => Expression),
 });
 
-const NegatedExpression: z.ZodType<NegatedExpression> = z.object({
+const NegatedExpression: z.ZodType<NegatedExpression<DataSelector>> = z.object({
     type: z.literal(NegatedExpressionType),
     on: z.lazy(() => Expression)
 });
 
-const FunctionExpression: z.ZodType<FunctionExpression> = z.object({
+const FunctionExpression: z.ZodType<FunctionExpression<DataSelector>> = z.object({
     type: z.literal(FunctionExpressionType),
     name: z.string(),
     args: z.array(z.lazy(() => Expression))
@@ -159,7 +159,7 @@ const LiteralExpression: z.ZodType<LiteralExpression> = z.object({
     value: z.union([z.string(), z.number(), z.boolean()])
 });
 
-const SelectorExpression: z.ZodType<SelectorExpression> = z.object({
+const SelectorExpression: z.ZodType<SelectorExpression<DataSelector>> = z.object({
     type: z.literal(SelectorExpressionType),
     from: DataSelector
 });
@@ -168,7 +168,7 @@ const SelfExpression: z.ZodType<SelfExpression> = z.object({
     type: SelfSelector
 });
 
-const Expression: z.ZodType<Expression> = z.union([
+const Expression: z.ZodType<Expression<DataSelector>> = z.union([
     CompoundExpression,
     NegatedExpression,
     FunctionExpression,

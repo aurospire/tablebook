@@ -1,5 +1,16 @@
-import { BorderType } from "../tables/types";
+import { BorderType, Expression } from "../tables/types";
 import { ColorObject } from "../util/Color";
+import { SheetRange } from "./SheetPosition";
+
+export type SheetSelector = number | `${number}`;
+
+export type SheetExpression = Expression<SheetSelector>;
+
+export type SheetValue = string | number | boolean | SheetExpression;
+
+export type SheetContent = {
+    value?: SheetValue | null;
+};
 
 export type SheetStyle = {
     fore?: ColorObject | null;
@@ -20,19 +31,11 @@ export type SheetBorderSet = {
     right?: SheetBorder;
 };
 
+
 export type SheetAlign = 'start' | 'middle' | 'end';
 
 export type SheetWrap = 'overflow' | 'clip' | 'wrap';
 
-export type SheetType = 'text' | 'number' | 'percent' | 'currency' | 'date' | 'time' | 'datetime';
-
-export type SheetFormula = (column: number, row: number) => string;
-
-export type SheetValue = string | number | boolean | SheetFormula;
-
-export type SheetContent = {
-    value?: SheetValue | null;
-};
 
 export type SheetAlignment = {
     horizontal?: SheetAlign | null;
@@ -40,16 +43,12 @@ export type SheetAlignment = {
     wrap?: SheetWrap | null;
 };
 
+
+export type SheetType = 'text' | 'number' | 'percent' | 'currency' | 'date' | 'time' | 'datetime';
+
 export type SheetFormat = {
     type?: SheetType | null;
     pattern?: string | null;
-};
-
-export const nullSheetData = {
-    back: null, fore: null,
-    bold: null, italic: null,
-    horizontal: null, vertical: null, wrap: null,
-    type: null, pattern: null
 };
 
 export type SheetData = SheetContent & SheetStyle & SheetAlignment & SheetFormat;

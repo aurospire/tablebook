@@ -158,28 +158,40 @@ export type Operator = ComparisonOperator | IntegrativeOperator;
 
 /* Expressions */
 export const CompoundExpressionType = 'compound';
-export type CompoundExpression = { type: typeof CompoundExpressionType; with: Operator; left: Expression; right: Expression; };
+export type CompoundExpression<Selector> = {
+    type: typeof CompoundExpressionType;
+    with: Operator;
+    left: Expression<Selector>;
+    right: Expression<Selector>;
+};
 
 export const NegatedExpressionType = 'negated';
-export type NegatedExpression = { type: typeof NegatedExpressionType; on: Expression; };
+export type NegatedExpression<Selector> = {
+    type: typeof NegatedExpressionType;
+    on: Expression<Selector>;
+};
 
 export const FunctionExpressionType = 'function';
-export type FunctionExpression = { type: typeof FunctionExpressionType; name: string; args: Expression[]; }; // NO HARDCODED - ITS UP TO USERS TO MAKE SURE FUNCTIONS ARE VALID
+export type FunctionExpression<Selector> = {
+    type: typeof FunctionExpressionType;
+    name: string;
+    args: Expression<Selector>[];
+}; // NO HARDCODED - ITS UP TO USERS TO MAKE SURE FUNCTIONS ARE VALID
+
+export const SelectorExpressionType = 'selector';
+export type SelectorExpression<Selector> = { type: typeof SelectorExpressionType; from: Selector; };
 
 export const LiteralExpressionType = 'literal';
 export type LiteralExpression = { type: typeof LiteralExpressionType; value: string | number | boolean; };
 
-export const SelectorExpressionType = 'selector';
-export type SelectorExpression = { type: typeof SelectorExpressionType; from: DataSelector; };
-
 export type SelfExpression = { type: typeof SelfLiteral; };
 
-export type Expression =
-    | CompoundExpression
-    | NegatedExpression
-    | FunctionExpression
+export type Expression<Selector> =
+    | CompoundExpression<Selector>
+    | NegatedExpression<Selector>
+    | FunctionExpression<Selector>
+    | SelectorExpression<Selector>
     | LiteralExpression
-    | SelectorExpression
     | SelfExpression;
 
 
@@ -210,7 +222,7 @@ export const MatchOperators = ['contains', 'begins', 'ends'] as const;
 export type MatchRule = { type: typeof MatchOperators[number]; value: string; };
 
 export const CustomRuleType = 'custom';
-export type CustomRule = { type: typeof CustomRuleType; expression: Expression; };
+export type CustomRule = { type: typeof CustomRuleType; expression: Expression<DataSelector>; };
 
 
 export type NumericRule = ComparisonRule<Comparable> | BetweenRule<Comparable> | CustomRule;
@@ -340,7 +352,7 @@ export type NumericFormat =
 export const TextTypeType = 'text';
 export type TextType = {
     type: typeof TextTypeType;
-    expression?: Expression;
+    expression?: Expression<DataSelector>;
     rules?: TextRule[];
     styles?: ConditionalStyle<TextRule>[];
 };
@@ -348,7 +360,7 @@ export type TextType = {
 export const NumericTypeType = 'numeric';
 export type NumericType = {
     type: typeof NumericTypeType;
-    expression?: Expression;
+    expression?: Expression<DataSelector>;
     rules?: NumericRule[];
     styles?: ConditionalStyle<NumericRule>[];
     format?: NumericFormat;
