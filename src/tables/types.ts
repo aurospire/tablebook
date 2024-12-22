@@ -161,8 +161,7 @@ export const CompoundExpressionType = 'compound';
 export type CompoundExpression<Selector> = {
     type: typeof CompoundExpressionType;
     with: Operator;
-    left: Expression<Selector>;
-    right: Expression<Selector>;
+    left: Expression<Selector>; right: Expression<Selector>;
 };
 
 export const NegatedExpressionType = 'negated';

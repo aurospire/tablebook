@@ -45,10 +45,36 @@ const toGridRange = (sheetId: number, range: SheetRange): sheets_v4.Schema$GridR
     endRowIndex: range.end?.row
 });
 
+const chars: Record<string, string> = {
+    '\t': 'CHAR(9)',
+    '\n': 'CHAR(10)',
+    '\r\n': 'CHAR(10)',
+    '"': 'CHAR(34)'
+};
 
-function toFormula(value: SheetExpression, position: SheetPosition): string {
-    throw new Error("Function not implemented.");
-}
+const toFormulaString = (value: string): string => {
+    return value.split(/(\t|\r?\n|")/).filter(Boolean).map(part => {
+        const char = chars[part];
+        return char ? char : `"${part}"`;
+    }).join(' & ');
+};
+
+const toFormula = (exp: SheetExpression, position: SheetPosition): string {
+    switch (exp.type) {
+        case 'literal': {
+            switch (typeof exp.value) {
+                case 'string':
+                    return toFormulaString(exp.value);
+                case 'number':
+                    return exp.value.toString();
+                case 'boolean':
+                    return exp.value.toString();
+            }
+        }
+        default:
+            throw new Error();
+    }
+};
 
 
 const getExtendedValue = (value: SheetValue, position: SheetPosition): GoogleCellValue | undefined => {
