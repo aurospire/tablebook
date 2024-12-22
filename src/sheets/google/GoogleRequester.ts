@@ -1,11 +1,11 @@
 import { sheets_v4 } from "@googleapis/sheets";
 import { inspect } from "util";
-import { ColorObject, Colors } from "../../util/Color";
-import { SheetRange } from "../SheetAddress";
-import { SheetCell } from "../SheetCell";
-import { nullSheetCellProperties, SheetBorder, SheetBorderSet, SheetCellAlign, SheetCellType, SheetCellWrap } from "../SheetCellProperties";
-import { GoogleAddSheetReply, GoogleApi, GoogleCellFormat, GoogleCellValue, GoogleNumberFormat, GoogleReply, GoogleRequest, GoogleTextFormat } from "./GoogleTypes";
 import { BorderType } from "../../tables/types";
+import { ColorObject, Colors } from "../../util/Color";
+import { SheetRange } from "../SheetPosition";
+import { nullSheetCellProperties, SheetBorder, SheetBorderSet, SheetCellAlign, SheetCellType, SheetCellWrap } from "../SheetCellProperties";
+import { SheetCellData } from "../SheetData";
+import { GoogleAddSheetReply, GoogleApi, GoogleCellFormat, GoogleCellValue, GoogleNumberFormat, GoogleReply, GoogleRequest, GoogleTextFormat } from "./GoogleTypes";
 
 export type GoogleReplyProcessor<Reply = GoogleReply> = (reply: Reply | undefined) => void;
 
@@ -45,7 +45,7 @@ const toGridRange = (sheetId: number, range: SheetRange): sheets_v4.Schema$GridR
     endRowIndex: range.end?.row
 });
 
-const getExtendedValue = (value: SheetCell['value'], col: number, row: number): GoogleCellValue | undefined => {
+const getExtendedValue = (value: SheetCellData['value'], col: number, row: number): GoogleCellValue | undefined => {
     switch (typeof value) {
         case 'string':
             return { stringValue: value };
@@ -59,6 +59,8 @@ const getExtendedValue = (value: SheetCell['value'], col: number, row: number): 
 
     }
 };
+
+
 
 const GoogleHorizontalAlignment = {
     start: 'LEFT',
@@ -90,7 +92,7 @@ const GoogleCellType = {
 } satisfies Record<SheetCellType, string>;
 
 
-const toCellValue = (value: SheetCell['value'], fields: string[], col: number, row: number): GoogleCellValue | undefined => {
+const toCellValue = (value: SheetCellData['value'], fields: string[], col: number, row: number): GoogleCellValue | undefined => {
     if (value !== undefined) {
         fields.push('userEnteredValue');
         if (value !== null)
@@ -98,7 +100,7 @@ const toCellValue = (value: SheetCell['value'], fields: string[], col: number, r
     }
 };
 
-const toCellFormat = (props: SheetCell['props'], fields: string[]): GoogleCellFormat | undefined => {
+const toCellFormat = (props: SheetCellData['props'], fields: string[]): GoogleCellFormat | undefined => {
     let dataFormat: GoogleCellFormat | undefined;
 
     let textFormat: GoogleTextFormat | undefined;
@@ -247,28 +249,26 @@ export class GoogleRequester {
                 bottom: toSheetsBorder(borders.bottom),
                 left: toSheetsBorder(borders.left),
                 right: toSheetsBorder(borders.right),
-            }            
+            }
         }, process);
     }
-
-    updateCell(sheedId: number, col: number, row: number, cell: SheetCell, process?: GoogleReplyProcessor): GoogleRequester {
+    
+    updateCells(sheetId: number, range: SheetRange, data: SheetCellData, process?: GoogleReplyProcessor): GoogleRequester {
         const fields: string[] = [];
-        const value = toCellValue(cell.value, fields, col, row);
-        const format = toCellFormat(cell.props, fields);
+        const format = toCellFormat(data.props, fields);
+        const value = toCellValue(data.value, fields, range.start.col, range.start.row);
 
         if (fields.length)
             return this.do({
-                updateCells: {
-                    start: { sheetId: sheedId, columnIndex: col, rowIndex: row },
-                    rows: [{
-                        values: [{
-                            userEnteredValue: value,
-                            userEnteredFormat: format
-                        }]
-                    }],
+                repeatCell: {
+                    range: toGridRange(sheetId, range),
+                    cell: {
+                        userEnteredValue: value,
+                        userEnteredFormat: format
+                    },
                     fields: fields.join(',')
                 }
-            });
+            }, process);
 
         return this;
     }
@@ -290,3 +290,4 @@ export class GoogleRequester {
         return result;
     }
 }
+

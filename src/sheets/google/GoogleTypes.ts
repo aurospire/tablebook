@@ -24,3 +24,5 @@ export type GoogleCellFormat = sheets_v4.Schema$CellFormat;
 export type GoogleTextFormat = sheets_v4.Schema$TextFormat;
 
 export type GoogleNumberFormat = sheets_v4.Schema$NumberFormat;
+
+export type GoogleValidation = sheets_v4.Schema$DataValidationRule;

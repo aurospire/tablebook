@@ -1,4 +1,6 @@
-import { ColorObject, BorderType } from "../tables/types";
+import { BorderType } from "../tables/types";
+import { ColorObject } from "../util/Color";
+import { SheetCondition } from "./SheetCondition";
 
 export type SheetStyle = {
     fore?: ColorObject | null;
@@ -34,6 +36,10 @@ export type SheetCellAlignment = {
 export type SheetCellFormat = {
     type?: SheetCellType | null;
     pattern?: string | null;
+};
+
+export type SheetCellValiation = {
+    validation?: SheetCondition[] | null;
 };
 
 export const nullSheetCellProperties = { back: null, fore: null, bold: null, italic: null, horizontal: null, vertical: null, wrap: null, type: null, pattern: null };

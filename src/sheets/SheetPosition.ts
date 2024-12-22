@@ -1,6 +1,6 @@
-export type SheetAddress = { col: number; row: number, };
+export type SheetPosition  = { col: number; row: number, };
 
-export type SheetRange = { start: SheetAddress, end?: Partial<SheetAddress>; };
+export type SheetRange = { start: SheetPosition , end?: Partial<SheetPosition >; };
 
 export const SheetRange = Object.freeze({
     cell: (col: number, row: number): SheetRange => ({

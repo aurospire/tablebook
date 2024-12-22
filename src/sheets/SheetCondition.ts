@@ -1,5 +1,5 @@
 import { ComparisonOperators, BetweenOperator, MatchOperators } from "../tables/types";
-import { SheetAddress, SheetRange } from "./SheetAddress";
+import { SheetPosition , SheetRange } from "./SheetPosition";
 import { SheetCellFormula } from './SheetCellValue';
 import { SheetStyle } from './SheetCellProperties';
 
@@ -33,7 +33,7 @@ export type SheetEnumCondition = {
 export type SheetLookupCondition = {
     type: 'lookup';
     sheet: string;
-    range: SheetRange | SheetAddress;
+    range: SheetRange | SheetPosition ;
 };
 
 export type SheetFormulaCondition = {
@@ -41,11 +41,16 @@ export type SheetFormulaCondition = {
     from: SheetCellFormula;
 };
 
-export type SheetCondition = SheetComparisonCondition |
-    SheetBetweenCondition |
-    SheetMatchCondition |
-    SheetEnumCondition |
-    SheetLookupCondition |
-    SheetFormulaCondition;
+export type SheetCondition =
+    | SheetComparisonCondition
+    | SheetBetweenCondition
+    | SheetMatchCondition
+    | SheetEnumCondition
+    | SheetLookupCondition
+    | SheetFormulaCondition
+    ;
 
-export type SheetConditionalFormat = { condition: SheetCondition; style: SheetStyle; };
+export type SheetConditionalFormat = {
+    condition: SheetCondition;
+    style: SheetStyle;
+};
