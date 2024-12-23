@@ -10,6 +10,8 @@ export type SheetKind = {
 
 
 export const toPattern = (format: NumericFormat): string => {
+    switch (format.type) {
 
-    switch (format.)
+    }
+    return ''
 };

@@ -8,7 +8,7 @@ import {
     ColumnSelector, Comparable, ComparisonOperator,
     ComparisonOperators, ComparisonRule, CompoundExpression, CompoundExpressionType,
     ConditionalStyle, CurrencyFormat, CurrencyFormatType, CurrencySymbolPositions,
-    CustomRule, CustomRuleType, CustomTheme,
+    CustomRule, CustomRuleType,
     DataSelector, DataType, DateFormat, DateString, DateStringRegex,
     DateTimeFormat, DateTimeFormatType, DateTimeString, DateTimeStringRegex, Definitions,
     DigitPlaceholder, EnumItem, EnumType, EnumTypeType, Expression,
@@ -19,7 +19,8 @@ import {
     MatchRule,
     NegatedExpression, NegatedExpressionType,
     NegativeFormats, NumberDateFormat, NumberDateFormatOrder, NumberDateFormatType,
-    NumberFormat, NumberFormatType, NumberTimeFormat, NumberTimeFormatType, NumericFormat,
+    NumberFormat, NumberFormatType,
+    NumericFormat,
     NumericRule, NumericType, NumericTypeType, Operator,
     Partition, PercentFormat, PercentFormatType,
     RangeRowSelector, RangeRowSelectorType,
@@ -27,11 +28,12 @@ import {
     SelectorExpression, SelectorExpressionType,
     SelfExpression, SelfLiteral, SelfSelector, StandardDateFormats,
     StandardDateReference,
-    StandardThemeReference, StandardThemes, StandardTimeFormats, StandardTimeReference, Style, TableBook, TableColumn,
+    StandardTimeFormats, StandardTimeReference, Style, TableBook, TableColumn,
     TableGroup, TableSheet, TableUnit, TableUnitNameRegex, TemporalFormat,
     TextDateFormat, TextDateFormatOrder, TextDateFormatType,
     TextForm, TextRule, TextType, TextTypeType, Theme,
-    TimeFormat, TimeString, TimeStringRegex,
+    TimeFormat, TimeFormatType,
+    TimeString, TimeStringRegex,
     UnitLength, UnitLengths, UnitSelector,
     UnitSelectorRegex
 } from './types';
@@ -111,16 +113,13 @@ const HeaderStyleReference = z.union([HeaderStyle, Reference]);
 
 const StyleReference = z.union([Style, Reference]);
 
-const CustomTheme: z.ZodType<CustomTheme> = z.object({
-    inherits: z.union([Reference, z.array(Reference)]).optional(),
+const Theme: z.ZodType<Theme> = z.object({
+    inherits: z.array(Reference).optional(),
+    tab: ColorReference.optional(),
     group: HeaderStyleReference.optional(),
     header: HeaderStyleReference.optional(),
     data: StyleReference.optional(),
 });
-
-const StandardTheme: z.ZodType<StandardThemeReference> = z.enum(Object.keys(StandardThemes) as any);
-
-const Theme: z.ZodType<Theme> = z.union([CustomTheme, StandardTheme]);
 
 
 /* Operators */
@@ -288,12 +287,11 @@ const StandardDateFormat: z.ZodType<keyof typeof StandardDateFormats> = z.enum(O
 
 const DateFormat: z.ZodType<DateFormat> = z.union([
     TextDateFormat,
-    NumberDateFormat,
-    z.custom<StandardDateReference>(value => new RegExp(`^@(${Object.keys(StandardDateFormats).join('|')})$`).test(value as string))
+    NumberDateFormat
 ]);
 
-const NumberTimeFormat: z.ZodType<NumberTimeFormat> = z.object({
-    type: z.literal(NumberTimeFormatType),
+const TimeFormat: z.ZodType<TimeFormat> = z.object({
+    type: z.literal(TimeFormatType),
     format: z.enum(HourFormats),
     hours: UnitLength.optional(),
     minutes: UnitLength.optional(),
@@ -303,10 +301,9 @@ const NumberTimeFormat: z.ZodType<NumberTimeFormat> = z.object({
 
 const StandardTimeFormat: z.ZodType<keyof typeof StandardTimeFormats> = z.enum(Object.keys(StandardDateFormats) as any);
 
-const TimeFormat: z.ZodType<TimeFormat> = z.union([
-    NumberTimeFormat,
-    z.custom<StandardTimeReference>(value => new RegExp(`^@(${Object.keys(StandardTimeFormats).join('|')})$`).test(value as string))
-]);
+z.custom<StandardDateReference>(value => new RegExp(`^@(${Object.keys(StandardDateFormats).join('|')})$`).test(value as string));
+z.custom<StandardTimeReference>(value => new RegExp(`^@(${Object.keys(StandardTimeFormats).join('|')})$`).test(value as string));
+
 
 const DateTimeFormat: z.ZodType<DateTimeFormat> = z.object({
     type: z.literal(DateTimeFormatType),
@@ -324,8 +321,7 @@ const NumericFormat: z.ZodType<NumericFormat> = z.union([
     NumberFormat,
     PercentFormat,
     CurrencyFormat,
-    TemporalFormat,
-    Reference
+    TemporalFormat
 ]);
 
 

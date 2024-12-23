@@ -77,15 +77,15 @@ export type Partition = {
 export type HeaderStyle = Style & { partition?: Partition; };
 
 
-export type CustomTheme = {
-    inherits?: Reference | Reference[]; // Deep overriding (into styles and borders)
+export type Theme = {
+    inherits?: (StandardThemeReference | Reference)[]; // Deep overriding (into styles and borders)
     tab?: Color | Reference;
     group?: HeaderStyle | Reference;
     header?: HeaderStyle | Reference;
     data?: Style | Reference;
 };
 
-const makeStandardTheme = (darkest: Color, dark: Color, normal: Color, lightest: Color): CustomTheme => {
+const makeStandardTheme = (darkest: Color, dark: Color, normal: Color, lightest: Color): Theme => {
     return {
         tab: normal,
         group: { back: darkest },
@@ -135,8 +135,6 @@ export const StandardThemes = {
 } as const;
 
 export type StandardThemeReference = Reference<keyof typeof StandardThemes>;
-
-export type Theme = CustomTheme | StandardThemeReference;
 
 
 /* Operators */
@@ -284,7 +282,7 @@ export type TextDateFormat = {
 
 export const StandardDateFormats = {
     // Numeric Date Formats
-    isodate: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'YMD' },
+    iso: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'YMD' },
     eurolong: { type: 'numberdate', year: 'short', month: 'short', day: 'short', order: 'DMY' },
     euroshort: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'DMY' },
     usshort: { type: 'numberdate', year: 'short', month: 'short', day: 'short', order: 'MDY' },
@@ -298,12 +296,12 @@ export const StandardDateFormats = {
 
 export type StandardDateReference = Reference<keyof typeof StandardDateFormats>;
 
-export type DateFormat = TextDateFormat | NumberDateFormat | StandardDateReference;
+export type DateFormat = TextDateFormat | NumberDateFormat;
 
 export const HourFormats = ['standard', 'military'] as const;
-export const NumberTimeFormatType = 'time';
-export type NumberTimeFormat = {
-    type: typeof NumberTimeFormatType;
+export const TimeFormatType = 'time';
+export type TimeFormat = {
+    type: typeof TimeFormatType;
     format?: typeof HourFormats[number];            // Time format (standard or military)
     hours?: UnitLength;                             // Hours configuration (e.g., 5 or 05)
     minutes?: UnitLength;                           // Minutes configuration (e.g., 5 or 05)
@@ -318,11 +316,10 @@ export const StandardTimeFormats = {
     militaryshort: { type: 'time', format: 'military', hours: 'short', minutes: 'short', seconds: 'short' },
     militarylong: { type: 'time', format: 'military', hours: 'long', minutes: 'long', seconds: 'long' },
 
-} as const satisfies Record<string, NumberTimeFormat>;
+} as const satisfies Record<string, TimeFormat>;
 
 export type StandardTimeReference = Reference<keyof typeof StandardTimeFormats>;
 
-export type TimeFormat = NumberTimeFormat | StandardTimeReference;
 
 export const DateTimeFormatType = 'datetime';
 export type DateTimeFormat = {
@@ -337,12 +334,15 @@ export type TemporalFormat =
     | DateTimeFormat
     ;
 
+export type NumericReference =
+    | StandardDateReference
+    | StandardTimeReference
+
 export type NumericFormat =
     | NumberFormat
     | PercentFormat
     | CurrencyFormat
     | TemporalFormat
-    | Reference
     ;
 
 
@@ -361,7 +361,7 @@ export type NumericType = {
     expression?: Expression<DataSelector>;
     rules?: NumericRule[];
     styles?: ConditionalStyle<NumericRule>[];
-    format?: NumericFormat;
+    format?: NumericFormat | NumericReference | Reference;
 };
 
 export type EnumItem = string | { value: string; style?: Style | Reference; };
@@ -385,7 +385,7 @@ export type DataType = TextType | NumericType | EnumType | LookupType | Referenc
 export const TableUnitNameRegex = /^[A-Z](A-Za-z0-9)*$/;
 export type TableUnit = {
     name: string;
-    theme?: Theme | Reference;
+    theme?: Theme | StandardThemeReference | Reference;
     description?: string; // meta description of column
 };
 
@@ -408,8 +408,8 @@ export type TableSheet = TableUnit & {
 export type Definitions = {
     colors?: Record<string, Color>;
     styles?: Record<string, Style | HeaderStyle>;
-    themes?: Record<string, Theme>; // Includes Standard Themes by default, overriding them by name not allowed
-    formats?: Record<string, NumericFormat>;
+    themes?: Record<string, Theme>; // Includes Standard Themes by default
+    formats?: Record<string, NumericFormat>; // Includes Standard Formats by default
     types?: Record<string, DataType>;
 };
 
