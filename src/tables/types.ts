@@ -54,7 +54,7 @@ export type DataSelector = {
 export const ColorRegex = /^#[A-Za-z0-9]{6}$/;
 export type Color = `#${string}`;
 
-export const TextFormShortcuts = ['n', 'b', 'i', 'bi'] as const;
+export const TextFormShortcuts = ['n', 'b', 'i', 'bi', 'ib'] as const;
 
 export type TextForm = { bold?: boolean; italic?: boolean; } | typeof TextFormShortcuts[number];
 
@@ -177,10 +177,9 @@ export type FunctionExpression<Selector> = {
 export const SelectorExpressionType = 'selector';
 export type SelectorExpression<Selector> = { type: typeof SelectorExpressionType; from: Selector; };
 
-export const LiteralExpressionType = 'literal';
-export type LiteralExpression = { type: typeof LiteralExpressionType; value: string | number | boolean; };
-
 export type SelfExpression = { type: typeof SelfLiteral; };
+
+export type LiteralExpression = string | number | boolean;
 
 export type Expression<Selector> =
     | CompoundExpression<Selector>

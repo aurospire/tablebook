@@ -79,7 +79,7 @@ const modifyUnitSelector = (offset: UnitSelector | undefined | null, current: nu
     let [_, type, number] = offset?.match(UnitSelectorRegex) ?? [];
 
     let value = Number(number ?? 0);
-    console.log({offset, type, number, base, value})
+    console.log({ offset, type, number, base, value });
 
     if (type === '$')
         base = '$';
@@ -100,29 +100,26 @@ const toAddress = (selector: SheetRangeSelector | null, position: SheetPosition)
 };
 
 const toFormula = (exp: SheetExpression, position: SheetPosition): string => {
-    switch (exp.type) {
-        case 'compound':
-            return exp.items.map(item => toFormula(item, position)).join(exp.with);
-        case 'function':
-            return `${exp.name}(${exp.args.map(arg => toFormula(arg, position)).join(',')})`;
-        case 'negated':
-            return `-(${toFormula(exp.on, position)})`;
-        case 'literal': {
-            switch (typeof exp.value) {
-                case 'string':
-                    return toFormulaString(exp.value);
-                case 'number':
-                    return exp.value.toString();
-                case 'boolean':
-                    return exp.value.toString();
+    switch (typeof exp) {
+        case 'string':
+            return toFormulaString(exp);
+        case 'number':
+            return exp.toString();
+        case 'boolean':
+            return exp.toString();
+        case 'object':
+            switch (exp.type) {
+                case 'compound':
+                    return exp.items.map(item => toFormula(item, position)).join(exp.with);
+                case 'function':
+                    return `${exp.name}(${exp.args.map(arg => toFormula(arg, position)).join(',')})`;
+                case 'negated':
+                    return `-(${toFormula(exp.on, position)})`;
+                case 'self':
+                    return toAddress(null, position);
+                case 'selector':
+                    return toAddress(exp.from, position);
             }
-        }
-        case 'self':
-            return toAddress(null, position);
-        case 'selector':
-            return toAddress(exp.from, position);
-        default:
-            throw new Error();
     }
 };
 

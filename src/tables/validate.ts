@@ -14,7 +14,7 @@ import {
     DigitPlaceholder, EnumItem, EnumType, EnumTypeType, Expression,
     FunctionExpression, FunctionExpressionType, HeaderStyle,
     HourFormats, IntegrativeOperator, IntegrativeOperators, LiteralExpression,
-    LiteralExpressionType, LookupType, LookupTypeType,
+    LookupType, LookupTypeType,
     MatchOperators,
     MatchRule,
     NegatedExpression, NegatedExpressionType,
@@ -151,10 +151,7 @@ const FunctionExpression: z.ZodType<FunctionExpression<DataSelector>> = z.object
     args: z.array(z.lazy(() => Expression))
 });
 
-const LiteralExpression: z.ZodType<LiteralExpression> = z.object({
-    type: z.literal(LiteralExpressionType),
-    value: z.union([z.string(), z.number(), z.boolean()])
-});
+const LiteralExpression: z.ZodType<LiteralExpression> = z.union([z.string(), z.number(), z.boolean()]);
 
 const SelectorExpression: z.ZodType<SelectorExpression<DataSelector>> = z.object({
     type: z.literal(SelectorExpressionType),
