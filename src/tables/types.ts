@@ -26,9 +26,9 @@ export type ColumnSelector = {
 };
 
 // Targets a single row in a column using absolute or relative indexing.
-export const UnitRowSelectorTypes = ['index', 'offset'] as const;
-export type UnitRowSelector = {
-    type: typeof UnitRowSelectorTypes[number]; // 'index' for absolute or 'offset' for relative positioning.
+export const UnitSelectorTypes = ['index', 'offset'] as const;
+export type UnitSelector = {
+    type: typeof UnitSelectorTypes[number]; // 'index' for absolute or 'offset' for relative positioning.
     value: number;  // The absolute index or offset value.
 };
 
@@ -37,12 +37,12 @@ export type UnitRowSelector = {
 export const RangeRowSelectorType = 'range';
 export type RangeRowSelector = {
     type: typeof RangeRowSelectorType; // Specifies that this selector targets a range.
-    from: UnitRowSelector;  // One boundary of the range.
-    to: UnitRowSelector;    // The other boundary of the range.
+    from: UnitSelector;  // One boundary of the range.
+    to: UnitSelector;    // The other boundary of the range.
 };
 
 // Targets rows in a column using a single position, a range, or `self` for the element's row.
-export type RowSelector = UnitRowSelector | RangeRowSelector | SelfSelector;
+export type RowSelector = UnitSelector | RangeRowSelector | SelfSelector;
 
 // Combines column and row selection to target data within a table.
 // Selects the entire column by default; limits to specific rows if `row` is provided.
@@ -161,7 +161,7 @@ export const CompoundExpressionType = 'compound';
 export type CompoundExpression<Selector> = {
     type: typeof CompoundExpressionType;
     with: Operator;
-    left: Expression<Selector>; right: Expression<Selector>;
+    items: Expression<Selector>[]
 };
 
 export const NegatedExpressionType = 'negated';

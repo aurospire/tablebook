@@ -1,8 +1,8 @@
 import { sheets_v4 } from "@googleapis/sheets";
 import { inspect } from "util";
-import { BorderType, Expression } from "../../tables/types";
+import { BorderType, Expression, UnitSelector } from "../../tables/types";
 import { ColorObject, Colors } from "../../util/Color";
-import { SheetBorder, SheetBorderSet, SheetAlign, SheetData, SheetType, SheetValue, SheetWrap, SheetExpression } from "../SheetData";
+import { SheetBorder, SheetBorderSet, SheetAlign, SheetData, SheetType, SheetValue, SheetWrap, SheetExpression, SheetRangeSelector } from "../SheetData";
 import { SheetPosition, SheetRange } from "../SheetPosition";
 import { GoogleAddSheetReply, GoogleApi, GoogleCellFormat, GoogleCellValue, GoogleNumberFormat, GoogleReply, GoogleRequest, GoogleTextFormat } from "./GoogleTypes";
 
@@ -59,8 +59,49 @@ const toFormulaString = (value: string): string => {
     }).join(' & ');
 };
 
-const toFormula = (exp: SheetExpression, position: SheetPosition): string {
+const charCodeA = 'A'.charCodeAt(0);
+
+const letterfy = (value: number): string => {
+    let result = '';
+
+    do {
+        result = String.fromCharCode(charCodeA + (value % 26 | 0)) + result;
+
+        value = value / 26 | 0;
+    } while (value);
+
+    return result;
+};
+
+const modifyUnitSelector = (selector: UnitSelector | undefined | null, current: number, letter: boolean): string => {
+    let base = '';
+
+    let value = selector?.value ?? 0;
+
+    if (selector?.type === 'index')
+        base = '$';
+    else
+        value += current;
+
+    return base + (letter ? letterfy(value) : (value + 1).toString());
+};
+
+const toAddress = (selector: SheetRangeSelector | null, position: SheetPosition): string => {
+    const col = modifyUnitSelector(selector?.start.col, position.col, true);
+
+    const row = modifyUnitSelector(selector?.start.row, position.row, false);
+
+    return col + row;
+};
+
+const toFormula = (exp: SheetExpression, position: SheetPosition): string => {
     switch (exp.type) {
+        case 'compound':
+            return exp.items.map(item => toFormula(item, position)).join(exp.with);
+        case 'function':
+            return `${exp.name}(${exp.args.map(arg => toFormula(arg, position)).join(',')})`;
+        case 'negated':
+            return `-(${toFormula(exp.on, position)})`;
         case 'literal': {
             switch (typeof exp.value) {
                 case 'string':
@@ -71,11 +112,16 @@ const toFormula = (exp: SheetExpression, position: SheetPosition): string {
                     return exp.value.toString();
             }
         }
+        case 'self':
+            return toAddress(null, position);
+        case 'selector':
+            return toAddress(exp.from, position);
         default:
             throw new Error();
     }
 };
 
+const exp = <T>(value: T) => (console.log(value), value);
 
 const getExtendedValue = (value: SheetValue, position: SheetPosition): GoogleCellValue | undefined => {
     switch (typeof value) {
@@ -86,8 +132,7 @@ const getExtendedValue = (value: SheetValue, position: SheetPosition): GoogleCel
         case 'boolean':
             return { boolValue: value };
         default:
-            return { formulaValue: toFormula(value, position) };
-
+            return { formulaValue: exp('=' + toFormula(value, position)) };
     }
 };
 
@@ -123,7 +168,7 @@ const GoogleCellType = {
 } satisfies Record<SheetType, string>;
 
 
-const SheetDataFieldMap = {
+const SheetDataFieldMap: Record<string, string[]> = {
     back: ['userEnteredFormat.backgroundColorStyle'],
     fore: ['userEnteredFormat.textFormat.foregroundColorStyle'],
     bold: ['userEnteredFormat.textFormat.bold'],
@@ -142,14 +187,13 @@ const getFields = (from: string[] | SheetData): string[] => {
         .filter(([_, v]) => v !== undefined)
         .map(([k]) => k);
 
-    const fields = new Set<string>(keys.flatMap(key => [key]));
+    const fields = new Set<string>(keys.flatMap(key => SheetDataFieldMap[key] ?? []));
 
     return [...fields];
 };
 
 const toCellValue = (data: SheetData, position: SheetPosition): GoogleCellValue | undefined => {
     if (data.value !== undefined) {
-
         if (data.value !== null)
             return getExtendedValue(data.value, position);
     }
@@ -328,7 +372,10 @@ export class GoogleRequester {
         for (let i = 0; i < this.#processors.length; i++)
             this.#processors[i](replies[i]);
 
-        console.log(result);
+        if (result.status > 300) {
+            console.log(result);
+            console.log(inspect(result.data, { depth: null, colors: true }));
+        }
         return result;
     }
 }

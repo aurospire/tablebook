@@ -31,7 +31,7 @@ import {
     TextDateFormat, TextDateFormatOrder, TextDateFormatType,
     TextForm, TextFormShortcuts, TextRule, TextType, TextTypeType, Theme,
     TimeFormat, TimeString, TimeStringRegex,
-    UnitLength, UnitLengths, UnitRowSelector, UnitRowSelectorTypes
+    UnitLength, UnitLengths, UnitSelector, UnitSelectorTypes
 } from './types';
 
 // Note: Manually doing validation instead of inferring types from these to keep types clean.
@@ -51,18 +51,18 @@ const ColumnSelector: z.ZodType<ColumnSelector> = z.object({
     column: z.string()
 });
 
-const UnitRowSelector: z.ZodType<UnitRowSelector> = z.object({
-    type: z.enum(UnitRowSelectorTypes),
+const UnitSelector: z.ZodType<UnitSelector> = z.object({
+    type: z.enum(UnitSelectorTypes),
     value: z.number()
 });
 
 const RangeRowSelector: z.ZodType<RangeRowSelector> = z.object({
     type: z.literal(RangeRowSelectorType),
-    from: UnitRowSelector,
-    to: UnitRowSelector
+    from: UnitSelector,
+    to: UnitSelector
 });
 
-const RowSelector: z.ZodType<RowSelector> = z.union([UnitRowSelector, RangeRowSelector]);
+const RowSelector: z.ZodType<RowSelector> = z.union([UnitSelector, RangeRowSelector]);
 
 const DataSelector: z.ZodType<DataSelector> = z.union([
     SelfSelector,
@@ -139,8 +139,7 @@ const Operator: z.ZodType<Operator> = z.union([
 const CompoundExpression: z.ZodType<CompoundExpression<DataSelector>> = z.object({
     type: z.literal(CompoundExpressionType),
     with: Operator,
-    left: z.lazy(() => Expression),
-    right: z.lazy(() => Expression),
+    items: z.array(z.lazy(() => Expression))
 });
 
 const NegatedExpression: z.ZodType<NegatedExpression<DataSelector>> = z.object({
