@@ -49,8 +49,8 @@ const main = async () => {
             .updateCells(id, SheetRange.cell(0, 2), {
                 value: {
                     type: 'compound', with: '+', items: [
-                        { type: 'selector', from: { start: { col: "0", row: "0" } } },
-                        { type: 'selector', from: { start: { col: "0", row: "1" } } },
+                        { type: 'selector', from: { start: { col: "$0", row: "$0" } } },
+                        { type: 'selector', from: { start: { col: "$0", row: "$1" } } },
                     ]
                 }
             })

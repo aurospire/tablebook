@@ -1,11 +1,9 @@
 import { BorderType, Expression, UnitSelector } from "../tables/types";
 import { ColorObject } from "../util/Color";
-import { SheetPosition, SheetRange } from "./SheetPosition";
+import { SheetRange } from "./SheetPosition";
 
 
-export type SheetOffset = number | `${number}`;
-
-export type SheetRangeSelector = SheetRange<SheetOffset>;
+export type SheetRangeSelector = SheetRange<UnitSelector>;
 
 export type SheetExpression = Expression<SheetRangeSelector>;
 

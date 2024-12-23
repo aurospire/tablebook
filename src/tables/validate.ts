@@ -31,7 +31,8 @@ import {
     TextDateFormat, TextDateFormatOrder, TextDateFormatType,
     TextForm, TextFormShortcuts, TextRule, TextType, TextTypeType, Theme,
     TimeFormat, TimeString, TimeStringRegex,
-    UnitLength, UnitLengths, UnitSelector, UnitSelectorTypes
+    UnitLength, UnitLengths, UnitSelector,
+    UnitSelectorRegex
 } from './types';
 
 // Note: Manually doing validation instead of inferring types from these to keep types clean.
@@ -51,10 +52,7 @@ const ColumnSelector: z.ZodType<ColumnSelector> = z.object({
     column: z.string()
 });
 
-const UnitSelector: z.ZodType<UnitSelector> = z.object({
-    type: z.enum(UnitSelectorTypes),
-    value: z.number()
-});
+const UnitSelector: z.ZodType<UnitSelector> = z.custom<UnitSelector>(value => UnitSelectorRegex.test(value as string));
 
 const RangeRowSelector: z.ZodType<RangeRowSelector> = z.object({
     type: z.literal(RangeRowSelectorType),

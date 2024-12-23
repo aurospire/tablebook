@@ -26,11 +26,8 @@ export type ColumnSelector = {
 };
 
 // Targets a single row in a column using absolute or relative indexing.
-export const UnitSelectorTypes = ['index', 'offset'] as const;
-export type UnitSelector = {
-    type: typeof UnitSelectorTypes[number]; // 'index' for absolute or 'offset' for relative positioning.
-    value: number;  // The absolute index or offset value.
-};
+export const UnitSelectorRegex = /^(\+|\-|\$)(\d+)$/;
+export type UnitSelector = `${'+' | '-' | '$'}${number}`; // + or - means offset, $ means absolute
 
 // Targets a range of rows within a column using two endpoints.
 // The `from` and `to` endpoints can be in any order; the compiler determines the correct range.
@@ -161,7 +158,7 @@ export const CompoundExpressionType = 'compound';
 export type CompoundExpression<Selector> = {
     type: typeof CompoundExpressionType;
     with: Operator;
-    items: Expression<Selector>[]
+    items: Expression<Selector>[];
 };
 
 export const NegatedExpressionType = 'negated';

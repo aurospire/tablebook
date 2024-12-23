@@ -1,8 +1,8 @@
 import { sheets_v4 } from "@googleapis/sheets";
 import { inspect } from "util";
-import { BorderType, Expression, UnitSelector } from "../../tables/types";
+import { BorderType, UnitSelector, UnitSelectorRegex } from "../../tables/types";
 import { ColorObject, Colors } from "../../util/Color";
-import { SheetBorder, SheetBorderSet, SheetAlign, SheetData, SheetType, SheetValue, SheetWrap, SheetExpression, SheetRangeSelector, SheetOffset } from "../SheetData";
+import { SheetAlign, SheetBorder, SheetBorderSet, SheetData, SheetExpression, SheetRangeSelector, SheetType, SheetValue, SheetWrap } from "../SheetData";
 import { SheetPosition, SheetRange } from "../SheetPosition";
 import { GoogleAddSheetReply, GoogleApi, GoogleCellFormat, GoogleCellValue, GoogleNumberFormat, GoogleReply, GoogleRequest, GoogleTextFormat } from "./GoogleTypes";
 
@@ -73,15 +73,20 @@ const letterfy = (value: number): string => {
     return result;
 };
 
-const modifyUnitSelector = (offset: SheetOffset | undefined | null, current: number, letter: boolean): string => {
+const modifyUnitSelector = (offset: UnitSelector | undefined | null, current: number, letter: boolean): string => {
     let base = '';
 
-    let value = Number(offset);
+    let [_, type, number] = offset?.match(UnitSelectorRegex) ?? [];
 
-    if (typeof offset === 'string')
+    let value = Number(number ?? 0);
+    console.log({offset, type, number, base, value})
+
+    if (type === '$')
         base = '$';
+    else if (type === '-')
+        value = current - value;
     else
-        value += current;
+        value = current + value;
 
     return base + (letter ? letterfy(value) : (value + 1).toString());
 };
