@@ -2,7 +2,7 @@ import { sheets_v4 } from "@googleapis/sheets";
 import { inspect } from "util";
 import { BorderType, Expression, UnitSelector } from "../../tables/types";
 import { ColorObject, Colors } from "../../util/Color";
-import { SheetBorder, SheetBorderSet, SheetAlign, SheetData, SheetType, SheetValue, SheetWrap, SheetExpression, SheetRangeSelector } from "../SheetData";
+import { SheetBorder, SheetBorderSet, SheetAlign, SheetData, SheetType, SheetValue, SheetWrap, SheetExpression, SheetRangeSelector, SheetOffset } from "../SheetData";
 import { SheetPosition, SheetRange } from "../SheetPosition";
 import { GoogleAddSheetReply, GoogleApi, GoogleCellFormat, GoogleCellValue, GoogleNumberFormat, GoogleReply, GoogleRequest, GoogleTextFormat } from "./GoogleTypes";
 
@@ -73,12 +73,12 @@ const letterfy = (value: number): string => {
     return result;
 };
 
-const modifyUnitSelector = (selector: UnitSelector | undefined | null, current: number, letter: boolean): string => {
+const modifyUnitSelector = (offset: SheetOffset | undefined | null, current: number, letter: boolean): string => {
     let base = '';
 
-    let value = selector?.value ?? 0;
+    let value = Number(offset);
 
-    if (selector?.type === 'index')
+    if (typeof offset === 'string')
         base = '$';
     else
         value += current;

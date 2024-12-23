@@ -46,10 +46,14 @@ const main = async () => {
         await sheet.modify(r => r
             .updateCells(id, SheetRange.cell(0, 0), { value: 10 })
             .updateCells(id, SheetRange.cell(0, 1), { value: 5 })
-            .updateCells(id, SheetRange.cell(0, 2), { value: {type: 'compound', with: '+',items:[
-                {type:'selector', from: {start: { col: {type: 'index', value: 0}, row: {type: 'index', value: 0}}}},
-                {type:'selector', from: {start: { col: {type: 'index', value: 0}, row: {type: 'index', value: 1}}}},
-            ]} })
+            .updateCells(id, SheetRange.cell(0, 2), {
+                value: {
+                    type: 'compound', with: '+', items: [
+                        { type: 'selector', from: { start: { col: "0", row: "0" } } },
+                        { type: 'selector', from: { start: { col: "0", row: "1" } } },
+                    ]
+                }
+            })
         );
 
         await sheet.modify(r => r.updateCells(id, SheetRange.region(1, 1, 2, 2), { back: Colors.toObject('#333333') }));
