@@ -1,11 +1,8 @@
-import { BorderType, Expression, UnitSelector } from "../tables/types";
+import { BorderType } from "../tables/types";
 import { ColorObject } from "../util/Color";
-import { SheetRange } from "./SheetPosition";
+import { SheetExpression } from "./SheetExpression";
+import { SheetKind } from "./SheetKind";
 
-
-export type SheetRangeSelector = SheetRange<UnitSelector>;
-
-export type SheetExpression = Expression<SheetRangeSelector>;
 
 export type SheetValue = string | number | boolean | SheetExpression;
 
@@ -45,11 +42,4 @@ export type SheetAlignment = {
 };
 
 
-export type SheetType = 'text' | 'number' | 'percent' | 'currency' | 'date' | 'time' | 'datetime';
-
-export type SheetFormat = {
-    type?: SheetType | null;
-    pattern?: string | null;
-};
-
-export type SheetData = SheetContent & SheetStyle & SheetAlignment & SheetFormat;
+export type SheetData = SheetContent & SheetStyle & SheetAlignment & SheetKind;

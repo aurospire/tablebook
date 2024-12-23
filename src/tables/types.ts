@@ -1,10 +1,7 @@
 /* Reference */
-
-import { ColorHex } from "../util/Color";
-
 // Used to Reference context dependent items (color,style,theme,type) defined in TableBook Definition object
 export const ReferenceRegex = /^@.+$/;
-export type Reference = `@${string}`;
+export type Reference<Set extends string = string> = `@${Set}`;
 
 
 /* Data Selector */
@@ -27,7 +24,8 @@ export type ColumnSelector = {
 
 // Targets a single row in a column using absolute or relative indexing.
 export const UnitSelectorRegex = /^(\+|\-|\$)(\d+)$/;
-export type UnitSelector = `${'+' | '-' | '$'}${number}`; // + or - means offset, $ means absolute
+// +|- is relative offset, $ means absolute index
+export type UnitSelector = `${'+' | '-' | '$'}${number}`;
 
 // Targets a range of rows within a column using two endpoints.
 // The `from` and `to` endpoints can be in any order; the compiler determines the correct range.
@@ -54,9 +52,7 @@ export type DataSelector = {
 export const ColorRegex = /^#[A-Za-z0-9]{6}$/;
 export type Color = `#${string}`;
 
-export const TextFormShortcuts = ['n', 'b', 'i', 'bi', 'ib'] as const;
-
-export type TextForm = { bold?: boolean; italic?: boolean; } | typeof TextFormShortcuts[number];
+export type TextForm = boolean | { bold?: boolean; italic?: boolean; };
 
 export type Style = {
     fore?: Color | Reference; // defaults to black
@@ -138,9 +134,9 @@ export const StandardThemes = {
     charcoal: makeStandardTheme('#2A2A2A', '#4D4D4D', '#676767', '#E2E2E2'), // Deep gray tones
 } as const;
 
-export type StandardTheme = keyof typeof StandardThemes;
+export type StandardThemeReference = Reference<keyof typeof StandardThemes>;
 
-export type Theme = CustomTheme | StandardTheme;
+export type Theme = CustomTheme | StandardThemeReference;
 
 
 /* Operators */
@@ -288,24 +284,27 @@ export type TextDateFormat = {
 
 export const StandardDateFormats = {
     // Numeric Date Formats
-    ISODate: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'YMD' },
-    ShortUSDate: { type: 'numberdate', year: 'short', month: 'short', day: 'short', order: 'MDY' },
-    LongUSDate: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'MDY' },
-    EuroDate: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'DMY' },
+    isodate: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'YMD' },
+    eurolong: { type: 'numberdate', year: 'short', month: 'short', day: 'short', order: 'DMY' },
+    euroshort: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'DMY' },
+    usshort: { type: 'numberdate', year: 'short', month: 'short', day: 'short', order: 'MDY' },
+    uslong: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'MDY' },
 
     // Text Date Formats
-    LongTextDate: { type: 'textdate', weekday: 'long', month: 'long', day: 'short', year: 'long', order: 'MD' },
-    ShortTextDate: { type: 'textdate', weekday: 'short', month: 'short', day: 'short', year: 'short', order: 'DM' },
+    textshort: { type: 'textdate', weekday: 'short', month: 'short', day: 'short', year: 'short', order: 'DM' },
+    textlong: { type: 'textdate', weekday: 'long', month: 'long', day: 'short', year: 'long', order: 'MD' },
 } as const satisfies Record<string, TextDateFormat | NumberDateFormat>;
 
 
-export type DateFormat = TextDateFormat | NumberDateFormat | keyof typeof StandardDateFormats;
+export type StandardDateReference = Reference<keyof typeof StandardDateFormats>;
+
+export type DateFormat = TextDateFormat | NumberDateFormat | StandardDateReference;
 
 export const HourFormats = ['standard', 'military'] as const;
 export const NumberTimeFormatType = 'time';
 export type NumberTimeFormat = {
     type: typeof NumberTimeFormatType;
-    format: typeof HourFormats[number];              // Time format (standard or military)
+    format?: typeof HourFormats[number];            // Time format (standard or military)
     hours?: UnitLength;                             // Hours configuration (e.g., 5 or 05)
     minutes?: UnitLength;                           // Minutes configuration (e.g., 5 or 05)
     seconds?: UnitLength;                           // Seconds configuration (e.g., 5 or 05)
@@ -314,14 +313,16 @@ export type NumberTimeFormat = {
 
 export const StandardTimeFormats = {
     // Time Formats
-    ShortStandardTime: { type: 'time', format: 'standard', hours: 'short', minutes: 'short', seconds: 'short' },
-    ShortMilitaryTime: { type: 'time', format: 'military', hours: 'short', minutes: 'short', seconds: 'short' },
-    LongStandardTime: { type: 'time', format: 'standard', hours: 'long', minutes: 'long', seconds: 'long' },
-    LongMilitaryTime: { type: 'time', format: 'military', hours: 'long', minutes: 'long', seconds: 'long' },
+    standardshort: { type: 'time', format: 'standard', hours: 'short', minutes: 'short', seconds: 'short' },
+    standardlong: { type: 'time', format: 'standard', hours: 'long', minutes: 'long', seconds: 'long' },
+    militaryshort: { type: 'time', format: 'military', hours: 'short', minutes: 'short', seconds: 'short' },
+    militarylong: { type: 'time', format: 'military', hours: 'long', minutes: 'long', seconds: 'long' },
 
 } as const satisfies Record<string, NumberTimeFormat>;
 
-export type TimeFormat = NumberTimeFormat | keyof typeof StandardTimeFormats;
+export type StandardTimeReference = Reference<keyof typeof StandardTimeFormats>;
+
+export type TimeFormat = NumberTimeFormat | StandardTimeReference;
 
 export const DateTimeFormatType = 'datetime';
 export type DateTimeFormat = {
@@ -340,7 +341,9 @@ export type NumericFormat =
     | NumberFormat
     | PercentFormat
     | CurrencyFormat
-    | TemporalFormat;
+    | TemporalFormat
+    | Reference
+    ;
 
 
 /* Data Types */
@@ -406,6 +409,7 @@ export type Definitions = {
     colors?: Record<string, Color>;
     styles?: Record<string, Style | HeaderStyle>;
     themes?: Record<string, Theme>; // Includes Standard Themes by default, overriding them by name not allowed
+    formats?: Record<string, NumericFormat>;
     types?: Record<string, DataType>;
 };
 

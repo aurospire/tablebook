@@ -1,8 +1,10 @@
 import { sheets_v4 } from "@googleapis/sheets";
 import { inspect } from "util";
-import { BorderType, UnitSelector, UnitSelectorRegex } from "../../tables/types";
+import { BorderType } from "../../tables/types";
 import { ColorObject, Colors } from "../../util/Color";
-import { SheetAlign, SheetBorder, SheetBorderSet, SheetData, SheetExpression, SheetRangeSelector, SheetType, SheetValue, SheetWrap } from "../SheetData";
+import { SheetAlign, SheetBorder, SheetBorderSet, SheetData, SheetValue, SheetWrap } from "../SheetData";
+import { SheetType, toPattern } from "../SheetKind";
+import { toFormula } from "../SheetExpression";
 import { SheetPosition, SheetRange } from "../SheetPosition";
 import { GoogleAddSheetReply, GoogleApi, GoogleCellFormat, GoogleCellValue, GoogleNumberFormat, GoogleReply, GoogleRequest, GoogleTextFormat } from "./GoogleTypes";
 
@@ -45,83 +47,7 @@ const toGridRange = (sheetId: number, range: SheetRange): sheets_v4.Schema$GridR
     endRowIndex: range.end?.row
 });
 
-const chars: Record<string, string> = {
-    '\t': 'CHAR(9)',
-    '\n': 'CHAR(10)',
-    '\r\n': 'CHAR(10)',
-    '"': 'CHAR(34)'
-};
 
-const toFormulaString = (value: string): string => {
-    return value.split(/(\t|\r?\n|")/).filter(Boolean).map(part => {
-        const char = chars[part];
-        return char ? char : `"${part}"`;
-    }).join(' & ');
-};
-
-const charCodeA = 'A'.charCodeAt(0);
-
-const letterfy = (value: number): string => {
-    let result = '';
-
-    do {
-        result = String.fromCharCode(charCodeA + (value % 26 | 0)) + result;
-
-        value = value / 26 | 0;
-    } while (value);
-
-    return result;
-};
-
-const modifyUnitSelector = (offset: UnitSelector | undefined | null, current: number, letter: boolean): string => {
-    let base = '';
-
-    let [_, type, number] = offset?.match(UnitSelectorRegex) ?? [];
-
-    let value = Number(number ?? 0);
-    console.log({ offset, type, number, base, value });
-
-    if (type === '$')
-        base = '$';
-    else if (type === '-')
-        value = current - value;
-    else
-        value = current + value;
-
-    return base + (letter ? letterfy(value) : (value + 1).toString());
-};
-
-const toAddress = (selector: SheetRangeSelector | null, position: SheetPosition): string => {
-    const col = modifyUnitSelector(selector?.start.col, position.col, true);
-
-    const row = modifyUnitSelector(selector?.start.row, position.row, false);
-
-    return col + row;
-};
-
-const toFormula = (exp: SheetExpression, position: SheetPosition): string => {
-    switch (typeof exp) {
-        case 'string':
-            return toFormulaString(exp);
-        case 'number':
-            return exp.toString();
-        case 'boolean':
-            return exp.toString();
-        case 'object':
-            switch (exp.type) {
-                case 'compound':
-                    return exp.items.map(item => toFormula(item, position)).join(exp.with);
-                case 'function':
-                    return `${exp.name}(${exp.args.map(arg => toFormula(arg, position)).join(',')})`;
-                case 'negated':
-                    return `-(${toFormula(exp.on, position)})`;
-                case 'self':
-                    return toAddress(null, position);
-                case 'selector':
-                    return toAddress(exp.from, position);
-            }
-    }
-};
 
 const exp = <T>(value: T) => (console.log(value), value);
 
@@ -179,7 +105,7 @@ const SheetDataFieldMap: Record<string, string[]> = {
     vertical: ['userEnteredFormat.verticalAlignment'],
     wrap: ['userEnteredFormat.wrapStrategy'],
     type: ['userEnteredFormat.numberFormat.type', 'userEnteredFormat.numberFormat.pattern'],
-    pattern: ['userEnteredFormat.numberFormat.type', 'userEnteredFormat.numberFormat.pattern'],
+    format: ['userEnteredFormat.numberFormat.type', 'userEnteredFormat.numberFormat.pattern'],
     value: ['userEnteredValue'],
 } satisfies Record<keyof SheetData, string[]>;
 
@@ -259,11 +185,11 @@ const toCellFormat = (data: SheetData): GoogleCellFormat | undefined => {
             }
         }
 
-        if (data.type !== undefined || data.pattern !== undefined) {
-            if (data.type !== null || data.pattern !== null) {
+        if (data.type !== undefined || data.format !== undefined) {
+            if (data.type !== null || data.format !== null) {
                 numberFormat ??= {};
                 numberFormat.type = data.type ? GoogleCellType[data.type] : GoogleCellType.text;
-                numberFormat.pattern = data.pattern ? data.pattern : '';
+                numberFormat.pattern = data.format ? toPattern(data.format) : '';
             }
         }
     }

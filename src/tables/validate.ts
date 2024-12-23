@@ -26,10 +26,11 @@ import {
     Reference, ReferenceRegex, RowSelector,
     SelectorExpression, SelectorExpressionType,
     SelfExpression, SelfLiteral, SelfSelector, StandardDateFormats,
-    StandardTheme, StandardThemes, StandardTimeFormats, Style, TableBook, TableColumn,
+    StandardDateReference,
+    StandardThemeReference, StandardThemes, StandardTimeFormats, StandardTimeReference, Style, TableBook, TableColumn,
     TableGroup, TableSheet, TableUnit, TableUnitNameRegex, TemporalFormat,
     TextDateFormat, TextDateFormatOrder, TextDateFormatType,
-    TextForm, TextFormShortcuts, TextRule, TextType, TextTypeType, Theme,
+    TextForm, TextRule, TextType, TextTypeType, Theme,
     TimeFormat, TimeString, TimeStringRegex,
     UnitLength, UnitLengths, UnitSelector,
     UnitSelectorRegex
@@ -74,7 +75,7 @@ const DataSelector: z.ZodType<DataSelector> = z.union([
 const Color: z.ZodType<Color> = z.custom(value => ColorRegex.test(value as string));
 
 const TextForm: z.ZodType<TextForm> = z.union([
-    z.enum(TextFormShortcuts),
+    z.boolean(),
     z.object({
         bold: z.boolean().optional(),
         italic: z.boolean().optional()
@@ -117,7 +118,7 @@ const CustomTheme: z.ZodType<CustomTheme> = z.object({
     data: StyleReference.optional(),
 });
 
-const StandardTheme: z.ZodType<StandardTheme> = z.enum(Object.keys(StandardThemes) as any);
+const StandardTheme: z.ZodType<StandardThemeReference> = z.enum(Object.keys(StandardThemes) as any);
 
 const Theme: z.ZodType<Theme> = z.union([CustomTheme, StandardTheme]);
 
@@ -288,7 +289,7 @@ const StandardDateFormat: z.ZodType<keyof typeof StandardDateFormats> = z.enum(O
 const DateFormat: z.ZodType<DateFormat> = z.union([
     TextDateFormat,
     NumberDateFormat,
-    StandardDateFormat
+    z.custom<StandardDateReference>(value => new RegExp(`^@(${Object.keys(StandardDateFormats).join('|')})$`).test(value as string))
 ]);
 
 const NumberTimeFormat: z.ZodType<NumberTimeFormat> = z.object({
@@ -304,7 +305,7 @@ const StandardTimeFormat: z.ZodType<keyof typeof StandardTimeFormats> = z.enum(O
 
 const TimeFormat: z.ZodType<TimeFormat> = z.union([
     NumberTimeFormat,
-    StandardTimeFormat
+    z.custom<StandardTimeReference>(value => new RegExp(`^@(${Object.keys(StandardTimeFormats).join('|')})$`).test(value as string))
 ]);
 
 const DateTimeFormat: z.ZodType<DateTimeFormat> = z.object({
@@ -323,7 +324,8 @@ const NumericFormat: z.ZodType<NumericFormat> = z.union([
     NumberFormat,
     PercentFormat,
     CurrencyFormat,
-    TemporalFormat
+    TemporalFormat,
+    Reference
 ]);
 
 
