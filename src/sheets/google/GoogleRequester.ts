@@ -189,7 +189,7 @@ const toCellFormat = (data: SheetData): GoogleCellFormat | undefined => {
             if (data.type !== null || data.format !== null) {
                 numberFormat ??= {};
                 numberFormat.type = data.type ? GoogleCellType[data.type] : GoogleCellType.text;
-                numberFormat.pattern = data.format ? data.format : '';//toPattern(data.format) : '';
+                numberFormat.pattern = data.format ? toPattern(data.format) : '';
             }
         }
     }
@@ -301,8 +301,8 @@ export class GoogleRequester {
             this.#processors[i](replies[i]);
 
         if (result.status > 300) {
-            console.log(result);
-            console.log(inspect(result.data, { depth: null, colors: true }));
+            console.error(result);
+            console.error(inspect(result.data, { depth: null, colors: true }));
         }
         return result;
     }

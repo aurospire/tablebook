@@ -54,9 +54,7 @@ const main = async () => {
                     ]
                 }
             })
-            .updateCells(id, SheetRange.cell(0, 3), { value: 100.2, type: 'currency', format: '$' })
-            .updateCells(id, SheetRange.cell(0, 4), { value: 100.2, type: 'currency', format: '$0,0.000' })
-            .updateCells(id, SheetRange.cell(0, 5), { value: 100.2, type: 'number', format: '$0%' })
+            .updateCells(id, SheetRange.cell(0, 6), { value: 100.2, type: 'number', format: { type: 'currency', decimal: 3 } })
         );
 
         await sheet.modify(r => r.updateCells(id, SheetRange.region(1, 1, 2, 2), { back: Colors.toObject('#333333') }));

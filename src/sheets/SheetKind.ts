@@ -1,15 +1,15 @@
-import { BaseNumberFormat, DigitPlaceholder, NumericFormat, TemporalUnit, TemporalUnitLength, TemporalUnitType } from "../tables/types";
+import { BaseNumberFormat, DigitPlaceholder, NumericFormat, TemporalUnitLength, TemporalUnitType } from "../tables/types";
 
 
 export type SheetType = 'text' | 'number' | 'percent' | 'currency' | 'date' | 'time' | 'datetime';
 
 export type SheetKind = {
     type?: SheetType | null;
-    format?: string | null;
+    format?: NumericFormat | null;
 };
 
-const processDigitPlaceholder = (digits: number | DigitPlaceholder | undefined, reversed: boolean): string => {
-    if (!digits) return '';
+const processDigitPlaceholder = (digits: number | DigitPlaceholder | undefined, reversed: boolean): string | undefined => {
+    if (!digits) return undefined;
 
     if (typeof digits === 'number')
         return '0'.repeat(digits);
@@ -24,7 +24,7 @@ const processDigitPlaceholder = (digits: number | DigitPlaceholder | undefined, 
 const processBaseNumber = (format: BaseNumberFormat<string>) => {
     let result = '';
 
-    result = processDigitPlaceholder(format.integer, false);
+    result = processDigitPlaceholder(format.integer, false) ?? '#';
 
     if (format.commas) {
         result = result.padStart(2, '#');
@@ -34,6 +34,7 @@ const processBaseNumber = (format: BaseNumberFormat<string>) => {
     if (format.decimal)
         result += '.' + processDigitPlaceholder(format.decimal, true);
 
+    console.log(result);
     return result;
 };
 

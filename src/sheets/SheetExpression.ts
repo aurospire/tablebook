@@ -36,8 +36,7 @@ const modifyUnitSelector = (offset: UnitSelector | undefined | null, current: nu
 
     let [_, type, number] = offset?.match(UnitSelectorRegex) ?? [];
 
-    let value = Number(number ?? 0);
-    console.log({ offset, type, number, base, value });
+    let value = Number(number ?? 0);    
 
     if (type === '$')
         base = '$';
