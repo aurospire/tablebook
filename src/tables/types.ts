@@ -253,88 +253,24 @@ export type CurrencyFormat = BaseNumberFormat<typeof CurrencyFormatType> & {
     position?: typeof CurrencySymbolPositions[number];
 };
 
+
 export const UnitLengths = ['short', 'long'] as const;
 export type UnitLength = typeof UnitLengths[number];
 
-export const NumberDateFormatType = 'numberdate';
-export const NumberDateFormatOrder = ['YMD', 'MDY', 'DMY'] as const; // Default: YMD (Y-M-D or M/D/Y or D.M.Y)
-export type NumberDateFormat = {
-    type: typeof NumberDateFormatType;
-    year?: UnitLength;                                      // Year configuration (e.g., 2025 or 25)
-    month?: UnitLength;                                     // Month configuration (e.g., 01 or 1)
-    day?: UnitLength;                                       // Day configuration (e.g., 01 or 1)    
-    order?: typeof NumberDateFormatOrder[number];           // Order of date components
+export const TemporalUnitTypes = ['year', 'month', 'monthname', 'weekday', 'day', 'hour12', 'hour24', 'minute', 'second'] as const;
+export type TemporalUnitType = typeof TemporalUnitTypes[number];
+
+// export const TemporalUnitRegex = new RegExp(`^\$(${TemporalUnitTypes.flatMap(u => UnitLengths.map(l => `${u}:${l}`).join('|'))})$`);
+// export type TemporalUnit = `$${TemporalUnitType}:${UnitLength}`;
+
+export type TemporalUnit = { type: TemporalUnitType, length: UnitLength; };
+
+export type TemporalItem = TemporalUnit | string;
+
+export type TemporalFormat = {
+    type: 'temporal',
+    items: TemporalItem[];
 };
-
-export const TextDateFormatType = 'textdate';
-export const TextDateFormatOrder = ['DM', 'MD'] as const;     // Default: DM (D M, or M D)
-export type TextDateFormat = {
-    type: typeof TextDateFormatType;
-    weekday?: UnitLength;                                 // Weekday name (e.g., Mon/Monday)
-    month?: UnitLength;                                   // Month as words (e.g., Mar/March)
-    year?: UnitLength;                                    // Year configuration
-    day?: UnitLength;                                     // Day configuration (e.g., 1 or 01)
-    order?: typeof TextDateFormatOrder[number];           // MD (Month, Day) or DM (Day Month)
-};
-
-
-export const StandardDateFormats = {
-    // Numeric Date Formats
-    iso: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'YMD' },
-    eurolong: { type: 'numberdate', year: 'short', month: 'short', day: 'short', order: 'DMY' },
-    euroshort: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'DMY' },
-    usshort: { type: 'numberdate', year: 'short', month: 'short', day: 'short', order: 'MDY' },
-    uslong: { type: 'numberdate', year: 'long', month: 'long', day: 'long', order: 'MDY' },
-
-    // Text Date Formats
-    textshort: { type: 'textdate', weekday: 'short', month: 'short', day: 'short', year: 'short', order: 'DM' },
-    textlong: { type: 'textdate', weekday: 'long', month: 'long', day: 'short', year: 'long', order: 'MD' },
-} as const satisfies Record<string, TextDateFormat | NumberDateFormat>;
-
-
-export type StandardDateReference = Reference<keyof typeof StandardDateFormats>;
-
-export type DateFormat = TextDateFormat | NumberDateFormat;
-
-export const HourFormats = ['standard', 'military'] as const;
-export const TimeFormatType = 'time';
-export type TimeFormat = {
-    type: typeof TimeFormatType;
-    format?: typeof HourFormats[number];            // Time format (standard or military)
-    hours?: UnitLength;                             // Hours configuration (e.g., 5 or 05)
-    minutes?: UnitLength;                           // Minutes configuration (e.g., 5 or 05)
-    seconds?: UnitLength;                           // Seconds configuration (e.g., 5 or 05)
-    milliseconds?: 1 | 2 | 3;                       // Optional precision level
-};
-
-export const StandardTimeFormats = {
-    // Time Formats
-    standardshort: { type: 'time', format: 'standard', hours: 'short', minutes: 'short', seconds: 'short' },
-    standardlong: { type: 'time', format: 'standard', hours: 'long', minutes: 'long', seconds: 'long' },
-    militaryshort: { type: 'time', format: 'military', hours: 'short', minutes: 'short', seconds: 'short' },
-    militarylong: { type: 'time', format: 'military', hours: 'long', minutes: 'long', seconds: 'long' },
-
-} as const satisfies Record<string, TimeFormat>;
-
-export type StandardTimeReference = Reference<keyof typeof StandardTimeFormats>;
-
-
-export const DateTimeFormatType = 'datetime';
-export type DateTimeFormat = {
-    type: typeof DateTimeFormatType;
-    date: DateFormat;
-    time: TimeFormat;
-};
-
-export type TemporalFormat =
-    | DateFormat
-    | TimeFormat
-    | DateTimeFormat
-    ;
-
-export type NumericReference =
-    | StandardDateReference
-    | StandardTimeReference;
 
 export type NumericFormat =
     | NumberFormat
@@ -342,7 +278,6 @@ export type NumericFormat =
     | CurrencyFormat
     | TemporalFormat
     ;
-
 
 /* Data Types */
 export const TextTypeType = 'text';
@@ -359,7 +294,7 @@ export type NumericType = {
     expression?: Expression<DataSelector>;
     rules?: NumericRule[];
     styles?: ConditionalStyle<NumericRule>[];
-    format?: NumericFormat | NumericReference | Reference;
+    format?: NumericFormat | Reference;
 };
 
 export type EnumItem = string | { value: string; style?: Style | Reference; };
