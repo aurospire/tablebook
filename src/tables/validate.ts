@@ -18,7 +18,7 @@ import {
     MatchOperators,
     MatchRule,
     NegatedExpression, NegatedExpressionType,
-    NegativeFormats, NumberDateFormat, NumberDateFormatOrder, NumberDateFormatType,
+    NumberDateFormat, NumberDateFormatOrder, NumberDateFormatType,
     NumberFormat, NumberFormatType,
     NumericFormat,
     NumericRule, NumericType, NumericTypeType, Operator,
@@ -237,9 +237,9 @@ const NumericConditionalStyle: z.ZodType<ConditionalStyle<NumericRule>> = z.obje
 
 /* Numeric Format */
 const DigitPlaceholder: z.ZodType<DigitPlaceholder> = z.object({
-    fixed: z.number().int().optional(),
-    flex: z.number().int().optional(),
-    align: z.number().int().optional(),
+    fixed: z.number().int().positive().optional(),
+    flex: z.number().int().positive().optional(),
+    align: z.number().int().positive().optional(),
 });
 
 const NumberOrDigitPlaceholder = z.union([z.number(), DigitPlaceholder]);
@@ -250,7 +250,6 @@ const makeNumberFormat = <Type extends string>(type: Type) => {
         integer: NumberOrDigitPlaceholder.optional(),
         decimal: NumberOrDigitPlaceholder.optional(),
         commas: z.boolean().optional(),
-        negatives: z.enum(NegativeFormats).optional()
     });
 };
 
@@ -373,6 +372,7 @@ const TableUnit: z.ZodType<TableUnit> = z.object({
     theme: z.union([Theme, Reference]).optional(),
     description: z.string().optional()
 });
+
 
 const TableColumn: z.ZodType<TableColumn> = TableUnit.and(z.object({
     type: DataType,

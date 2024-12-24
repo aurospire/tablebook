@@ -227,19 +227,17 @@ export type ConditionalStyle<Rule> = {
 
 /* Numeric Formats */
 export type DigitPlaceholder = {
-    fixed?: number; /** '0' in NumericFormat */
-    flex?: number;  /** '#' in NumericFormat */
-    align?: number; /** '?' in NumericFormat */
+    fixed?: number; // '0' in NumericFormat
+    flex?: number;  // '#' in NumericFormat
+    align?: number; // '?' in NumericFormat
 };
 
-export const NegativeFormats = ['minus', 'enclosed'] as const;
 
 export type BaseNumberFormat<Type extends string> = {
     type: Type;
     integer?: number | DigitPlaceholder;
     decimal?: number | DigitPlaceholder;
-    commas?: boolean; /** Separate thousands with ',' */
-    negatives?: typeof NegativeFormats[number]; // defaults to minus
+    commas?: boolean; // Separate thousands with ','
 };
 
 export const NumberFormatType = 'number';
@@ -264,7 +262,7 @@ export type NumberDateFormat = {
     type: typeof NumberDateFormatType;
     year?: UnitLength;                                      // Year configuration (e.g., 2025 or 25)
     month?: UnitLength;                                     // Month configuration (e.g., 01 or 1)
-    day?: UnitLength;                                       // Day configuration (e.g., 01 or 1)
+    day?: UnitLength;                                       // Day configuration (e.g., 01 or 1)    
     order?: typeof NumberDateFormatOrder[number];           // Order of date components
 };
 
@@ -336,7 +334,7 @@ export type TemporalFormat =
 
 export type NumericReference =
     | StandardDateReference
-    | StandardTimeReference
+    | StandardTimeReference;
 
 export type NumericFormat =
     | NumberFormat
