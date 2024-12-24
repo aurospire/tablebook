@@ -189,7 +189,7 @@ const toCellFormat = (data: SheetData): GoogleCellFormat | undefined => {
             if (data.type !== null || data.format !== null) {
                 numberFormat ??= {};
                 numberFormat.type = data.type ? GoogleCellType[data.type] : GoogleCellType.text;
-                numberFormat.pattern = data.format ? toPattern(data.format) : '';
+                numberFormat.pattern = data.format ? exp(toPattern(data.format)) : '';
             }
         }
     }

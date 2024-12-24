@@ -72,7 +72,7 @@ export const toPattern = (format: NumericFormat): string => {
         }
         case 'temporal':
             return format.items.map(item => {
-                typeof item === 'string' ? item : temporalTable[item.type + item.length];
+                return typeof item === 'string' ? `"${item}"` : temporalTable[item.type + item.length];
             }).join('');
     }
 };
