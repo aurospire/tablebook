@@ -1,4 +1,4 @@
-import { BaseNumberFormat, DigitPlaceholder, NumericFormat } from "../tables/types";
+import { BaseNumberFormat, DigitPlaceholder, NumericFormat, TemporalUnit, TemporalUnitLength, TemporalUnitType } from "../tables/types";
 
 
 export type SheetType = 'text' | 'number' | 'percent' | 'currency' | 'date' | 'time' | 'datetime';
@@ -37,6 +37,27 @@ const processBaseNumber = (format: BaseNumberFormat<string>) => {
     return result;
 };
 
+export const temporalTable: Record<string, string> = {
+    yearlong: 'yyyy',
+    yearshort: 'yy',
+    monthlong: 'mm',
+    monthshort: 'm',
+    monthnamelong: 'mmmm',
+    monthnameshort: 'mmm',
+    daylong: 'dd',
+    dayshort: 'd',
+    weekdaylong: 'dddd',
+    weekdayshort: 'ddd',
+    hourlong: 'hh',
+    hourshort: 'h',
+    minutelong: 'mm',
+    minuteshort: 'm',
+    secondlong: 'ss',
+    secondshort: 's',
+    meridiemlong: 'AM/PM',
+    meridiemshort: 'a/p',
+} satisfies Record<`${TemporalUnitType}${TemporalUnitLength}`, string>;
+
 export const toPattern = (format: NumericFormat): string => {
     switch (format.type) {
         case 'number':
@@ -49,6 +70,8 @@ export const toPattern = (format: NumericFormat): string => {
             return format.position === 'suffix' ? pattern + symbol : symbol + pattern;
         }
         case 'temporal':
-            return '';
+            return format.items.map(item => {
+                typeof item === 'string' ? item : temporalTable[item.type + item.length];
+            }).join('');
     }
 };

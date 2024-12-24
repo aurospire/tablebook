@@ -257,11 +257,8 @@ export type CurrencyFormat = BaseNumberFormat<typeof CurrencyFormatType> & {
 export const TemporalUnitLengths = ['short', 'long'] as const;
 export type TemporalUnitLength = typeof TemporalUnitLengths[number];
 
-export const TemporalUnitTypes = ['year', 'month', 'monthname', 'weekday', 'day', 'hour12', 'hour24', 'minute', 'second'] as const;
+export const TemporalUnitTypes = ['year', 'month', 'monthname', 'weekday', 'day',  'hour', 'meridiem', 'minute', 'second'] as const;
 export type TemporalUnitType = typeof TemporalUnitTypes[number];
-
-// export const TemporalUnitRegex = new RegExp(`^\$(${TemporalUnitTypes.flatMap(u => UnitLengths.map(l => `${u}:${l}`).join('|'))})$`);
-// export type TemporalUnit = `$${TemporalUnitType}:${UnitLength}`;
 
 export type TemporalUnit = { type: TemporalUnitType, length: TemporalUnitLength; };
 
