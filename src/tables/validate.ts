@@ -9,16 +9,16 @@ import {
     ComparisonOperators, ComparisonRule, CompoundExpression, CompoundExpressionType,
     ConditionalStyle, CurrencyFormat, CurrencyFormatType, CurrencySymbolPositions,
     CustomRule, CustomRuleType,
-    DataSelector, DataType, DateFormat, DateString, DateStringRegex,
-    DateTimeFormat, DateTimeFormatType, DateTimeString, DateTimeStringRegex, Definitions,
+    DataSelector, DataType, DateString, DateStringRegex,
+    DateTimeString, DateTimeStringRegex, Definitions,
     DigitPlaceholder, EnumItem, EnumType, EnumTypeType, Expression,
     FunctionExpression, FunctionExpressionType, HeaderStyle,
-    HourFormats, IntegrativeOperator, IntegrativeOperators, LiteralExpression,
+    IntegrativeOperator, IntegrativeOperators, LiteralExpression,
     LookupType, LookupTypeType,
     MatchOperators,
     MatchRule,
     NegatedExpression, NegatedExpressionType,
-    NumberDateFormat, NumberDateFormatOrder, NumberDateFormatType,
+
     NumberFormat, NumberFormatType,
     NumericFormat,
     NumericRule, NumericType, NumericTypeType, Operator,
@@ -26,15 +26,20 @@ import {
     RangeRowSelector, RangeRowSelectorType,
     Reference, ReferenceRegex, RowSelector,
     SelectorExpression, SelectorExpressionType,
-    SelfExpression, SelfLiteral, SelfSelector, StandardDateFormats,
-    StandardDateReference,
-    StandardTimeFormats, StandardTimeReference, Style, TableBook, TableColumn,
+    SelfExpression, SelfLiteral, SelfSelector,
+
+    Style, TableBook, TableColumn,
     TableGroup, TableSheet, TableUnit, TableUnitNameRegex, TemporalFormat,
-    TextDateFormat, TextDateFormatOrder, TextDateFormatType,
-    TextForm, TextRule, TextType, TextTypeType, Theme,
-    TimeFormat, TimeFormatType,
+    TemporalFormatType,
+    TemporalItem,
+    TemporalUnit,
+    TemporalUnitLength, TemporalUnitLengths,
+    TemporalUnitType,
+    TemporalUnitTypes,
+    TextForm, TextRule, TextType,
+    TextTypeType, Theme,
     TimeString, TimeStringRegex,
-    UnitLength, UnitLengths, UnitSelector,
+    UnitSelector,
     UnitSelectorRegex
 } from './types';
 
@@ -263,58 +268,19 @@ const CurrencyFormat: z.ZodType<CurrencyFormat> = makeNumberFormat(CurrencyForma
 }));
 
 
-const UnitLength: z.ZodType<UnitLength> = z.enum(UnitLengths);
-
-const NumberDateFormat: z.ZodType<NumberDateFormat> = z.object({
-    type: z.literal(NumberDateFormatType),
-    year: UnitLength.optional(),
-    month: UnitLength.optional(),
-    day: UnitLength.optional(),
-    order: z.enum(NumberDateFormatOrder).optional(),
+const TemporalUnitLength: z.ZodType<TemporalUnitLength> = z.enum(TemporalUnitLengths);
+const TemporalUnitType: z.ZodType<TemporalUnitType> = z.enum(TemporalUnitTypes);
+const TemporalUnit: z.ZodType<TemporalUnit> = z.object({
+    type: TemporalUnitType,
+    length: TemporalUnitLength
 });
 
-const TextDateFormat: z.ZodType<TextDateFormat> = z.object({
-    type: z.literal(TextDateFormatType),
-    weekday: UnitLength.optional(),
-    month: UnitLength.optional(),
-    year: UnitLength.optional(),
-    day: UnitLength.optional(),
-    order: z.enum(TextDateFormatOrder).optional(),
+const TemporaItem: z.ZodType<TemporalItem> = z.union([TemporalUnit, z.string()]);
+
+const TemporalFormat: z.ZodType<TemporalFormat> = z.object({
+    type: z.literal(TemporalFormatType),
+    items: z.array(TemporaItem)
 });
-
-const StandardDateFormat: z.ZodType<keyof typeof StandardDateFormats> = z.enum(Object.keys(StandardDateFormats) as any);
-
-const DateFormat: z.ZodType<DateFormat> = z.union([
-    TextDateFormat,
-    NumberDateFormat
-]);
-
-const TimeFormat: z.ZodType<TimeFormat> = z.object({
-    type: z.literal(TimeFormatType),
-    format: z.enum(HourFormats),
-    hours: UnitLength.optional(),
-    minutes: UnitLength.optional(),
-    seconds: UnitLength.optional(),
-    milliseconds: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
-});
-
-const StandardTimeFormat: z.ZodType<keyof typeof StandardTimeFormats> = z.enum(Object.keys(StandardDateFormats) as any);
-
-z.custom<StandardDateReference>(value => new RegExp(`^@(${Object.keys(StandardDateFormats).join('|')})$`).test(value as string));
-z.custom<StandardTimeReference>(value => new RegExp(`^@(${Object.keys(StandardTimeFormats).join('|')})$`).test(value as string));
-
-
-const DateTimeFormat: z.ZodType<DateTimeFormat> = z.object({
-    type: z.literal(DateTimeFormatType),
-    date: DateFormat,
-    time: TimeFormat,
-});
-
-const TemporalFormat: z.ZodType<TemporalFormat> = z.union([
-    DateFormat,
-    TimeFormat,
-    DateTimeFormat
-]);
 
 const NumericFormat: z.ZodType<NumericFormat> = z.union([
     NumberFormat,

@@ -48,10 +48,7 @@ export const toPattern = (format: NumericFormat): string => {
             const pattern = processBaseNumber(format);
             return format.position === 'suffix' ? pattern + symbol : symbol + pattern;
         }
-        case 'numberdate':         
-        case 'textdate':
-        case 'time':
-        case 'datetime':
+        case 'temporal':
+            return '';
     }
-    return '';
 };
