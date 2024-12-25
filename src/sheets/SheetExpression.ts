@@ -13,13 +13,16 @@ const chars: Record<string, string> = {
     '\r\n': 'CHAR(10)',
     '"': 'CHAR(34)'
 };
+
 const toFormulaString = (value: string): string => {
     return value.split(/(\t|\r?\n|")/).filter(Boolean).map(part => {
         const char = chars[part];
         return char ? char : `"${part}"`;
     }).join(' & ');
 };
+
 const charCodeA = 'A'.charCodeAt(0);
+
 const letterfy = (value: number): string => {
     let result = '';
 
@@ -31,12 +34,13 @@ const letterfy = (value: number): string => {
 
     return result;
 };
+
 const modifyUnitSelector = (offset: UnitSelector | undefined | null, current: number, letter: boolean): string => {
     let base = '';
 
     let [_, type, number] = offset?.match(UnitSelectorRegex) ?? [];
 
-    let value = Number(number ?? 0);    
+    let value = Number(number ?? 0);
 
     if (type === '$')
         base = '$';
@@ -48,6 +52,7 @@ const modifyUnitSelector = (offset: UnitSelector | undefined | null, current: nu
 
     return base + (letter ? letterfy(value) : (value + 1).toString());
 };
+
 const toAddress = (selector: SheetRangeSelector | null, position: SheetPosition): string => {
     const col = modifyUnitSelector(selector?.start.col, position.col, true);
 
