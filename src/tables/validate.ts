@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import {
-    BetweenOperator,
-    BetweenRule,
+    RangeOperators,
+    RangeRule,
     Border, BorderType, BorderTypes,
     Color,
     ColorRegex,
@@ -21,7 +21,7 @@ import {
 
     NumberFormat, NumberFormatType,
     NumericFormat,
-    NumericRule, NumericType, NumericTypeType, Operator,
+    NumericRule, NumericType, NumericTypeType,
     Partition, PercentFormat, PercentFormatType,
     RangeRowSelector, RangeRowSelectorType,
     Reference, ReferenceRegex, RowSelector,
@@ -132,16 +132,10 @@ const ComparisonOperator: z.ZodType<ComparisonOperator> = z.enum(ComparisonOpera
 
 const IntegrativeOperator: z.ZodType<IntegrativeOperator> = z.enum(IntegrativeOperators);
 
-const Operator: z.ZodType<Operator> = z.union([
-    ComparisonOperator,
-    IntegrativeOperator
-]);
-
-
 /* Expressions */
 const CompoundExpression: z.ZodType<CompoundExpression<DataSelector>> = z.object({
     type: z.literal(CompoundExpressionType),
-    with: Operator,
+    with: z.union([ComparisonOperator, IntegrativeOperator]),
     items: z.array(z.lazy(() => Expression))
 });
 
@@ -199,10 +193,10 @@ const makeValueRules = <C extends Comparable>(c: z.ZodType<C>) => {
     }) as z.ZodType<ComparisonRule<C>>;
 
     const between = z.object({
-        type: z.literal(BetweenOperator),
+        type: z.enum(RangeOperators),
         low: c,
         high: c
-    }) as z.ZodType<BetweenRule<C>>;
+    }) as z.ZodType<RangeRule<C>>;
 
     return z.union([comparison, between]);
 };

@@ -2,11 +2,12 @@ import { sheets_v4 } from "@googleapis/sheets";
 import { inspect } from "util";
 import { BorderType } from "../../tables/types";
 import { ColorObject, Colors } from "../../util/Color";
-import { SheetAlign, SheetBorder, SheetBorderSet, SheetData, SheetValue, SheetWrap } from "../SheetData";
-import { SheetType, toPattern } from "../SheetKind";
+import { SheetBorder, SheetBorderSet, SheetData, SheetValue } from "../SheetData";
+import { toPattern } from "../SheetKind";
 import { toFormula } from "../SheetExpression";
 import { SheetPosition, SheetRange } from "../SheetPosition";
 import { GoogleAddSheetReply, GoogleApi, GoogleCellFormat, GoogleCellValue, GoogleNumberFormat, GoogleReply, GoogleRequest, GoogleTextFormat } from "./GoogleTypes";
+import { GoogleFieldMap, GoogleHorizontalAlignMap, GoogleVerticalAlignMap, GoogleWrapMap, GoogleCellTypeMap } from "./GoogleMaps";
 
 export type GoogleReplyProcessor<Reply = GoogleReply> = (reply: Reply | undefined) => void;
 
@@ -66,56 +67,13 @@ const getExtendedValue = (value: SheetValue, position: SheetPosition): GoogleCel
 
 
 
-const GoogleHorizontalAlignment = {
-    start: 'LEFT',
-    middle: 'CENTER',
-    end: 'RIGHT'
-} satisfies Record<SheetAlign, string>;
-
-const GoogleVerticalAlignment = {
-    start: 'TOP',
-    middle: 'MIDDLE',
-    end: 'BOTTOM'
-} satisfies Record<SheetAlign, string>;
-
-const GoogleWrap = {
-    overflow: 'OVERFLOW_CELL',
-    clip: 'CLIP',
-    wrap: 'WRAP'
-} satisfies Record<SheetWrap, string>;
-
-
-const GoogleCellType = {
-    text: 'TEXT',
-    number: 'NUMBER',
-    percent: 'PERCENT',
-    currency: 'CURRENCY',
-    date: 'DATE',
-    time: 'TIME',
-    datetime: 'DATE_TIME',
-} satisfies Record<SheetType, string>;
-
-
-const SheetDataFieldMap: Record<string, string[]> = {
-    back: ['userEnteredFormat.backgroundColorStyle'],
-    fore: ['userEnteredFormat.textFormat.foregroundColorStyle'],
-    bold: ['userEnteredFormat.textFormat.bold'],
-    italic: ['userEnteredFormat.textFormat.italic'],
-    horizontal: ['userEnteredFormat.horizontalAlignment'],
-    vertical: ['userEnteredFormat.verticalAlignment'],
-    wrap: ['userEnteredFormat.wrapStrategy'],
-    type: ['userEnteredFormat.numberFormat.type', 'userEnteredFormat.numberFormat.pattern'],
-    format: ['userEnteredFormat.numberFormat.type', 'userEnteredFormat.numberFormat.pattern'],
-    value: ['userEnteredValue'],
-} satisfies Record<keyof SheetData, string[]>;
-
 const getFields = (from: string[] | SheetData): string[] => {
     const keys: string[] = Array.isArray(from) ? from : Object
         .entries(from)
         .filter(([_, v]) => v !== undefined)
         .map(([k]) => k);
 
-    const fields = new Set<string>(keys.flatMap(key => SheetDataFieldMap[key] ?? []));
+    const fields = new Set<string>(keys.flatMap(key => GoogleFieldMap[key] ?? []));
 
     return [...fields];
 };
@@ -167,28 +125,28 @@ const toCellFormat = (data: SheetData): GoogleCellFormat | undefined => {
         if (data.horizontal !== undefined) {
             if (data.horizontal !== null) {
                 dataFormat ??= {};
-                dataFormat.horizontalAlignment = GoogleHorizontalAlignment[data.horizontal];
+                dataFormat.horizontalAlignment = GoogleHorizontalAlignMap[data.horizontal];
             }
         }
 
         if (data.vertical !== undefined) {
             if (data.vertical !== null) {
                 dataFormat ??= {};
-                dataFormat.verticalAlignment = GoogleVerticalAlignment[data.vertical];
+                dataFormat.verticalAlignment = GoogleVerticalAlignMap[data.vertical];
             }
         }
 
         if (data.wrap !== undefined) {
             if (data.wrap !== null) {
                 dataFormat ??= {};
-                dataFormat.wrapStrategy = GoogleWrap[data.wrap];
+                dataFormat.wrapStrategy = GoogleWrapMap[data.wrap];
             }
         }
 
         if (data.type !== undefined || data.format !== undefined) {
             if (data.type !== null || data.format !== null) {
                 numberFormat ??= {};
-                numberFormat.type = data.type ? GoogleCellType[data.type] : GoogleCellType.text;
+                numberFormat.type = data.type ? GoogleCellTypeMap[data.type] : GoogleCellTypeMap.text;
                 numberFormat.pattern = data.format ? exp(toPattern(data.format)) : '';
             }
         }

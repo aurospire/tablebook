@@ -1,6 +1,6 @@
-import { ComparisonOperators, BetweenOperator, MatchOperators, Expression } from "../tables/types";
-import { SheetPosition, SheetRange } from "./SheetPosition";
+import { BetweenOperator, ComparisonOperators, Expression, MatchOperators } from "../tables/types";
 import { SheetStyle } from './SheetData';
+import { SheetPosition, SheetRange } from "./SheetPosition";
 
 export type SheetComparisonValue = number | string;
 

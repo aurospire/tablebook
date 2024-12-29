@@ -144,14 +144,12 @@ export type ComparisonOperator = typeof ComparisonOperators[number];
 export const IntegrativeOperators = ['+', '-', '*', '/', '^', '&'] as const;
 export type IntegrativeOperator = typeof IntegrativeOperators[number];
 
-export type Operator = ComparisonOperator | IntegrativeOperator;
-
 
 /* Expressions */
 export const CompoundExpressionType = 'compound';
 export type CompoundExpression<Selector> = {
     type: typeof CompoundExpressionType;
-    with: Operator;
+    with: ComparisonOperator | IntegrativeOperator;
     items: Expression<Selector>[];
 };
 
@@ -202,21 +200,19 @@ export type Comparable = number | DateString | TimeString | DateTimeString;
 
 export type ComparisonRule<T extends Comparable> = { type: ComparisonOperator; to: T; };
 
-export const BetweenOperator = 'between';
-export type BetweenRule<T extends Comparable> = { type: typeof BetweenOperator; low: T; high: T; };
+export const CustomRuleType = 'custom';
+export type CustomRule = { type: typeof CustomRuleType; expression: Expression<DataSelector>; };
 
+export const RangeOperators = ['between', 'outside'] as const;
+export type RangeRule<T extends Comparable> = { type: typeof RangeOperators[number]; low: T; high: T; };
+
+export type NumericRule = ComparisonRule<Comparable> | RangeRule<Comparable> | CustomRule;
 
 
 export const MatchOperators = ['contains', 'begins', 'ends'] as const;
 export type MatchRule = { type: typeof MatchOperators[number]; value: string; };
 
-export const CustomRuleType = 'custom';
-export type CustomRule = { type: typeof CustomRuleType; expression: Expression<DataSelector>; };
-
-
-export type NumericRule = ComparisonRule<Comparable> | BetweenRule<Comparable> | CustomRule;
-
-export type TextRule = MatchRule | ComparisonRule<number> | BetweenRule<number> | CustomRule;
+export type TextRule = MatchRule | ComparisonRule<number> | RangeRule<number> | CustomRule;
 
 
 export type ConditionalStyle<Rule> = {
@@ -257,7 +253,7 @@ export type CurrencyFormat = BaseNumberFormat<typeof CurrencyFormatType> & {
 export const TemporalUnitLengths = ['short', 'long'] as const;
 export type TemporalUnitLength = typeof TemporalUnitLengths[number];
 
-export const TemporalUnitTypes = ['year', 'month', 'monthname', 'weekday', 'day',  'hour', 'meridiem', 'minute', 'second'] as const;
+export const TemporalUnitTypes = ['year', 'month', 'monthname', 'weekday', 'day', 'hour', 'meridiem', 'minute', 'second'] as const;
 export type TemporalUnitType = typeof TemporalUnitTypes[number];
 
 export type TemporalUnit = { type: TemporalUnitType, length: TemporalUnitLength; };
