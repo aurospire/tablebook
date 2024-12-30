@@ -1,5 +1,9 @@
+import { TemporalString } from "../../tables/types";
+import { SheetRule } from "../SheetRule";
 import { SheetAlign, SheetWrap, SheetData } from "../SheetData";
 import { SheetType } from "../SheetKind";
+import { SheetRange } from "../SheetPosition";
+import { GoogleCondition } from "./GoogleTypes";
 
 export const GoogleHorizontalAlignMap = {
     start: 'LEFT',
@@ -44,15 +48,15 @@ export const GoogleFieldMap: Record<string, string[]> = {
 
 
 
-export const GoogleConditionType = [
+export const SingleValueNumberConditionTypes = [
     'NUMBER_GREATER',
     'NUMBER_GREATER_THAN_EQ',
     'NUMBER_LESS',
-    'NUMBER_GREATER_THAN_EQ',
+    'NUMBER_LESS_THAN_EQ',
     'NUMBER_EQ',
     'NUMBER_NOT_EQ',
     'NUMBER_BETWEEN',
-    'NUMBER_NOT_BETWEEN',    
+    'NUMBER_NOT_BETWEEN',
 
     'DATE_EQ',
     'DATE_BEFORE',
@@ -65,8 +69,13 @@ export const GoogleConditionType = [
     'TEXT_CONTAINS',
     'TEXT_STARTS_WITH',
     'TEXT_ENDS_WITH',
-    
+
     'ONE_OF_LIST',
     'ONE_OF_RANGE',
 
+    'CUSTOM_FORMULA'
 ] as const;
+
+
+const toGoogleCondition = (conditions: SheetRule): GoogleCondition => {
+};

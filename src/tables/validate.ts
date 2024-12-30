@@ -12,8 +12,8 @@ import {
     CustomRule, CustomRuleType,
     DataSelector,
     DataType,
-    DateString, DateStringRegex,
-    DateTimeString, DateTimeStringRegex,
+    DateString,
+    DateTimeString,
     Definitions,
     DigitPlaceholder,
     EnumItem, EnumType, EnumTypeType,
@@ -47,6 +47,7 @@ import {
     TemporalItem,
     TemporalRule,
     TemporalString,
+    TemporalStringRegex,
     TemporalType, TemporalTypeType,
     TemporalUnit,
     TemporalUnitLength, TemporalUnitLengths,
@@ -55,7 +56,7 @@ import {
     TextRule,
     TextType, TextTypeType,
     Theme,
-    TimeString, TimeStringRegex,
+    TimeString,
     UnitSelector, UnitSelectorRegex
 } from './types';
 
@@ -178,11 +179,7 @@ const Expression: z.ZodType<Expression<DataSelector>> = z.union([
 ]);
 
 /* Data Rules */
-const DateString: z.ZodType<DateString> = z.custom(value => DateStringRegex.test(value as string));
-const TimeString: z.ZodType<TimeString> = z.custom(value => TimeStringRegex.test(value as string));
-const DateTimeString: z.ZodType<DateTimeString> = z.custom(value => DateTimeStringRegex.test(value as string));
-
-const TemporalString = z.union([DateString, TimeString, DateTimeString]);
+const TemporalString: z.ZodType<TemporalString> = z.custom(value => TemporalStringRegex.test(value as string));
 
 const makeValueRules = <T>(type: z.ZodType<T>) => {
     const comparison = z.object({

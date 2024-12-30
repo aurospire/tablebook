@@ -186,17 +186,10 @@ export type Expression<Selector> =
 
 // Rule[] => All(Rule) all must pass
 
-export const DateStringRegex = /^\d{4}-\d{2}-d{2}$/;
+export const TemporalStringRegex = /^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}:\d{2})?$/;
 export type DateString = `${number}-${number}-${number}`;
-
-export const TimeStringRegex = /^\d{2}:\d{2}:d{2}$/;
-export type TimeString = `${number}:${number}:${number}`;
-
-export const DateTimeStringRegex = /^\d{4}-\d{2}-d{2} \d{2}:\d{2}:d{2}$/;
-export type DateTimeString = `${DateString} ${TimeString}`;
-
-export type TemporalString = DateString | TimeString | DateTimeString;
-
+export type DateTimeString = `${DateString}${'T' | ' '}${number}:${number}:${number}`;
+export type TemporalString = DateString | DateTimeString;
 
 export type ComparisonRule<T> = { type: ComparisonOperator; to: T; };
 
@@ -221,7 +214,7 @@ export type TextRule = MatchRule | CustomRule;
 
 
 export type ConditionalStyle<Rule> = {
-    on: Rule[]; // ALL Rules have to pass 
+    on: Rule;
     style: Style | Reference;
 };
 
@@ -278,7 +271,7 @@ export const TextTypeType = 'text';
 export type TextType = {
     type: typeof TextTypeType;
     expression?: Expression<DataSelector>;
-    rules?: TextRule[];
+    rules?: TextRule;
     styles?: ConditionalStyle<TextRule>[];
 };
 
@@ -286,7 +279,7 @@ export const NumericTypeType = 'numeric';
 export type NumericType = {
     type: typeof NumericTypeType;
     expression?: Expression<DataSelector>;
-    rules?: NumericRule[];
+    rules?: NumericRule;
     styles?: ConditionalStyle<NumericRule>[];
     format?: NumericFormat | Reference;
 };
@@ -295,7 +288,7 @@ export const TemporalTypeType = 'temporal';
 export type TemporalType = {
     type: typeof TemporalTypeType;
     expression?: Expression<DataSelector>;
-    rules?: TemporalRule[];
+    rules?: TemporalRule;
     styles?: ConditionalStyle<TemporalRule>[];
     format?: TemporalFormat | Reference;
 };
