@@ -141,15 +141,15 @@ export type StandardThemeReference = Reference<keyof typeof StandardThemes>;
 export const ComparisonOperators = ['=', '>', '<', '>=', '<=', '<>'] as const;
 export type ComparisonOperator = typeof ComparisonOperators[number];
 
-export const IntegrativeOperators = ['+', '-', '*', '/', '^', '&'] as const;
-export type IntegrativeOperator = typeof IntegrativeOperators[number];
+export const MergeOperators = ['+', '-', '*', '/', '^', '&'] as const;
+export type MergeOperator = typeof MergeOperators[number];
 
 
 /* Expressions */
 export const CompoundExpressionType = 'compound';
 export type CompoundExpression<Selector> = {
     type: typeof CompoundExpressionType;
-    with: ComparisonOperator | IntegrativeOperator;
+    with: ComparisonOperator | MergeOperator;
     items: Expression<Selector>[];
 };
 
@@ -195,18 +195,21 @@ export type TimeString = `${number}:${number}:${number}`;
 export const DateTimeStringRegex = /^\d{4}-\d{2}-d{2} \d{2}:\d{2}:d{2}$/;
 export type DateTimeString = `${DateString} ${TimeString}`;
 
+export type TemporalString = DateString | TimeString | DateTimeString;
 
-export type Comparable = number | DateString | TimeString | DateTimeString;
 
-export type ComparisonRule<T extends Comparable> = { type: ComparisonOperator; to: T; };
+export type ComparisonRule<T> = { type: ComparisonOperator; to: T; };
 
 export const CustomRuleType = 'custom';
 export type CustomRule = { type: typeof CustomRuleType; expression: Expression<DataSelector>; };
 
-export const RangeOperators = ['between', 'outside'] as const;
-export type RangeRule<T extends Comparable> = { type: typeof RangeOperators[number]; low: T; high: T; };
 
-export type NumericRule = ComparisonRule<Comparable> | RangeRule<Comparable> | CustomRule;
+export const RangeOperators = ['between', 'outside'] as const;
+export type RangeRule<T> = { type: typeof RangeOperators[number]; low: T; high: T; };
+
+export type NumericRule = ComparisonRule<number> | RangeRule<number> | CustomRule;
+
+export type TemporalRule = ComparisonRule<TemporalString> | RangeRule<TemporalString> | CustomRule;
 
 
 export const MatchOperators = ['contains', 'begins', 'ends'] as const;
@@ -228,7 +231,6 @@ export type DigitPlaceholder = {
     align?: number; // '?' in NumericFormat
 };
 
-
 export type BaseNumberFormat<Type extends string> = {
     type: Type;
     integer?: number | DigitPlaceholder;
@@ -249,7 +251,14 @@ export type CurrencyFormat = BaseNumberFormat<typeof CurrencyFormatType> & {
     position?: typeof CurrencySymbolPositions[number];
 };
 
+export type NumericFormat =
+    | NumberFormat
+    | PercentFormat
+    | CurrencyFormat
+    ;
 
+
+/* Temporal Formats */
 export const TemporalUnitLengths = ['short', 'long'] as const;
 export type TemporalUnitLength = typeof TemporalUnitLengths[number];
 
@@ -260,18 +269,7 @@ export type TemporalUnit = { type: TemporalUnitType, length: TemporalUnitLength;
 
 export type TemporalItem = TemporalUnit | string;
 
-export const TemporalFormatType = 'temporal';
-export type TemporalFormat = {
-    type: typeof TemporalFormatType,
-    items: TemporalItem[];
-};
-
-export type NumericFormat =
-    | NumberFormat
-    | PercentFormat
-    | CurrencyFormat
-    | TemporalFormat
-    ;
+export type TemporalFormat = TemporalItem[]
 
 /* Data Types */
 export const TextTypeType = 'text';
@@ -291,6 +289,15 @@ export type NumericType = {
     format?: NumericFormat | Reference;
 };
 
+export const TemporalTypeType = 'temporal';
+export type TemporalType = {
+    type: typeof TemporalTypeType;
+    expression?: Expression<DataSelector>;
+    rules?: TemporalRule[];
+    styles?: ConditionalStyle<TemporalRule>[];
+    format?: TemporalFormat | Reference;
+};
+
 export type EnumItem = string | { value: string; style?: Style | Reference; };
 
 export const EnumTypeType = 'enum';
@@ -305,7 +312,7 @@ export type LookupType = {
     values: ColumnSelector;
 };
 
-export type DataType = TextType | NumericType | EnumType | LookupType | Reference;
+export type DataType = TextType | NumericType | TemporalType | EnumType | LookupType | Reference;
 
 
 /* Table Structures */
@@ -336,7 +343,8 @@ export type Definitions = {
     colors?: Record<string, Color>;
     styles?: Record<string, Style | HeaderStyle>;
     themes?: Record<string, Theme>; // Includes Standard Themes by default
-    formats?: Record<string, NumericFormat>; // Includes Standard Formats by default
+    numerics?: Record<string, NumericFormat>;
+    temporals?: Record<string, TemporalFormat>; // Includes Standard Formats by default
     types?: Record<string, DataType>;
 };
 
