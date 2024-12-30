@@ -217,9 +217,7 @@ export const MatchOperators = ['contains', 'begins', 'ends'] as const;
 export type MatchOperator = typeof MatchOperators[number];
 export type MatchRule = { type: MatchOperator; value: string; };
 
-export type TextLengthRule = ComparisonRule<number> | RangeRule<number>;
-
-export type TextRule = MatchRule | TextLengthRule | CustomRule;
+export type TextRule = MatchRule | CustomRule;
 
 
 export type ConditionalStyle<Rule> = {

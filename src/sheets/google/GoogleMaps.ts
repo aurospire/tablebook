@@ -45,13 +45,28 @@ export const GoogleFieldMap: Record<string, string[]> = {
 
 
 export const GoogleConditionType = [
-'NUMBER_GREATER',
-'NUMBER_GREATER_THAN_EQ',
-'NUMBER_LESS',
-'NUMBER_GREATER_THAN_EQ',
-'NUMBER_EQ',
-'NUMBER_NOT_EQ',
-'NUMBER_BETWEEN',
+    'NUMBER_GREATER',
+    'NUMBER_GREATER_THAN_EQ',
+    'NUMBER_LESS',
+    'NUMBER_GREATER_THAN_EQ',
+    'NUMBER_EQ',
+    'NUMBER_NOT_EQ',
+    'NUMBER_BETWEEN',
+    'NUMBER_NOT_BETWEEN',    
 
-'TEXT'
+    'DATE_EQ',
+    'DATE_BEFORE',
+    'DATE_ON_OR_BEFORE',
+    'DATE_AFTER',
+    'DATE_ON_OR_AFTER',
+    'DATE_BETWEEN',
+    'DATE_NOT_BETWEEN',
+
+    'TEXT_CONTAINS',
+    'TEXT_STARTS_WITH',
+    'TEXT_ENDS_WITH',
+    
+    'ONE_OF_LIST',
+    'ONE_OF_RANGE',
+
 ] as const;

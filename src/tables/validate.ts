@@ -52,7 +52,6 @@ import {
     TemporalUnitLength, TemporalUnitLengths,
     TemporalUnitType, TemporalUnitTypes,
     TextForm,
-    TextLengthRule,
     TextRule,
     TextType, TextTypeType,
     Theme,
@@ -210,10 +209,9 @@ const CustomRule: z.ZodType<CustomRule> = z.object({
     expression: Expression
 });
 
-const TextLengthRule: z.ZodType<TextLengthRule> = makeValueRules(z.number());
 const NumericRule: z.ZodType<NumericRule> = z.union([makeValueRules(z.number()), CustomRule]);
 const TemporalRule: z.ZodType<TemporalRule> = z.union([makeValueRules(TemporalString), CustomRule]);
-const TextRule: z.ZodType<TextRule> = z.union([MatchRule, TextLengthRule, CustomRule]);
+const TextRule: z.ZodType<TextRule> = z.union([MatchRule, CustomRule]);
 
 const makeConditionalStyle = <Rule extends z.ZodType<any>>(rule: Rule) => {
     return z.object({
