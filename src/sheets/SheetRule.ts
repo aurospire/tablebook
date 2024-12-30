@@ -1,24 +1,33 @@
 import { DateTime } from "luxon";
 import { ComparisonOperator, Expression, MatchOperator, RangeOperator } from "../tables/types";
 import { SheetStyle } from './SheetData';
-import { SheetPosition, SheetRange } from "./SheetPosition";
+import { SheetRange } from "./SheetPosition";
 
-export type SheetComparisonValue = number | DateTime;
+// Common Targets
+export type NumberTarget = 'number';
+export type DateTarget = 'date' | 'datetime';
 
-export type SheetComparisonTarget = 'numeric' | 'date';
-
-export type SheetComparisonRule = {
-    type: ComparisonOperator
-    target: SheetComparisonTarget;
-    value: SheetComparisonValue;
+// Generic Rule for Comparison
+export type SheetComparisonRule<TTarget, TValue> = {
+    type: ComparisonOperator;
+    target: TTarget;
+    value: TValue;
 };
 
-export type SheetRangeRule = {
+// Generic Rule for Ranges
+export type SheetRangeRule<TTarget, TValue> = {
     type: RangeOperator;
-    target: SheetComparisonTarget;
-    low: SheetComparisonValue;
-    high: SheetComparisonValue;
+    target: TTarget;
+    low: TValue;
+    high: TValue;
 };
+
+// Specialized Rules
+export type SheetNumberComparisonRule = SheetComparisonRule<NumberTarget, number>;
+export type SheetNumberRangeRule = SheetRangeRule<NumberTarget, number>;
+
+export type SheetDateComparisonRule = SheetComparisonRule<DateTarget, DateTime>;
+export type SheetDateRangeRule = SheetRangeRule<DateTarget, DateTime>;
 
 export type SheetMatchRule = {
     type: MatchOperator;
@@ -33,7 +42,7 @@ export type SheetEnumRule = {
 export type SheetLookupRule = {
     type: 'lookup';
     sheet: string;
-    range: SheetRange | SheetPosition;
+    range: SheetRange;
 };
 
 export type SheetFormulaRule = {
@@ -41,14 +50,16 @@ export type SheetFormulaRule = {
     from: Expression<SheetRange>;
 };
 
+// Consolidated SheetRule Type
 export type SheetRule =
-    | SheetComparisonRule
-    | SheetRangeRule
+    | SheetNumberComparisonRule
+    | SheetNumberRangeRule
+    | SheetDateComparisonRule
+    | SheetDateRangeRule
     | SheetMatchRule
     | SheetEnumRule
     | SheetLookupRule
-    | SheetFormulaRule
-    ;
+    | SheetFormulaRule;
 
 export type SheetConditionalFormat = {
     rules: SheetRule;

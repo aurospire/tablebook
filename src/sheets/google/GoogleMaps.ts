@@ -1,8 +1,7 @@
-import { TemporalString } from "../../tables/types";
-import { SheetRule } from "../SheetRule";
-import { SheetAlign, SheetWrap, SheetData } from "../SheetData";
+import { ComparisonOperator, MatchOperator, RangeOperator } from "../../tables/types";
+import { SheetAlign, SheetData, SheetWrap } from "../SheetData";
 import { SheetType } from "../SheetKind";
-import { SheetRange } from "../SheetPosition";
+import { SheetRule } from "../SheetRule";
 import { GoogleCondition } from "./GoogleTypes";
 
 export const GoogleHorizontalAlignMap = {
@@ -48,34 +47,39 @@ export const GoogleFieldMap: Record<string, string[]> = {
 
 
 
-export const SingleValueNumberConditionTypes = [
-    'NUMBER_GREATER',
-    'NUMBER_GREATER_THAN_EQ',
-    'NUMBER_LESS',
-    'NUMBER_LESS_THAN_EQ',
-    'NUMBER_EQ',
-    'NUMBER_NOT_EQ',
-    'NUMBER_BETWEEN',
-    'NUMBER_NOT_BETWEEN',
+export const GoogleNumberConditionTypeMap: Record<string, string> = {
+    '=': 'NUMBER_EQ',
+    '<>': 'NUMBER_NOT_EQ',
+    '>': 'NUMBER_GREATER',
+    '>=': 'NUMBER_GREATER_THAN_EQ',
+    '<': 'NUMBER_LESS',
+    '<=': 'NUMBER_LESS_THAN_EQ',
+    'between': 'NUMBER_BETWEEN',
+    'outside': 'NUMBER_NOT_BETWEEN',
+} satisfies Record<ComparisonOperator | RangeOperator, string>;
 
-    'DATE_EQ',
-    'DATE_BEFORE',
-    'DATE_ON_OR_BEFORE',
-    'DATE_AFTER',
-    'DATE_ON_OR_AFTER',
-    'DATE_BETWEEN',
-    'DATE_NOT_BETWEEN',
+export const GoogleDateConditionTypeMap: Record<string, string> = {
+    '=': 'DATE_EQ',
+    '<>': 'DATE_NOT_EQ',
+    '>': 'DATE_GREATER',
+    '>=': 'DATE_GREATER_THAN_EQ',
+    '<': 'DATE_LESS',
+    '<=': 'DATE_LESS_THAN_EQ',
+    'between': 'DATE_BETWEEN',
+    'outside': 'DATE_NOT_BETWEEN',
+} satisfies Record<ComparisonOperator | RangeOperator, string>;
 
-    'TEXT_CONTAINS',
-    'TEXT_STARTS_WITH',
-    'TEXT_ENDS_WITH',
+export const GoogleTextConditionTypeMap: Record<string, string> = {
+    'contains': 'TEXT_CONTAINS',
+    'begins': 'TEXT_STARTS_WITH',
+    'ends': 'TEXT_ENDS_WITH',
+} satisfies Record<MatchOperator, string>;
 
-    'ONE_OF_LIST',
-    'ONE_OF_RANGE',
 
-    'CUSTOM_FORMULA'
-] as const;
+const GoogleOneOfListConditionType = 'ONE_OF_LIST', ;
+const GoogleOneOfRangeConditionType = 'ONE_OF_RANGE', ;
 
+const GoogleFormulaConditionType = 'CUSTOM_FORMULA';
 
 const toGoogleCondition = (rule: SheetRule): GoogleCondition => {
     switch (rule.type) {
@@ -85,13 +89,23 @@ const toGoogleCondition = (rule: SheetRule): GoogleCondition => {
         case ">=":
         case "<=":
         case "<>":
+            switch (rule.target) {
+                case "number":
+                    return {type: GoogleNumberConditionTypeMap[rule.type], values: [{userEnteredValue: rule.value.toString()}]};
+                case "date":
+                case "datetime":
+            }
         case "between":
         case "outside":
+
         case "contains":
         case "begins":
         case "ends":
+
         case "enum":
+
         case "lookup":
+
         case "formula":
-    }    
+    }
 };
