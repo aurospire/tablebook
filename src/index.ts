@@ -73,12 +73,10 @@ const main = async () => {
                 }
             })
             .updateCells(id, SheetRange.cell(0, 6), {
-                value: serialNumber('2024-01-02'), type: 'time', format: {
-                    type: 'temporal', items: [
-                        { type: 'year', length: 'long' }, '-', { type: 'month', length: 'short' }, '-', { type: 'day', length: 'short' },
-                        { type: 'weekday', length: 'long' }, ' | ', { type: 'hour', length: 'long' }, ':', { type: 'minute', length: 'long' }, { type: 'meridiem', length: 'long' }
-                    ]
-                }
+                value: serialNumber('2024-01-02'), type: 'time', format: [
+                    { type: 'year', length: 'long' }, '-', { type: 'month', length: 'short' }, '-', { type: 'day', length: 'short' },
+                    { type: 'weekday', length: 'long' }, ' | ', { type: 'hour', length: 'long' }, ':', { type: 'minute', length: 'long' }, { type: 'meridiem', length: 'long' }
+                ]
             })
         );
 

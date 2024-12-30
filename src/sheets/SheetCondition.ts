@@ -1,4 +1,4 @@
-import { BetweenOperator, ComparisonOperators, Expression, MatchOperators } from "../tables/types";
+import { ComparisonOperator, Expression, MatchOperators, RangeOperator } from "../tables/types";
 import { SheetStyle } from './SheetData';
 import { SheetPosition, SheetRange } from "./SheetPosition";
 
@@ -7,13 +7,13 @@ export type SheetComparisonValue = number | string;
 export type SheetComparisonTarget = 'numeric' | 'length';
 
 export type SheetComparisonCondition = {
-    type: (typeof ComparisonOperators)[number];
+    type: ComparisonOperator
     target: SheetComparisonTarget;
     value: SheetComparisonValue;
 };
 
 export type SheetBetweenCondition = {
-    type: typeof BetweenOperator;
+    type: RangeOperator;
     target: SheetComparisonTarget;
     low: SheetComparisonValue;
     high: SheetComparisonValue;

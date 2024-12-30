@@ -205,7 +205,8 @@ export type CustomRule = { type: typeof CustomRuleType; expression: Expression<D
 
 
 export const RangeOperators = ['between', 'outside'] as const;
-export type RangeRule<T> = { type: typeof RangeOperators[number]; low: T; high: T; };
+export type RangeOperator = typeof RangeOperators[number];
+export type RangeRule<T> = { type: RangeOperator; low: T; high: T; };
 
 export type NumericRule = ComparisonRule<number> | RangeRule<number> | CustomRule;
 
@@ -213,7 +214,8 @@ export type TemporalRule = ComparisonRule<TemporalString> | RangeRule<TemporalSt
 
 
 export const MatchOperators = ['contains', 'begins', 'ends'] as const;
-export type MatchRule = { type: typeof MatchOperators[number]; value: string; };
+export type MatchOperator = typeof MatchOperators[number];
+export type MatchRule = { type: MatchOperator; value: string; };
 
 export type TextLengthRule = ComparisonRule<number> | RangeRule<number>;
 

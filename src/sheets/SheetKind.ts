@@ -1,11 +1,11 @@
-import { BaseNumberFormat, DigitPlaceholder, NumericFormat, TemporalUnitLength, TemporalUnitType } from "../tables/types";
+import { BaseNumberFormat, DigitPlaceholder, NumericFormat, TemporalFormat, TemporalUnitLength, TemporalUnitType } from "../tables/types";
 
 
 export type SheetType = 'text' | 'number' | 'percent' | 'currency' | 'date' | 'time' | 'datetime';
 
 export type SheetKind = {
     type?: SheetType | null;
-    format?: NumericFormat | null;
+    format?: NumericFormat | TemporalFormat | null;
 };
 
 const processDigitPlaceholder = (digits: number | DigitPlaceholder | undefined, reversed: boolean): string | undefined => {
@@ -59,20 +59,23 @@ export const temporalTable: Record<string, string> = {
     meridiemshort: 'a/p',
 } satisfies Record<`${TemporalUnitType}${TemporalUnitLength}`, string>;
 
-export const toPattern = (format: NumericFormat): string => {
-    switch (format.type) {
-        case 'number':
-            return processBaseNumber(format);
-        case 'percent':
-            return processBaseNumber(format) + '%';
-        case 'currency': {
-            const symbol = format.symbol ?? '$';
-            const pattern = processBaseNumber(format);
-            return format.position === 'suffix' ? pattern + symbol : symbol + pattern;
+export const toPattern = (format: NumericFormat | TemporalFormat): string => {
+    if (Array.isArray(format)) {
+        return format.map(item => {
+            return typeof item === 'string' ? `"${item}"` : temporalTable[item.type + item.length];
+        }).join('');
+    }
+    else {
+        switch (format.type) {
+            case 'number':
+                return processBaseNumber(format);
+            case 'percent':
+                return processBaseNumber(format) + '%';
+            case 'currency': {
+                const symbol = format.symbol ?? '$';
+                const pattern = processBaseNumber(format);
+                return format.position === 'suffix' ? pattern + symbol : symbol + pattern;
+            }
         }
-        case 'temporal':
-            return format.items.map(item => {
-                return typeof item === 'string' ? `"${item}"` : temporalTable[item.type + item.length];
-            }).join('');
     }
 };
