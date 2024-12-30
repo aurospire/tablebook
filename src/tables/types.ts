@@ -215,7 +215,9 @@ export type TemporalRule = ComparisonRule<TemporalString> | RangeRule<TemporalSt
 export const MatchOperators = ['contains', 'begins', 'ends'] as const;
 export type MatchRule = { type: typeof MatchOperators[number]; value: string; };
 
-export type TextRule = MatchRule | ComparisonRule<number> | RangeRule<number> | CustomRule;
+export type TextLengthRule = ComparisonRule<number> | RangeRule<number>;
+
+export type TextRule = MatchRule | TextLengthRule | CustomRule;
 
 
 export type ConditionalStyle<Rule> = {
@@ -269,7 +271,7 @@ export type TemporalUnit = { type: TemporalUnitType, length: TemporalUnitLength;
 
 export type TemporalItem = TemporalUnit | string;
 
-export type TemporalFormat = TemporalItem[]
+export type TemporalFormat = TemporalItem[];
 
 /* Data Types */
 export const TextTypeType = 'text';

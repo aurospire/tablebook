@@ -1,52 +1,64 @@
 import { z } from 'zod';
 import {
-    RangeOperators,
-    RangeRule,
     Border, BorderType, BorderTypes,
     Color,
     ColorRegex,
-    ColumnSelector, Comparable, ComparisonOperator,
-    ComparisonOperators, ComparisonRule, CompoundExpression, CompoundExpressionType,
-    ConditionalStyle, CurrencyFormat, CurrencyFormatType, CurrencySymbolPositions,
+    ColumnSelector,
+    ComparisonOperator,
+    ComparisonOperators,
+    ComparisonRule,
+    CompoundExpression, CompoundExpressionType,
+    CurrencyFormat, CurrencyFormatType, CurrencySymbolPositions,
     CustomRule, CustomRuleType,
-    DataSelector, DataType, DateString, DateStringRegex,
-    DateTimeString, DateTimeStringRegex, Definitions,
-    DigitPlaceholder, EnumItem, EnumType, EnumTypeType, Expression,
-    FunctionExpression, FunctionExpressionType, HeaderStyle,
-    IntegrativeOperator, IntegrativeOperators, LiteralExpression,
+    DataSelector,
+    DataType,
+    DateString, DateStringRegex,
+    DateTimeString, DateTimeStringRegex,
+    Definitions,
+    DigitPlaceholder,
+    EnumItem, EnumType, EnumTypeType,
+    Expression,
+    FunctionExpression, FunctionExpressionType,
+    HeaderStyle,
+    LiteralExpression,
     LookupType, LookupTypeType,
     MatchOperators,
     MatchRule,
+    MergeOperator, MergeOperators,
     NegatedExpression, NegatedExpressionType,
-
     NumberFormat, NumberFormatType,
     NumericFormat,
-    NumericRule, NumericType, NumericTypeType,
-    Partition, PercentFormat, PercentFormatType,
+    NumericRule,
+    NumericType, NumericTypeType,
+    Partition,
+    PercentFormat, PercentFormatType,
+    RangeOperators,
     RangeRowSelector, RangeRowSelectorType,
-    Reference, ReferenceRegex, RowSelector,
+    RangeRule,
+    Reference, ReferenceRegex,
+    RowSelector,
     SelectorExpression, SelectorExpressionType,
     SelfExpression, SelfLiteral, SelfSelector,
-
-    Style, TableBook, TableColumn,
-    TableGroup, TableSheet, TableUnit, TableUnitNameRegex, TemporalFormat,
-    TemporalFormatType,
+    Style,
+    TableBook, TableColumn,
+    TableGroup, TableSheet,
+    TableUnit, TableUnitNameRegex,
+    TemporalFormat,
     TemporalItem,
+    TemporalRule,
+    TemporalString,
+    TemporalType, TemporalTypeType,
     TemporalUnit,
     TemporalUnitLength, TemporalUnitLengths,
-    TemporalUnitType,
-    TemporalUnitTypes,
-    TextForm, TextRule, TextType,
-    TextTypeType, Theme,
+    TemporalUnitType, TemporalUnitTypes,
+    TextForm,
+    TextLengthRule,
+    TextRule,
+    TextType, TextTypeType,
+    Theme,
     TimeString, TimeStringRegex,
-    UnitSelector,
-    UnitSelectorRegex
+    UnitSelector, UnitSelectorRegex
 } from './types';
-
-// Note: Manually doing validation instead of inferring types from these to keep types clean.
-// I'm also ok with it using Object.value as any to extract const Object values
-// as theres no way to extract values or keys from a const object here
-
 
 /* Reference */
 const Reference: z.ZodType<Reference> = z.custom<Reference>(value => ReferenceRegex.test(value as string));
@@ -113,9 +125,7 @@ const HeaderStyle: z.ZodType<HeaderStyle> = Style.and(z.object({
     partition: Partition.optional()
 }));
 
-
 const HeaderStyleReference = z.union([HeaderStyle, Reference]);
-
 const StyleReference = z.union([Style, Reference]);
 
 const Theme: z.ZodType<Theme> = z.object({
@@ -126,16 +136,14 @@ const Theme: z.ZodType<Theme> = z.object({
     data: StyleReference.optional(),
 });
 
-
 /* Operators */
 const ComparisonOperator: z.ZodType<ComparisonOperator> = z.enum(ComparisonOperators);
-
-const IntegrativeOperator: z.ZodType<IntegrativeOperator> = z.enum(IntegrativeOperators);
+const MergeOperator: z.ZodType<MergeOperator> = z.enum(MergeOperators);
 
 /* Expressions */
 const CompoundExpression: z.ZodType<CompoundExpression<DataSelector>> = z.object({
     type: z.literal(CompoundExpressionType),
-    with: z.union([ComparisonOperator, IntegrativeOperator]),
+    with: z.union([ComparisonOperator, MergeOperator]),
     items: z.array(z.lazy(() => Expression))
 });
 
@@ -170,33 +178,24 @@ const Expression: z.ZodType<Expression<DataSelector>> = z.union([
     SelfExpression
 ]);
 
-
 /* Data Rules */
 const DateString: z.ZodType<DateString> = z.custom(value => DateStringRegex.test(value as string));
-
 const TimeString: z.ZodType<TimeString> = z.custom(value => TimeStringRegex.test(value as string));
-
 const DateTimeString: z.ZodType<DateTimeString> = z.custom(value => DateTimeStringRegex.test(value as string));
 
+const TemporalString = z.union([DateString, TimeString, DateTimeString]);
 
-const Comparable: z.ZodType<Comparable> = z.union([
-    z.number(),
-    DateString,
-    TimeString,
-    DateTimeString
-]);
-
-const makeValueRules = <C extends Comparable>(c: z.ZodType<C>) => {
+const makeValueRules = <T>(type: z.ZodType<T>) => {
     const comparison = z.object({
         type: ComparisonOperator,
-        to: c
-    }) as z.ZodType<ComparisonRule<C>>;
+        to: type
+    }) as z.ZodType<ComparisonRule<T>>;
 
     const between = z.object({
         type: z.enum(RangeOperators),
-        low: c,
-        high: c
-    }) as z.ZodType<RangeRule<C>>;
+        low: type,
+        high: type
+    }) as z.ZodType<RangeRule<T>>;
 
     return z.union([comparison, between]);
 };
@@ -211,30 +210,23 @@ const CustomRule: z.ZodType<CustomRule> = z.object({
     expression: Expression
 });
 
+const TextLengthRule: z.ZodType<TextLengthRule> = makeValueRules(z.number());
+const NumericRule: z.ZodType<NumericRule> = z.union([makeValueRules(z.number()), CustomRule]);
+const TemporalRule: z.ZodType<TemporalRule> = z.union([makeValueRules(TemporalString), CustomRule]);
+const TextRule: z.ZodType<TextRule> = z.union([MatchRule, TextLengthRule, CustomRule]);
 
-const NumericRule: z.ZodType<NumericRule> = z.union([
-    makeValueRules(Comparable),
-    CustomRule
-]);
+const makeConditionalStyle = <Rule extends z.ZodType<any>>(rule: Rule) => {
+    return z.object({
+        on: z.array(rule),
+        style: StyleReference
+    });
+};
 
-const TextRule: z.ZodType<TextRule> = z.union([
-    MatchRule,
-    makeValueRules(z.number()),
-    CustomRule
-]);
+const TextConditionalStyle = makeConditionalStyle(TextRule);
+const NumericConditionalStyle = makeConditionalStyle(NumericRule);
+const TemporalConditionalStyle = makeConditionalStyle(TemporalRule);
 
-const TextConditionalStyle: z.ZodType<ConditionalStyle<TextRule>> = z.object({
-    on: z.array(TextRule),
-    style: StyleReference
-});
-
-const NumericConditionalStyle: z.ZodType<ConditionalStyle<NumericRule>> = z.object({
-    on: z.array(NumericRule),
-    style: StyleReference
-});
-
-
-/* Numeric Format */
+/* Numeric Formats */
 const DigitPlaceholder: z.ZodType<DigitPlaceholder> = z.object({
     fixed: z.number().int().positive().optional(),
     flex: z.number().int().positive().optional(),
@@ -253,15 +245,19 @@ const makeNumberFormat = <Type extends string>(type: Type) => {
 };
 
 const NumberFormat: z.ZodType<NumberFormat> = makeNumberFormat(NumberFormatType);
-
 const PercentFormat: z.ZodType<PercentFormat> = makeNumberFormat(PercentFormatType);
-
 const CurrencyFormat: z.ZodType<CurrencyFormat> = makeNumberFormat(CurrencyFormatType).and(z.object({
     symbol: z.string().optional(),
     position: z.enum(CurrencySymbolPositions).optional()
 }));
 
+const NumericFormat: z.ZodType<NumericFormat> = z.union([
+    NumberFormat,
+    PercentFormat,
+    CurrencyFormat
+]);
 
+/* Temporal Format */
 const TemporalUnitLength: z.ZodType<TemporalUnitLength> = z.enum(TemporalUnitLengths);
 const TemporalUnitType: z.ZodType<TemporalUnitType> = z.enum(TemporalUnitTypes);
 const TemporalUnit: z.ZodType<TemporalUnit> = z.object({
@@ -269,20 +265,8 @@ const TemporalUnit: z.ZodType<TemporalUnit> = z.object({
     length: TemporalUnitLength
 });
 
-const TemporaItem: z.ZodType<TemporalItem> = z.union([TemporalUnit, z.string()]);
-
-const TemporalFormat: z.ZodType<TemporalFormat> = z.object({
-    type: z.literal(TemporalFormatType),
-    items: z.array(TemporaItem)
-});
-
-const NumericFormat: z.ZodType<NumericFormat> = z.union([
-    NumberFormat,
-    PercentFormat,
-    CurrencyFormat,
-    TemporalFormat
-]);
-
+const TemporalItem: z.ZodType<TemporalItem> = z.union([TemporalUnit, z.string()]);
+const TemporalFormat: z.ZodType<TemporalFormat> = z.array(TemporalItem);
 
 /* Data Types */
 const TextType: z.ZodType<TextType> = z.object({
@@ -297,7 +281,15 @@ const NumericType: z.ZodType<NumericType> = z.object({
     expression: Expression.optional(),
     rules: z.array(NumericRule).optional(),
     styles: z.array(NumericConditionalStyle).optional(),
-    format: NumericFormat.optional(),
+    format: z.union([NumericFormat, Reference]).optional()
+});
+
+const TemporalType: z.ZodType<TemporalType> = z.object({
+    type: z.literal(TemporalTypeType),
+    expression: Expression.optional(),
+    rules: z.array(TemporalRule).optional(),
+    styles: z.array(TemporalConditionalStyle).optional(),
+    format: z.union([TemporalFormat, Reference]).optional()
 });
 
 const EnumItem: z.ZodType<EnumItem> = z.union([
@@ -321,6 +313,7 @@ const LookupType: z.ZodType<LookupType> = z.object({
 const DataType: z.ZodType<DataType> = z.union([
     TextType,
     NumericType,
+    TemporalType,
     EnumType,
     LookupType,
     Reference
@@ -332,7 +325,6 @@ const TableUnit: z.ZodType<TableUnit> = z.object({
     theme: z.union([Theme, Reference]).optional(),
     description: z.string().optional()
 });
-
 
 const TableColumn: z.ZodType<TableColumn> = TableUnit.and(z.object({
     type: DataType,
@@ -349,16 +341,17 @@ const TableSheet: z.ZodType<TableSheet> = TableUnit.and(z.object({
 }));
 
 const Definitions: z.ZodType<Definitions> = z.object({
-    colors: z.record(z.string(), Color).default({}),
-    styles: z.record(z.string(), z.union([Style, HeaderStyle])).default({}),
-    themes: z.record(z.string(), Theme).default({}),
-    types: z.record(z.string(), DataType).default({}),
+    colors: z.record(z.string(), Color).optional(),
+    styles: z.record(z.string(), z.union([Style, HeaderStyle])).optional(),
+    themes: z.record(z.string(), Theme).optional(),
+    numerics: z.record(z.string(), NumericFormat).optional(),
+    temporals: z.record(z.string(), TemporalFormat).optional(),
+    types: z.record(z.string(), DataType).optional()
 });
 
 const TableBook: z.ZodType<TableBook> = TableUnit.and(z.object({
     sheets: z.array(TableSheet),
     definitions: Definitions.optional()
 }));
-
 
 export { TableBook as TableBookValidator };
