@@ -77,5 +77,21 @@ export const SingleValueNumberConditionTypes = [
 ] as const;
 
 
-const toGoogleCondition = (conditions: SheetRule): GoogleCondition => {
+const toGoogleCondition = (rule: SheetRule): GoogleCondition => {
+    switch (rule.type) {
+        case "=":
+        case ">":
+        case "<":
+        case ">=":
+        case "<=":
+        case "<>":
+        case "between":
+        case "outside":
+        case "contains":
+        case "begins":
+        case "ends":
+        case "enum":
+        case "lookup":
+        case "formula":
+    }    
 };

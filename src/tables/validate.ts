@@ -12,8 +12,6 @@ import {
     CustomRule, CustomRuleType,
     DataSelector,
     DataType,
-    DateString,
-    DateTimeString,
     Definitions,
     DigitPlaceholder,
     EnumItem, EnumType, EnumTypeType,
@@ -56,7 +54,6 @@ import {
     TextRule,
     TextType, TextTypeType,
     Theme,
-    TimeString,
     UnitSelector, UnitSelectorRegex
 } from './types';
 
@@ -212,7 +209,7 @@ const TextRule: z.ZodType<TextRule> = z.union([MatchRule, CustomRule]);
 
 const makeConditionalStyle = <Rule extends z.ZodType<any>>(rule: Rule) => {
     return z.object({
-        on: z.array(rule),
+        on: rule,
         style: StyleReference
     });
 };
@@ -267,14 +264,14 @@ const TemporalFormat: z.ZodType<TemporalFormat> = z.array(TemporalItem);
 const TextType: z.ZodType<TextType> = z.object({
     type: z.literal(TextTypeType),
     expression: Expression.optional(),
-    rules: z.array(TextRule).optional(),
+    rule: TextRule.optional(),
     styles: z.array(TextConditionalStyle).optional()
 });
 
 const NumericType: z.ZodType<NumericType> = z.object({
     type: z.literal(NumericTypeType),
     expression: Expression.optional(),
-    rules: z.array(NumericRule).optional(),
+    rule: NumericRule.optional(),
     styles: z.array(NumericConditionalStyle).optional(),
     format: z.union([NumericFormat, Reference]).optional()
 });
@@ -282,7 +279,7 @@ const NumericType: z.ZodType<NumericType> = z.object({
 const TemporalType: z.ZodType<TemporalType> = z.object({
     type: z.literal(TemporalTypeType),
     expression: Expression.optional(),
-    rules: z.array(TemporalRule).optional(),
+    rule: TemporalRule.optional(),
     styles: z.array(TemporalConditionalStyle).optional(),
     format: z.union([TemporalFormat, Reference]).optional()
 });

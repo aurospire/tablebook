@@ -271,7 +271,7 @@ export const TextTypeType = 'text';
 export type TextType = {
     type: typeof TextTypeType;
     expression?: Expression<DataSelector>;
-    rules?: TextRule;
+    rule?: TextRule;
     styles?: ConditionalStyle<TextRule>[];
 };
 
@@ -279,7 +279,7 @@ export const NumericTypeType = 'numeric';
 export type NumericType = {
     type: typeof NumericTypeType;
     expression?: Expression<DataSelector>;
-    rules?: NumericRule;
+    rule?: NumericRule;
     styles?: ConditionalStyle<NumericRule>[];
     format?: NumericFormat | Reference;
 };
@@ -288,7 +288,7 @@ export const TemporalTypeType = 'temporal';
 export type TemporalType = {
     type: typeof TemporalTypeType;
     expression?: Expression<DataSelector>;
-    rules?: TemporalRule;
+    rule?: TemporalRule;
     styles?: ConditionalStyle<TemporalRule>[];
     format?: TemporalFormat | Reference;
 };
@@ -338,8 +338,10 @@ export type Definitions = {
     colors?: Record<string, Color>;
     styles?: Record<string, Style | HeaderStyle>;
     themes?: Record<string, Theme>; // Includes Standard Themes by default
-    numerics?: Record<string, NumericFormat>;
-    temporals?: Record<string, TemporalFormat>; // Includes Standard Formats by default
+    formats?: {
+        numeric?: Record<string, NumericFormat>;
+        temporal?: Record<string, TemporalFormat>; // Includes Standard Formats by default
+    };
     types?: Record<string, DataType>;
 };
 
