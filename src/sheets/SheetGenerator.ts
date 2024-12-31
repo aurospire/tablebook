@@ -3,14 +3,14 @@ import { SheetBorderSet, SheetStyle } from "./SheetData";
 import { ColorObject } from "../util/Color";
 
 // Core generator interface for platform implementations
-export interface SheetGeneator {
+export interface SheetGenerator {
     setTitle(title: string): Promise<void>;
 
     addSheet(
         title: string,
         rows: number,
         columns: number,
-        color: ColorObject
+        color?: ColorObject
     ): Promise<number>;
 
     addGroup(
@@ -26,6 +26,7 @@ export interface SheetGeneator {
         sheetId: number,
         title: string,
         columnIndex: number,
+        inGroup: boolean,
         config: SheetColumnConfig
     ): Promise<void>;
 }
