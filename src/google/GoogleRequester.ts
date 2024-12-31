@@ -7,7 +7,7 @@ import { toPattern } from "../sheets/SheetKind";
 import { SheetPosition, SheetRange, SheetSelector } from "../sheets/SheetPosition";
 import { GoogleBorderMap, GoogleCellTypeMap, GoogleFieldMap, GoogleHorizontalAlignMap, GoogleVerticalAlignMap, GoogleWrapMap } from "./GoogleMaps";
 import { GoogleAddSheetReply, GoogleApi, GoogleCellFormat, GoogleCellValue, GoogleCondition, GoogleNumberFormat, GoogleReply, GoogleRequest, GoogleTextFormat } from "./GoogleTypes";
-import { SheetRule } from "../sheets/SheetRule";
+import { SheetConditionalFormat, SheetRule } from "../sheets/SheetRule";
 import { toGoogleCondition } from "./GoogleCondition";
 
 export type GoogleReplyProcessor<Reply = GoogleReply> = (reply: Reply | undefined) => void;
@@ -249,6 +249,19 @@ export class GoogleRequester {
         });
     }
 
+    setConditionalFormat(sheetId: number, range: SheetRange, format: SheetConditionalFormat): GoogleRequester {
+        return this.do({
+            addConditionalFormatRule: {
+                rule: {
+                    ranges: [toGridRange(sheetId, range)],
+                    booleanRule: {
+                        condition: toGoogleCondition(format.rule, range.start),
+                        format: toCellFormat(format.style)
+                    }
+                }
+            }
+        });
+    }
     
 
     async run(api: GoogleApi, id: string) {

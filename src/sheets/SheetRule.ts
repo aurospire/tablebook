@@ -62,6 +62,6 @@ export type SheetRule =
     | SheetFormulaRule;
 
 export type SheetConditionalFormat = {
-    rules: SheetRule;
+    rule: SheetRule;
     style: SheetStyle;
 };
