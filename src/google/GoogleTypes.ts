@@ -25,6 +25,7 @@ export type GoogleColorStyle = sheets_v4.Schema$ColorStyle;
 
 export type GoogleGridRange = sheets_v4.Schema$GridRange;
 
+
 export type GoogleLogin = { email: string; key: string; };
 
 export type GoogleSource = { api: GoogleApi; } | GoogleLogin;

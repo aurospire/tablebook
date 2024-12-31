@@ -2,8 +2,43 @@ import { DateTime } from "luxon";
 import { toFormula } from "../sheets/SheetExpression";
 import { SheetPosition, SheetSelector } from "../sheets/SheetPosition";
 import { SheetRule } from "../sheets/SheetRule";
-import { GoogleDateConditionTypeMap, GoogleFormulaConditionType, GoogleNumberConditionTypeMap, GoogleOneOfListConditionType, GoogleOneOfRangeConditionType, GoogleTextConditionTypeMap } from "./GoogleMaps";
+import { ComparisonOperator, MatchOperator, RangeOperator } from "../tables/types";
 import { GoogleCondition } from "./GoogleTypes";
+
+export const GoogleNumberConditionTypeMap: Record<string, string> = {
+    '=': 'NUMBER_EQ',
+    '<>': 'NUMBER_NOT_EQ',
+    '>': 'NUMBER_GREATER',
+    '>=': 'NUMBER_GREATER_THAN_EQ',
+    '<': 'NUMBER_LESS',
+    '<=': 'NUMBER_LESS_THAN_EQ',
+    'between': 'NUMBER_BETWEEN',
+    'outside': 'NUMBER_NOT_BETWEEN',
+} satisfies Record<ComparisonOperator | RangeOperator, string>;
+
+export const GoogleDateConditionTypeMap: Record<string, string> = {
+    '=': 'DATE_EQ',
+    '<>': 'DATE_NOT_EQ',
+    '>': 'DATE_GREATER',
+    '>=': 'DATE_GREATER_THAN_EQ',
+    '<': 'DATE_LESS',
+    '<=': 'DATE_LESS_THAN_EQ',
+    'between': 'DATE_BETWEEN',
+    'outside': 'DATE_NOT_BETWEEN',
+} satisfies Record<ComparisonOperator | RangeOperator, string>;
+
+export const GoogleTextConditionTypeMap: Record<string, string> = {
+    'contains': 'TEXT_CONTAINS',
+    'begins': 'TEXT_STARTS_WITH',
+    'ends': 'TEXT_ENDS_WITH',
+} satisfies Record<MatchOperator, string>;
+
+
+export const GoogleOneOfListConditionType = 'ONE_OF_LIST';
+export const GoogleOneOfRangeConditionType = 'ONE_OF_RANGE';
+
+export const GoogleFormulaConditionType = 'CUSTOM_FORMULA';
+
 
 const makeGoogleCondition = (type: string, values: string[]): GoogleCondition => {
     return { type, values: values.map(value => ({ userEnteredValue: value })) };

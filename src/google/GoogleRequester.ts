@@ -1,145 +1,14 @@
 import { inspect } from "util";
-import { SheetBorder, SheetBorderSet, SheetData, SheetValue } from "../sheets/SheetData";
-import { toFormula } from "../sheets/SheetExpression";
-import { toPattern } from "../sheets/SheetKind";
-import { SheetPosition, SheetRange } from "../sheets/SheetPosition";
+import { SheetBorderSet, SheetData } from "../sheets/SheetData";
+import { SheetRange } from "../sheets/SheetPosition";
 import { SheetConditionalFormat, SheetRule } from "../sheets/SheetRule";
-import { ColorObject, Colors } from "../util/Color";
+import { getFields, toCellFormat, toCellValue } from "./GoogleCellData";
 import { toGoogleCondition } from "./GoogleCondition";
-import { GoogleBorderMap, GoogleCellTypeMap, GoogleFieldMap, GoogleHorizontalAlignMap, GoogleVerticalAlignMap, GoogleWrapMap } from "./GoogleMaps";
-import { GoogleAddSheetOptions, GoogleAddSheetReply, GoogleApi, GoogleBorder, GoogleCellFormat, GoogleCellValue, GoogleColorStyle, GoogleGridRange, GoogleNumberFormat, GoogleReply, GoogleRequest, GoogleTextFormat } from "./GoogleTypes";
+import { toGridRange } from "./GoogleGridRange";
+import { toSheetsBorder, toWeightedColorStyle } from "./GoogleStyles";
+import { GoogleAddSheetOptions, GoogleAddSheetReply, GoogleApi, GoogleReply, GoogleRequest } from "./GoogleTypes";
 
 export type GoogleReplyProcessor<Reply = GoogleReply> = (reply: Reply | undefined) => void;
-
-
-const toSheetsBorder = (border: SheetBorder | undefined): GoogleBorder | undefined => {
-    return border ? {
-        style: GoogleBorderMap[border.type],
-        colorStyle: toWeightedColorStyle(border.color),
-    } : undefined;
-};
-
-const toWeightedColorStyle = (color: ColorObject | undefined): GoogleColorStyle | undefined => {
-    return color ? { rgbColor: Colors.toWeighted(color) } : undefined;
-};
-
-const toGridRange = (sheetId: number, range: SheetRange): GoogleGridRange => ({
-    sheetId,
-    startColumnIndex: range.start.col,
-    endColumnIndex: range.end ? range.end.col : range.start.col + 1,
-    startRowIndex: range.start.row,
-    endRowIndex: range.end ? range.end.row : range.start.row + 1,
-});
-
-
-
-const exp = <T>(value: T) => (console.log(value), value);
-
-const getExtendedValue = (value: SheetValue, position: SheetPosition<number>): GoogleCellValue | undefined => {
-    switch (typeof value) {
-        case 'string':
-            return { stringValue: value };
-        case 'number':
-            return { numberValue: value };
-        case 'boolean':
-            return { boolValue: value };
-        default:
-            return { formulaValue: exp('=' + toFormula(value, position)) };
-    }
-};
-
-
-
-const getFields = (from: string[] | SheetData): string[] => {
-    const keys: string[] = Array.isArray(from) ? from : Object
-        .entries(from)
-        .filter(([_, v]) => v !== undefined)
-        .map(([k]) => k);
-
-    const fields = new Set<string>(keys.flatMap(key => GoogleFieldMap[key] ?? []));
-
-    return [...fields];
-};
-
-const toCellValue = (data: SheetData, position: SheetPosition<number>): GoogleCellValue | undefined => {
-    if (data.value !== undefined) {
-        if (data.value !== null)
-            return getExtendedValue(data.value, position);
-    }
-};
-
-const toCellFormat = (data: SheetData): GoogleCellFormat | undefined => {
-    let dataFormat: GoogleCellFormat | undefined;
-
-    let textFormat: GoogleTextFormat | undefined;
-
-    let numberFormat: GoogleNumberFormat | undefined;
-
-    if (data) {
-        if (data.back !== undefined) {
-            if (data.back !== null) {
-                dataFormat ??= {};
-                dataFormat.backgroundColorStyle = toWeightedColorStyle(data.back);
-            }
-        }
-
-        if (data.fore !== undefined) {
-            if (data.fore !== null) {
-                textFormat ??= {};
-                textFormat.foregroundColorStyle = toWeightedColorStyle(data.fore);
-            }
-        }
-
-        if (data.bold !== undefined) {
-            if (data.bold !== null) {
-                textFormat ??= {};
-                textFormat.bold = data.bold;
-            }
-        }
-
-        if (data.italic !== undefined) {
-            if (data.italic !== null) {
-                textFormat ??= {};
-                textFormat.italic = data.italic;
-            }
-        }
-
-
-        if (data.horizontal !== undefined) {
-            if (data.horizontal !== null) {
-                dataFormat ??= {};
-                dataFormat.horizontalAlignment = GoogleHorizontalAlignMap[data.horizontal];
-            }
-        }
-
-        if (data.vertical !== undefined) {
-            if (data.vertical !== null) {
-                dataFormat ??= {};
-                dataFormat.verticalAlignment = GoogleVerticalAlignMap[data.vertical];
-            }
-        }
-
-        if (data.wrap !== undefined) {
-            if (data.wrap !== null) {
-                dataFormat ??= {};
-                dataFormat.wrapStrategy = GoogleWrapMap[data.wrap];
-            }
-        }
-
-        if (data.type !== undefined || data.format !== undefined) {
-            if (data.type !== null || data.format !== null) {
-                numberFormat ??= {};
-                numberFormat.type = data.type ? GoogleCellTypeMap[data.type] : GoogleCellTypeMap.text;
-                numberFormat.pattern = data.format ? exp(toPattern(data.format)) : '';
-            }
-        }
-    }
-
-    if (textFormat || numberFormat)
-        dataFormat = { ...(dataFormat ?? {}), textFormat, numberFormat };
-
-    return dataFormat;
-};
 
 export class GoogleRequester {
     #requests: GoogleRequest[];
@@ -230,20 +99,20 @@ export class GoogleRequester {
 
     setDataValidation(sheetId: number, range: SheetRange, rule: SheetRule, strict: boolean): GoogleRequester {
         return this.do({
-            setDataValidation: exp({
+            setDataValidation: {
                 range: toGridRange(sheetId, range),
                 rule: {
                     condition: toGoogleCondition(rule, range.start),
                     strict,
                     showCustomUi: rule.type === 'enum' || rule.type === 'lookup',
                 }
-            })
+            }
         });
     }
 
     setConditionalFormat(sheetId: number, range: SheetRange, format: SheetConditionalFormat): GoogleRequester {
         return this.do({
-            addConditionalFormatRule: exp({
+            addConditionalFormatRule: {
                 rule: {
                     ranges: [toGridRange(sheetId, range)],
                     booleanRule: {
@@ -251,7 +120,7 @@ export class GoogleRequester {
                         format: toCellFormat(format.style)
                     }
                 }
-            })
+            }
         });
     }
 
