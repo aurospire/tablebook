@@ -5,8 +5,7 @@ import { SheetBorderSet, SheetStyle } from "../sheets/SheetData";
 import { ColorObject } from "../util/Color";
 import { SheetRange } from "../sheets/SheetPosition";
 
-
-export class GoogleSheetGenerator implements SheetGenerator {
+export class GoogleGenerator implements SheetGenerator {
     #sheet: GoogleSheet;
 
     constructor(sheet: GoogleSheet) {

@@ -1,38 +1,29 @@
-import { sheets_v4 } from "@googleapis/sheets";
 import { inspect } from "util";
-import { ColorObject, Colors } from "../util/Color";
 import { SheetBorder, SheetBorderSet, SheetData, SheetValue } from "../sheets/SheetData";
 import { toFormula } from "../sheets/SheetExpression";
 import { toPattern } from "../sheets/SheetKind";
-import { SheetPosition, SheetRange, SheetSelector } from "../sheets/SheetPosition";
-import { GoogleBorderMap, GoogleCellTypeMap, GoogleFieldMap, GoogleHorizontalAlignMap, GoogleVerticalAlignMap, GoogleWrapMap } from "./GoogleMaps";
-import { GoogleAddSheetReply, GoogleApi, GoogleCellFormat, GoogleCellValue, GoogleCondition, GoogleNumberFormat, GoogleReply, GoogleRequest, GoogleTextFormat } from "./GoogleTypes";
+import { SheetPosition, SheetRange } from "../sheets/SheetPosition";
 import { SheetConditionalFormat, SheetRule } from "../sheets/SheetRule";
+import { ColorObject, Colors } from "../util/Color";
 import { toGoogleCondition } from "./GoogleCondition";
+import { GoogleBorderMap, GoogleCellTypeMap, GoogleFieldMap, GoogleHorizontalAlignMap, GoogleVerticalAlignMap, GoogleWrapMap } from "./GoogleMaps";
+import { GoogleAddSheetOptions, GoogleAddSheetReply, GoogleApi, GoogleBorder, GoogleCellFormat, GoogleCellValue, GoogleColorStyle, GoogleGridRange, GoogleNumberFormat, GoogleReply, GoogleRequest, GoogleTextFormat } from "./GoogleTypes";
 
 export type GoogleReplyProcessor<Reply = GoogleReply> = (reply: Reply | undefined) => void;
 
-export type GoogleAddSheetOptions = {
-    id?: number;
-    title?: string;
-    rows?: number;
-    columns?: number;
-    color?: ColorObject;
-};
 
-
-const toSheetsBorder = (border: SheetBorder | undefined): sheets_v4.Schema$Border | undefined => {
+const toSheetsBorder = (border: SheetBorder | undefined): GoogleBorder | undefined => {
     return border ? {
         style: GoogleBorderMap[border.type],
         colorStyle: toWeightedColorStyle(border.color),
     } : undefined;
 };
 
-const toWeightedColorStyle = (color: ColorObject | undefined): sheets_v4.Schema$ColorStyle | undefined => {
+const toWeightedColorStyle = (color: ColorObject | undefined): GoogleColorStyle | undefined => {
     return color ? { rgbColor: Colors.toWeighted(color) } : undefined;
 };
 
-const toGridRange = (sheetId: number, range: SheetRange): sheets_v4.Schema$GridRange => ({
+const toGridRange = (sheetId: number, range: SheetRange): GoogleGridRange => ({
     sheetId,
     startColumnIndex: range.start.col,
     endColumnIndex: range.end ? range.end.col : range.start.col + 1,
@@ -243,7 +234,7 @@ export class GoogleRequester {
                 range: toGridRange(sheetId, range),
                 rule: {
                     condition: toGoogleCondition(rule, range.start),
-                    strict,                    
+                    strict,
                     showCustomUi: rule.type === 'enum' || rule.type === 'lookup',
                 }
             })

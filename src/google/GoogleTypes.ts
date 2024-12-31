@@ -1,4 +1,5 @@
 import { sheets_v4 } from "@googleapis/sheets";
+import { ColorObject } from "../util/Color";
 
 
 export type GoogleApi = sheets_v4.Sheets;
@@ -11,6 +12,18 @@ export type GoogleReply = sheets_v4.Schema$Response;
 
 export type GoogleAddSheetReply = sheets_v4.Schema$AddSheetResponse;
 
+export type GoogleAddSheetOptions = {
+    id?: number;
+    title?: string;
+    rows?: number;
+    columns?: number;
+    color?: ColorObject;
+};
+export type GoogleBorder = sheets_v4.Schema$Border;
+
+export type GoogleColorStyle = sheets_v4.Schema$ColorStyle;
+
+export type GoogleGridRange = sheets_v4.Schema$GridRange;
 
 export type GoogleLogin = { email: string; key: string; };
 

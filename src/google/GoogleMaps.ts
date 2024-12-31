@@ -12,7 +12,6 @@ export const GoogleBorderMap = {
     double: 'DOUBLE',
 } as const satisfies Record<BorderType, string>;
 
-
 export const GoogleHorizontalAlignMap = {
     start: 'LEFT',
     middle: 'CENTER',
@@ -53,7 +52,6 @@ export const GoogleFieldMap: Record<string, string[]> = {
     format: ['userEnteredFormat.numberFormat.type', 'userEnteredFormat.numberFormat.pattern'],
     value: ['userEnteredValue'],
 } satisfies Record<keyof SheetData, string[]>;
-
 
 
 export const GoogleNumberConditionTypeMap: Record<string, string> = {
