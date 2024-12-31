@@ -78,6 +78,13 @@ const modifyUnitSelector = (offset: UnitSelector | undefined | null, current: nu
     return base + (letter ? letterfy(value) : (value + 1).toString());
 };
 
+const toAddress = (position?: Partial<SheetPosition<UnitSelector>>, from?: SheetPosition): string => {
+    const col = position?.col !== undefined ? modifyUnitSelector(position.col, from?.col ?? 0, true) : '';
+
+    const row = position?.row !== undefined ? modifyUnitSelector(position.row, from?.row ?? 0, false) : '';
+
+    return col + row;
+};
 
 export const SheetSelector = (sheet?: string) => Object.freeze({
     cell: (col: number | UnitSelector, row: number | UnitSelector): SheetSelector => ({
@@ -127,11 +134,21 @@ export const SheetSelector = (sheet?: string) => Object.freeze({
         };
     },
 
-    toAddress(selector: SheetSelector | null, position?: SheetPosition): string {
-        const col = modifyUnitSelector(selector?.start.col, position?.col ?? 0, true);
+    toAddress(selector?: SheetSelector | null, from?: SheetPosition): string {
+        let result = '';
 
-        const row = modifyUnitSelector(selector?.start.row, position?.row ?? 0, false);
+        if (selector?.sheet)
+            result += `'${selector.sheet}'!`;
 
-        return col + row;
+        result += toAddress(selector?.start, from);
+
+        const end = toAddress(selector?.end, from);
+
+        if (end)
+            result += `:${end}`;
+
+
+        return result;
     }
 });
+

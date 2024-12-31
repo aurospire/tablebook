@@ -4,7 +4,8 @@ import { SheetAlign, SheetData, SheetWrap } from "../SheetData";
 import { SheetType } from "../SheetKind";
 import { SheetRule } from "../SheetRule";
 import { GoogleCondition } from "./GoogleTypes";
-import { SheetPosition } from "../SheetPosition";
+import { SheetPosition, SheetSelector } from "../SheetPosition";
+import { toFormula } from "../SheetExpression";
 
 export const GoogleBorderMap = {
     none: 'NONE',
@@ -139,10 +140,10 @@ const toGoogleCondition = (rule: SheetRule, postion: SheetPosition): GoogleCondi
             return makeGoogleCondition(GoogleOneOfListConditionType, rule.values);
 
         case "lookup":
-
-            //return makeGoogleCondition(GoogleOneOfRangeConditionType);
+            return makeGoogleCondition(GoogleOneOfRangeConditionType, [SheetSelector(rule.sheet).toAddress(rule.range, postion)]);
 
         case "formula":
+            return makeGoogleCondition(GoogleFormulaConditionType, [toFormula(rule.from, postion)]);
     }
 
     throw new Error(`Unsupported Rule Type: ${rule}`);
