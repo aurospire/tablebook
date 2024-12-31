@@ -37,7 +37,7 @@ const toGridRange = (sheetId: number, range: SheetRange): sheets_v4.Schema$GridR
     startColumnIndex: range.start.col,
     endColumnIndex: range.end ? range.end.col : range.start.col + 1,
     startRowIndex: range.start.row,
-    endRowIndex:  range.end ? range.end.row : range.start.row + 1,
+    endRowIndex: range.end ? range.end.row : range.start.row + 1,
 });
 
 
@@ -239,19 +239,20 @@ export class GoogleRequester {
 
     setDataValidation(sheetId: number, range: SheetRange, rule: SheetRule, strict: boolean): GoogleRequester {
         return this.do({
-            setDataValidation: {
+            setDataValidation: exp({
                 range: toGridRange(sheetId, range),
                 rule: {
                     condition: toGoogleCondition(rule, range.start),
-                    strict
+                    strict,                    
+                    showCustomUi: rule.type === 'enum' || rule.type === 'lookup'
                 }
-            }
+            })
         });
     }
 
     setConditionalFormat(sheetId: number, range: SheetRange, format: SheetConditionalFormat): GoogleRequester {
         return this.do({
-            addConditionalFormatRule: {
+            addConditionalFormatRule: exp({
                 rule: {
                     ranges: [toGridRange(sheetId, range)],
                     booleanRule: {
@@ -259,7 +260,7 @@ export class GoogleRequester {
                         format: toCellFormat(format.style)
                     }
                 }
-            }
+            })
         });
     }
 
