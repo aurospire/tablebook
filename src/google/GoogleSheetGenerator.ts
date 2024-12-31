@@ -1,10 +1,10 @@
-import { GoogleSheet } from "../google/GoogleSheet";
-import { SpreadsheetGenerator } from "./SpreadsheetGenerator";
+import { GoogleSheet } from "./GoogleSheet";
+import { SheetGeneator } from "../sheets/SheetGenerator";
 import { SheetColumnConfig } from "../sheets/SheetColumns";
 import { SheetBorderSet, SheetStyle } from "../sheets/SheetData";
 
 
-export class GoogleSheetGenerator implements SpreadsheetGenerator {
+export class GoogleSheetGenerator implements SheetGeneator {
     #sheet: GoogleSheet;
 
     constructor(sheet: GoogleSheet) {
@@ -14,7 +14,7 @@ export class GoogleSheetGenerator implements SpreadsheetGenerator {
     get sheet(): GoogleSheet { return this.#sheet; }
 
     async setTitle(title: string): Promise<void> {
-        throw new Error("Method not implemented.");
+        this.#sheet.modify(r => r.setTitle(title));
     }
 
     async addSheet(name: string, rows: number, columns: number): Promise<number> {

@@ -1,11 +1,17 @@
-import { SheetBorderSet, SheetStyle } from "../sheets/SheetData";
-import { SheetColumnConfig } from "../sheets/SheetColumns";
+import { SheetColumnConfig } from "./SheetColumns";
+import { SheetBorderSet, SheetStyle } from "./SheetData";
+import { ColorObject } from "../util/Color";
 
 // Core generator interface for platform implementations
-export interface SpreadsheetGenerator {
+export interface SheetGeneator {
     setTitle(title: string): Promise<void>;
 
-    addSheet(title: string, rows: number, columns: number): Promise<number>;
+    addSheet(
+        title: string,
+        rows: number,
+        columns: number,
+        color: ColorObject
+    ): Promise<number>;
 
     addGroup(
         sheetId: number,
