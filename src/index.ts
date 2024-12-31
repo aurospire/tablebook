@@ -1,5 +1,5 @@
 import { v } from 'varcor';
-import { GoogleSheet } from './sheets/google/GoogleSheet';
+import { GoogleSheet } from './google/GoogleSheet';
 import { SheetPosition, SheetRange, SheetSelector } from './sheets/SheetPosition';
 import { Colors } from './util/Color';
 

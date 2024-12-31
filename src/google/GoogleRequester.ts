@@ -1,12 +1,14 @@
 import { sheets_v4 } from "@googleapis/sheets";
 import { inspect } from "util";
-import { ColorObject, Colors } from "../../util/Color";
-import { SheetBorder, SheetBorderSet, SheetData, SheetValue } from "../SheetData";
-import { toFormula } from "../SheetExpression";
-import { toPattern } from "../SheetKind";
-import { SheetPosition, SheetRange, SheetSelector } from "../SheetPosition";
+import { ColorObject, Colors } from "../util/Color";
+import { SheetBorder, SheetBorderSet, SheetData, SheetValue } from "../sheets/SheetData";
+import { toFormula } from "../sheets/SheetExpression";
+import { toPattern } from "../sheets/SheetKind";
+import { SheetPosition, SheetRange, SheetSelector } from "../sheets/SheetPosition";
 import { GoogleBorderMap, GoogleCellTypeMap, GoogleFieldMap, GoogleHorizontalAlignMap, GoogleVerticalAlignMap, GoogleWrapMap } from "./GoogleMaps";
-import { GoogleAddSheetReply, GoogleApi, GoogleCellFormat, GoogleCellValue, GoogleNumberFormat, GoogleReply, GoogleRequest, GoogleTextFormat } from "./GoogleTypes";
+import { GoogleAddSheetReply, GoogleApi, GoogleCellFormat, GoogleCellValue, GoogleCondition, GoogleNumberFormat, GoogleReply, GoogleRequest, GoogleTextFormat } from "./GoogleTypes";
+import { SheetRule } from "../sheets/SheetRule";
+import { toGoogleCondition } from "./GoogleCondition";
 
 export type GoogleReplyProcessor<Reply = GoogleReply> = (reply: Reply | undefined) => void;
 
@@ -234,6 +236,20 @@ export class GoogleRequester {
 
         return this;
     }
+
+    setDataValidation(sheetId: number, range: SheetRange, rule: SheetRule, strict: boolean): GoogleRequester {
+        return this.do({
+            setDataValidation: {
+                range: toGridRange(sheetId, range),
+                rule: {
+                    condition: toGoogleCondition(rule, range.start),
+                    strict
+                }
+            }
+        });
+    }
+
+    
 
     async run(api: GoogleApi, id: string) {
         const result = await api.spreadsheets.batchUpdate({

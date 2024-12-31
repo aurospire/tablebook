@@ -1,4 +1,4 @@
-import { GoogleSheet } from "../sheets/google/GoogleSheet";
+import { GoogleSheet } from "../google/GoogleSheet";
 import { SpreadsheetGenerator } from "./SpreadsheetGenerator";
 import { SheetColumnConfig } from "../sheets/SheetColumns";
 import { SheetBorderSet, SheetStyle } from "../sheets/SheetData";

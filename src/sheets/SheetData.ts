@@ -29,7 +29,6 @@ export type SheetBorderSet = {
     right?: SheetBorder;
 };
 
-
 export type SheetAlign = 'start' | 'middle' | 'end';
 
 export type SheetWrap = 'overflow' | 'clip' | 'wrap';

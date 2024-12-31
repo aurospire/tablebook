@@ -1,7 +1,7 @@
-import { UnitSelector, Expression, UnitSelectorRegex } from "../tables/types";
-import { SheetSelector, SheetPosition } from "./SheetPosition";
+import { Expression } from "../tables/types";
+import { SheetPosition, SheetSelector } from "./SheetPosition";
 
-
+export type SheetExpression = Expression<SheetSelector>;
 
 const chars: Record<string, string> = {
     '\t': 'CHAR(9)',
@@ -17,13 +17,7 @@ const toFormulaString = (value: string): string => {
     }).join(' & ');
 };
 
-
-
-
-export type SheetExpression = Expression<SheetSelector>;
-
-
-export const toFormula = (exp: SheetExpression, position: SheetPosition<number>): string => {
+export const toFormula = (exp: SheetExpression, position: SheetPosition): string => {
     switch (typeof exp) {
         case 'string':
             return toFormulaString(exp);
