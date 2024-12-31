@@ -244,7 +244,7 @@ export class GoogleRequester {
                 rule: {
                     condition: toGoogleCondition(rule, range.start),
                     strict,                    
-                    showCustomUi: rule.type === 'enum' || rule.type === 'lookup'
+                    showCustomUi: rule.type === 'enum' || rule.type === 'lookup',
                 }
             })
         });

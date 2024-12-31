@@ -78,8 +78,9 @@ const main = async () => {
                     { type: 'weekday', length: 'long' }, ' | ', { type: 'hour', length: 'long' }, ':', { type: 'minute', length: 'long' }, { type: 'meridiem', length: 'long' }
                 ]
             })
-            .setDataValidation(id, SheetRange.column(1, 3, 2), { type: 'enum', values: ['Hello', 'Goodbye'] }, false)
+            .setDataValidation(id, SheetRange.column(1, 3, 2), { type: 'enum', values: ['Hello', 'Goodbye'] }, true)
             .setDataValidation(id, SheetRange.column(2, 3, 2), { type: '>', target: 'number', value: 5 }, false)
+            .setConditionalFormat(id, SheetRange.column(2, 3, 2), { rule: { type: '=', target: 'number', value: 6 }, style: { fore: Colors.toObject('#FF0000'), bold: true } })
         );
 
         await sheet.modify(r => r.updateCells(id, SheetRange.region(1, 1, 2, 2), { back: Colors.toObject('#333333') }));
