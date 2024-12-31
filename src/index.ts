@@ -1,6 +1,6 @@
 import { v } from 'varcor';
 import { GoogleSheet } from './sheets/google/GoogleSheet';
-import { SheetPosition, SheetRange } from './sheets/SheetPosition';
+import { SheetPosition, SheetRange, SheetSelector } from './sheets/SheetPosition';
 import { Colors } from './util/Color';
 
 const serialNumber = (datestring: `${string}-${string}-${string}`) => {

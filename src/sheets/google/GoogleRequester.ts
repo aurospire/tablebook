@@ -1,13 +1,12 @@
 import { sheets_v4 } from "@googleapis/sheets";
 import { inspect } from "util";
-import { BorderType } from "../../tables/types";
 import { ColorObject, Colors } from "../../util/Color";
 import { SheetBorder, SheetBorderSet, SheetData, SheetValue } from "../SheetData";
-import { toPattern } from "../SheetKind";
 import { toFormula } from "../SheetExpression";
-import { SheetPosition, SheetRange } from "../SheetPosition";
+import { toPattern } from "../SheetKind";
+import { SheetPosition, SheetRange, SheetSelector } from "../SheetPosition";
+import { GoogleBorderMap, GoogleCellTypeMap, GoogleFieldMap, GoogleHorizontalAlignMap, GoogleVerticalAlignMap, GoogleWrapMap } from "./GoogleMaps";
 import { GoogleAddSheetReply, GoogleApi, GoogleCellFormat, GoogleCellValue, GoogleNumberFormat, GoogleReply, GoogleRequest, GoogleTextFormat } from "./GoogleTypes";
-import { GoogleFieldMap, GoogleHorizontalAlignMap, GoogleVerticalAlignMap, GoogleWrapMap, GoogleCellTypeMap } from "./GoogleMaps";
 
 export type GoogleReplyProcessor<Reply = GoogleReply> = (reply: Reply | undefined) => void;
 
@@ -19,15 +18,6 @@ export type GoogleAddSheetOptions = {
     color?: ColorObject;
 };
 
-const GoogleBorderMap = {
-    none: 'NONE',
-    thin: 'SOLID',
-    medium: 'SOLID_MEDIUM',
-    thick: 'SOLID_THICK',
-    dotted: 'DOTTED',
-    dashed: 'DASHED',
-    double: 'DOUBLE',
-} as const satisfies Record<BorderType, string>;
 
 const toSheetsBorder = (border: SheetBorder | undefined): sheets_v4.Schema$Border | undefined => {
     return border ? {
@@ -52,7 +42,7 @@ const toGridRange = (sheetId: number, range: SheetRange): sheets_v4.Schema$GridR
 
 const exp = <T>(value: T) => (console.log(value), value);
 
-const getExtendedValue = (value: SheetValue, position: SheetPosition): GoogleCellValue | undefined => {
+const getExtendedValue = (value: SheetValue, position: SheetPosition<number>): GoogleCellValue | undefined => {
     switch (typeof value) {
         case 'string':
             return { stringValue: value };
@@ -78,7 +68,7 @@ const getFields = (from: string[] | SheetData): string[] => {
     return [...fields];
 };
 
-const toCellValue = (data: SheetData, position: SheetPosition): GoogleCellValue | undefined => {
+const toCellValue = (data: SheetData, position: SheetPosition<number>): GoogleCellValue | undefined => {
     if (data.value !== undefined) {
         if (data.value !== null)
             return getExtendedValue(data.value, position);

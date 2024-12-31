@@ -1,10 +1,6 @@
 import { UnitSelector, Expression, UnitSelectorRegex } from "../tables/types";
-import { SheetRange, SheetPosition } from "./SheetPosition";
+import { SheetSelector, SheetPosition } from "./SheetPosition";
 
-
-export type SheetRangeSelector = SheetRange<UnitSelector>;
-
-export type SheetExpression = Expression<SheetRangeSelector>;
 
 
 const chars: Record<string, string> = {
@@ -21,47 +17,13 @@ const toFormulaString = (value: string): string => {
     }).join(' & ');
 };
 
-const charCodeA = 'A'.charCodeAt(0);
 
-const letterfy = (value: number): string => {
-    let result = '';
 
-    do {
-        result = String.fromCharCode(charCodeA + (value % 26 | 0)) + result;
 
-        value = value / 26 | 0;
-    } while (value);
+export type SheetExpression = Expression<SheetSelector>;
 
-    return result;
-};
 
-const modifyUnitSelector = (offset: UnitSelector | undefined | null, current: number, letter: boolean): string => {
-    let base = '';
-
-    let [_, type, number] = offset?.match(UnitSelectorRegex) ?? [];
-
-    let value = Number(number ?? 0);
-
-    if (type === '$')
-        base = '$';
-    else if (type === '-')
-        value = current - value;
-
-    else
-        value = current + value;
-
-    return base + (letter ? letterfy(value) : (value + 1).toString());
-};
-
-const toAddress = (selector: SheetRangeSelector | null, position: SheetPosition): string => {
-    const col = modifyUnitSelector(selector?.start.col, position.col, true);
-
-    const row = modifyUnitSelector(selector?.start.row, position.row, false);
-
-    return col + row;
-};
-
-export const toFormula = (exp: SheetExpression, position: SheetPosition): string => {
+export const toFormula = (exp: SheetExpression, position: SheetPosition<number>): string => {
     switch (typeof exp) {
         case 'string':
             return toFormulaString(exp);
@@ -78,9 +40,9 @@ export const toFormula = (exp: SheetExpression, position: SheetPosition): string
                 case 'negated':
                     return `-(${toFormula(exp.on, position)})`;
                 case 'self':
-                    return toAddress(null, position);
+                    return SheetSelector().toAddress(null, position);
                 case 'selector':
-                    return toAddress(exp.from, position);
+                    return SheetSelector().toAddress(exp.from, position);
             }
     }
 };

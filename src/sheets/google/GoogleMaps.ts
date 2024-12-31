@@ -1,8 +1,21 @@
-import { ComparisonOperator, MatchOperator, RangeOperator } from "../../tables/types";
+import { DateTime } from "luxon";
+import { BorderType, ComparisonOperator, MatchOperator, RangeOperator } from "../../tables/types";
 import { SheetAlign, SheetData, SheetWrap } from "../SheetData";
 import { SheetType } from "../SheetKind";
 import { SheetRule } from "../SheetRule";
 import { GoogleCondition } from "./GoogleTypes";
+import { SheetPosition } from "../SheetPosition";
+
+export const GoogleBorderMap = {
+    none: 'NONE',
+    thin: 'SOLID',
+    medium: 'SOLID_MEDIUM',
+    thick: 'SOLID_THICK',
+    dotted: 'DOTTED',
+    dashed: 'DASHED',
+    double: 'DOUBLE',
+} as const satisfies Record<BorderType, string>;
+
 
 export const GoogleHorizontalAlignMap = {
     start: 'LEFT',
@@ -76,12 +89,21 @@ export const GoogleTextConditionTypeMap: Record<string, string> = {
 } satisfies Record<MatchOperator, string>;
 
 
-const GoogleOneOfListConditionType = 'ONE_OF_LIST', ;
-const GoogleOneOfRangeConditionType = 'ONE_OF_RANGE', ;
+const GoogleOneOfListConditionType = 'ONE_OF_LIST';
+const GoogleOneOfRangeConditionType = 'ONE_OF_RANGE';
 
 const GoogleFormulaConditionType = 'CUSTOM_FORMULA';
 
-const toGoogleCondition = (rule: SheetRule): GoogleCondition => {
+const makeGoogleCondition = (type: string, values: string[]): GoogleCondition => {
+    return { type, values: values.map(value => ({ userEnteredValue: value })) };
+};
+
+const toISODate = (date: DateTime): string => date.toISODate()!;
+
+// YYYY-MM-DDTHH:MM:SS (NO TIMEZONE)
+const toISODateTime = (date: DateTime): string => date.toString();
+
+const toGoogleCondition = (rule: SheetRule, postion: SheetPosition): GoogleCondition => {
     switch (rule.type) {
         case "=":
         case ">":
@@ -91,21 +113,37 @@ const toGoogleCondition = (rule: SheetRule): GoogleCondition => {
         case "<>":
             switch (rule.target) {
                 case "number":
-                    return {type: GoogleNumberConditionTypeMap[rule.type], values: [{userEnteredValue: rule.value.toString()}]};
+                    return makeGoogleCondition(GoogleNumberConditionTypeMap[rule.type], [rule.value.toString()]);
                 case "date":
+                    return makeGoogleCondition(GoogleDateConditionTypeMap[rule.type], [toISODate(rule.value)]);
                 case "datetime":
+                    return makeGoogleCondition(GoogleDateConditionTypeMap[rule.type], [toISODateTime(rule.value)]);
             }
         case "between":
         case "outside":
+            switch (rule.target) {
+                case "number":
+                    return makeGoogleCondition(GoogleNumberConditionTypeMap[rule.type], [rule.low.toString(), rule.high.toString()]);
+                case "date":
+                    return makeGoogleCondition(GoogleDateConditionTypeMap[rule.type], [toISODate(rule.low), toISODate(rule.high)]);
+                case "datetime":
+                    return makeGoogleCondition(GoogleDateConditionTypeMap[rule.type], [toISODateTime(rule.low), toISODateTime(rule.high)]);
+            }
 
         case "contains":
         case "begins":
         case "ends":
+            return makeGoogleCondition(GoogleTextConditionTypeMap[rule.type], [rule.value]);
 
         case "enum":
+            return makeGoogleCondition(GoogleOneOfListConditionType, rule.values);
 
         case "lookup":
 
+            //return makeGoogleCondition(GoogleOneOfRangeConditionType);
+
         case "formula":
     }
+
+    throw new Error(`Unsupported Rule Type: ${rule}`);
 };

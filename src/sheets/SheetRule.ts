@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { ComparisonOperator, Expression, MatchOperator, RangeOperator } from "../tables/types";
 import { SheetStyle } from './SheetData';
-import { SheetRange } from "./SheetPosition";
+import { SheetSelector } from "./SheetPosition";
 
 // Common Targets
 export type NumberTarget = 'number';
@@ -42,12 +42,12 @@ export type SheetEnumRule = {
 export type SheetLookupRule = {
     type: 'lookup';
     sheet: string;
-    range: SheetRange;
+    range: SheetSelector;
 };
 
 export type SheetFormulaRule = {
     type: 'formula';
-    from: Expression<SheetRange>;
+    from: Expression<SheetSelector>;
 };
 
 // Consolidated SheetRule Type

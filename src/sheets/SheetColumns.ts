@@ -1,7 +1,7 @@
 import { Expression, NumericFormat } from "../tables/types";
 import { SheetBorder, SheetStyle } from "./SheetData";
-import { SheetRule, SheetConditionalFormat } from "./SheetRule";
-import { SheetRange } from "./SheetPosition";
+import { SheetSelector } from "./SheetPosition";
+import { SheetConditionalFormat, SheetRule } from "./SheetRule";
 
 export type SheetHeaderPartitions = {
     beneath?: SheetBorder;
@@ -22,6 +22,6 @@ export type SheetDataConfig = {
     style: SheetStyle;
     format?: NumericFormat;
     validation?: SheetRule;
-    formula?: Expression<SheetRange>;
+    formula?: Expression<SheetSelector>;
     conditionalFormats?: SheetConditionalFormat[];
 };
