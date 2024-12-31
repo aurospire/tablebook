@@ -35,9 +35,9 @@ const toWeightedColorStyle = (color: ColorObject | undefined): sheets_v4.Schema$
 const toGridRange = (sheetId: number, range: SheetRange): sheets_v4.Schema$GridRange => ({
     sheetId,
     startColumnIndex: range.start.col,
-    endColumnIndex: range.end?.col,
+    endColumnIndex: range.end ? range.end.col : range.start.col + 1,
     startRowIndex: range.start.row,
-    endRowIndex: range.end?.row
+    endRowIndex:  range.end ? range.end.row : range.start.row + 1,
 });
 
 
@@ -262,7 +262,7 @@ export class GoogleRequester {
             }
         });
     }
-    
+
 
     async run(api: GoogleApi, id: string) {
         const result = await api.spreadsheets.batchUpdate({
