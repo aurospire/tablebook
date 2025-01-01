@@ -1,0 +1,72 @@
+// Types for TableBook - a declarative schema (like DDL for databases) for one-time spreadsheet generation. Each sheet has one table with at least one column group. Use built-in themes/formats (@blue, @isodate etc) or define reusable items in definitions rather than hardcoding.
+type Reference<Set extends string = string> = `@${Set}`;
+
+// Data targeting: Column-based selectors (no horizontal selection). Targets entire columns or row subsets within a column. 
+// Table/group default to current element's context if not specified. 'self' refers to current element's column/row. 
+// Row selection uses relative (+/-) or absolute ($) offsets from current position.
+type DataSelector = { column: ColumnSelector | 'self'; row?: UnitSelector | RangeRowSelector | 'self'; } | 'self';
+type ColumnSelector = { table?: string; group?: string; column: string; };
+type UnitSelector = `${'+' | '-' | '$'}${number}`;
+type RangeRowSelector = { type: 'range'; from: UnitSelector; to: UnitSelector; };
+
+// Expressions for formulas and conditions (e.g. comparisons, math, functions, literals)
+type Expression<Selector> =
+    | { type: 'compound'; with: '=' | '<>' | '>' | '<' | '>=' | '<=' | '+' | '-' | '*' | '/' | '^' | '&'; items: Expression<Selector>[]; }
+    | { type: 'negated'; on: Expression<Selector>; }
+    | { type: 'function'; name: string; args: Expression<Selector>[]; }
+    | { type: 'selector'; from: Selector; } | { type: 'self'; }
+    | string | number | boolean;
+
+// Styling for cells, headers, and groups
+type StandardColorReference = Reference<'pink' | 'cranberry' | 'red' | 'rust' | 'orange' | 'yellow' | 'green' | 'moss' | 'sage' | 'teal' | 'slate' | 'cyan' | 'blue' | 'azure' | 'skyblue' | 'lavender' | 'indigo' | 'purple' | 'plum' | 'mauve' | 'coral' | 'terracotta' | 'bronze' | 'sand' | 'taupe' | 'gray' | 'charcoal'>;
+type ColorString = `#${string}`; // Full Hex Colors #RRGGBB
+type Color = ColorString | StandardColorReference | Reference;
+type Style = { fore?: Color | Reference; back?: Color | Reference; form?: boolean | { bold?: boolean; italic?: boolean; }; };
+type Border = { type: 'none' | 'thin' | 'medium' | 'thick' | 'dotted' | 'dashed' | 'double'; color?: Color | Reference; /* defaults to @black */ };
+type HeaderStyle = Style & { partition?: { below?: Border; between?: Border; }; };
+type Theme = { inherits?: (StandardColorReference | Reference)[]; tab?: Color | Reference; group?: HeaderStyle | Reference; header?: HeaderStyle | Reference; data?: Style | Reference; };
+
+// Rules for validation and conditional formatting
+type ConditionalStyle<Rule> = { on: Rule; style: Style | Reference; };
+type CustomRule = { type: 'custom'; expression: Expression<DataSelector>; };
+type NumericRule = { type: '=' | '<>' | '>' | '<' | '>=' | '<='; to: number; } | { type: 'between' | 'outside'; low: number; high: number; } | CustomRule;
+type TemporalString = `${number}-${number}-${number}` | `${number}-${number}-${number}${'T' | ' '}${number}:${number}:${number}`;
+type TemporalRule = { type: '=' | '<>' | '>' | '<' | '>=' | '<='; to: TemporalString; } | { type: 'between' | 'outside'; low: TemporalString; high: TemporalString; } | CustomRule;
+type TextRule = { type: 'contains' | 'begins' | 'ends'; value: string; } | CustomRule;
+
+// Formatting for numbers 
+type DigitPlaceholder = { fixed?: number; flex?: number; align?: number; };
+type BaseNumberFormat = { integer?: number | DigitPlaceholder; decimal?: number | DigitPlaceholder; commas?: boolean; };
+type NumberFormat = BaseNumberFormat & { type: 'number'; };
+type PercentFormat = BaseNumberFormat & { type: 'percent'; };
+type CurrencyFormat = BaseNumberFormat & { type: 'currency'; symbol?: string; position?: 'prefix' | 'suffix'; };
+type NumericFormat = NumberFormat | PercentFormat | CurrencyFormat;
+
+// Formatting for temporals: temporal units or literal strings
+type TemporalFormat = ({ type: 'year' | 'month' | 'monthname' | 'weekday' | 'day' | 'hour' | 'meridiem' | 'minute' | 'second'; length: 'short' | 'long'; } | string)[];
+type StandardFormatReference = Reference<'isodate' | 'isodatetime' | 'eurolongdate' | 'euroshortdate' | 'uslongdate' | 'usshortdate' | 'textlongdate' | 'textshortdate'>;
+
+// Column data types with validation and formatting
+type DataType =
+    | { type: 'text'; expression?: Expression<DataSelector>; rule?: TextRule; styles?: ConditionalStyle<TextRule>[]; }
+    | { type: 'numeric'; expression?: Expression<DataSelector>; rule?: NumericRule; styles?: ConditionalStyle<NumericRule>[]; format?: NumericFormat | Reference; }
+    | { type: 'temporal'; expression?: Expression<DataSelector>; rule?: TemporalRule; styles?: ConditionalStyle<TemporalRule>[]; format?: TemporalFormat | StandardFormatReference | Reference; }
+    | { type: 'enum'; values: (string | { value: string; style?: Style | Reference; })[]; }
+    | { type: 'lookup'; values: ColumnSelector; }
+    | Reference;
+
+// Table structure: Book > Sheet > Group > Column hierarchy
+type TableUnit = { name: string; theme?: Theme | StandardColorReference | Reference; description?: string; };
+type TableColumn = TableUnit & { type: DataType; source?: string; };
+type TableGroup = TableUnit & { columns: TableColumn[]; };
+type TableSheet = TableUnit & { groups: TableGroup[]; rows: number; };
+type TableBook = TableUnit & {
+    sheets: TableSheet[];
+    definitions?: {
+        colors?: Record<string, Color>;
+        styles?: Record<string, Style | HeaderStyle>;
+        themes?: Record<string, Theme>;
+        formats?: { numeric?: Record<string, NumericFormat>; temporal?: Record<string, TemporalFormat>; };
+        types?: Record<string, DataType>;
+    };
+};

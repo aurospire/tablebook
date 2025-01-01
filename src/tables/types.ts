@@ -1,3 +1,6 @@
+// Types for TableBook - a declarative schema (like DDL for databases) for one-time spreadsheet generation. 
+// Each sheet has one table with at least one column group. 
+
 /* Reference */
 // Used to Reference context dependent items (color,style,theme,type) defined in TableBook Definition object
 export const ReferenceRegex = /^@.+$/;
@@ -48,16 +51,65 @@ export type DataSelector = {
 } | SelfSelector; // Refers to the entire element, including its column and row.
 
 
-
 /* Styling */
 export const ColorRegex = /^#[A-Za-z0-9]{6}$/;
 export type Color = `#${string}`;
 
+export const makeStandardPalette = (
+    darkest: Color,
+    dark: Color,
+    main: Color,
+    lightest: Color
+) => ({ darkest, dark, main, lightest });
+
+export const StandardPalettes = {
+    // Reds
+    pink: makeStandardPalette('#741F3F', '#C0315A', '#E84E76', '#FFD6E0'), // True rose pink
+    cranberry: makeStandardPalette('#4C0D1C', '#721026', '#A31432', '#F4C2C9'), // Deep burgundy-cranberry
+    red: makeStandardPalette('#660000', '#880000', '#C32222', '#F8C5C5'), // Classic red shades
+
+    // Oranges and Yellows
+    rust: makeStandardPalette('#8B3103', '#B54D18', '#D65C2B', '#F7D5BC'), // Deep orange-brown
+    orange: makeStandardPalette('#783F04', '#B45F06', '#E6751A', '#FDD9BC'), // Bold orange shades
+    yellow: makeStandardPalette('#856500', '#BF9000', '#E6AC1E', '#FFF2C4'), // Golden yellow tones
+
+    // Greens
+    green: makeStandardPalette('#294E13', '#38761D', '#4B9022', '#D6E8CE'), // Deep forest green
+    moss: makeStandardPalette('#1E4D2B', '#3A7A47', '#519563', '#D4E8D1'), // Cool earthy green
+    sage: makeStandardPalette('#38471F', '#596F34', '#788F4A', '#DCEADF'), // Muted green tones
+
+    // Blues
+    teal: makeStandardPalette('#004548', '#006E6E', '#008F8F', '#D1F0EC'), // Deep blue-green
+    slate: makeStandardPalette('#2A4545', '#366060', '#507878', '#DEE8E8'), // Muted gray-blue
+    cyan: makeStandardPalette('#0C343D', '#134F5C', '#1B657A', '#CBE5E8'), // Fresh blue-green
+    blue: makeStandardPalette('#073763', '#0B5394', '#1763B8', '#CEE2F0'), // Classic blue shades
+    azure: makeStandardPalette('#123A75', '#1E5BAA', '#2D70C8', '#D0E2F4'), // Bright sky blue
+    skyblue: makeStandardPalette('#004080', '#0066CC', '#2E8FEA', '#D0E6F8'), // Light sky blue
+
+    // Purples
+    lavender: makeStandardPalette('#3F3677', '#5F51B7', '#776CCF', '#DAD5F2'), // Soft lavender tones
+    indigo: makeStandardPalette('#20124D', '#351C75', '#483CA4', '#D5D0E3'), // Deep blue-purple
+    purple: makeStandardPalette('#2D0A53', '#4B0082', '#6A0DAD', '#E6D5FF'), // Rich royal purple
+    plum: makeStandardPalette('#4E1A45', '#6C3483', '#8E4FA8', '#E7D0EA'), // Warm purple-pink
+    mauve: makeStandardPalette('#682F42', '#8D4659', '#A85475', '#F5D4DC'), // Dusky purple-pink
+
+    // Neutrals    
+    coral: makeStandardPalette('#762F2F', '#AF4A4A', '#D36868', '#FFE0DC'), // Warm reddish-pink
+    terracotta: makeStandardPalette('#713F2D', '#9C5F4E', '#C87561', '#FAD9CE'), // Earthy orange-red
+    bronze: makeStandardPalette('#5D4037', '#895D4D', '#A6705F', '#EAD6C7'), // Metallic brown
+    sand: makeStandardPalette('#6A5D47', '#8C755D', '#B5937A', '#EDE0D2'), // Warm beige tones
+    taupe: makeStandardPalette('#483C32', '#6B5D4F', '#857667', '#E5DBD1'), // Neutral brown-gray
+    gray: makeStandardPalette('#3B3B3B', '#656565', '#7E7E7E', '#E8E8E8'), // Neutral gray shades
+    charcoal: makeStandardPalette('#2A2A2A', '#4D4D4D', '#676767', '#E2E2E2'), // Deep gray tones
+} as const;
+
+export type StandardPaletteReference = Reference<keyof typeof StandardPalettes>;
+
 export type TextForm = boolean | { bold?: boolean; italic?: boolean; };
 
 export type Style = {
-    fore?: Color | Reference; // defaults to black
-    back?: Color | Reference; // defaults to white
+    fore?: Color | StandardPaletteReference | Reference; // defaults to black
+    back?: Color | StandardPaletteReference | Reference; // defaults to white
     form?: TextForm; // defaults to false
 };
 
@@ -67,7 +119,7 @@ export type BorderType = typeof BorderTypes[number];
 
 export type Border = {
     type: BorderType;
-    color?: Color | Reference;  // defaults to black    
+    color?: Color | StandardPaletteReference | Reference;  // defaults to black    
 };
 
 export type Partition = {
@@ -79,67 +131,13 @@ export type HeaderStyle = Style & { partition?: Partition; };
 
 
 export type Theme = {
-    inherits?: (StandardThemeReference | Reference)[]; // Deep overriding (into styles and borders)
-    tab?: Color | Reference;
+    // StandardPaletteReferences here map to darkest:group,dark:header,main:data,lightest:tab
+    inherits?: (StandardPaletteReference | Reference)[]; // Deep overriding - not shallow, order matters
+    tab?: Color | StandardPaletteReference | Reference;
     group?: HeaderStyle | Reference;
     header?: HeaderStyle | Reference;
     data?: Style | Reference;
 };
-
-const makeStandardTheme = (darkest: Color, dark: Color, normal: Color, lightest: Color): Theme => {
-    return {
-        tab: normal,
-        group: { back: darkest },
-        header: { back: dark },
-        data: { back: lightest },
-    };
-};
-
-export const StandardThemes = {
-    // Pinks
-    pink: makeStandardTheme('#741F3F', '#C0315A', '#E84E76', '#FFD6E0'), // True rose pink
-    //carmine: makeStandardTheme('#570724', '#960C3C', '#D81B60', '#F8BBD0'), // Rich red-pink
-
-    // Reds
-    cranberry: makeStandardTheme('#4C0D1C', '#721026', '#A31432', '#F4C2C9'), // Deep burgundy-cranberry
-    red: makeStandardTheme('#660000', '#880000', '#C32222', '#F8C5C5'), // Classic red shades
-
-    // Oranges and Yellows
-    rust: makeStandardTheme('#8B3103', '#B54D18', '#D65C2B', '#F7D5BC'), // Deep orange-brown
-    orange: makeStandardTheme('#783F04', '#B45F06', '#E6751A', '#FDD9BC'), // Bold orange shades
-    yellow: makeStandardTheme('#856500', '#BF9000', '#E6AC1E', '#FFF2C4'), // Golden yellow tones
-
-    // Greens
-    green: makeStandardTheme('#294E13', '#38761D', '#4B9022', '#D6E8CE'), // Deep forest green
-    moss: makeStandardTheme('#1E4D2B', '#3A7A47', '#519563', '#D4E8D1'), // Cool earthy green
-    sage: makeStandardTheme('#38471F', '#596F34', '#788F4A', '#DCEADF'), // Muted green tones
-
-    // Blues
-    teal: makeStandardTheme('#004548', '#006E6E', '#008F8F', '#D1F0EC'), // Deep blue-green
-    slate: makeStandardTheme('#2A4545', '#366060', '#507878', '#DEE8E8'), // Muted gray-blue
-    cyan: makeStandardTheme('#0C343D', '#134F5C', '#1B657A', '#CBE5E8'), // Fresh blue-green
-    blue: makeStandardTheme('#073763', '#0B5394', '#1763B8', '#CEE2F0'), // Classic blue shades
-    azure: makeStandardTheme('#123A75', '#1E5BAA', '#2D70C8', '#D0E2F4'), // Bright sky blue
-    skyblue: makeStandardTheme('#004080', '#0066CC', '#2E8FEA', '#D0E6F8'), // Light sky blue
-
-    // Purples
-    lavender: makeStandardTheme('#3F3677', '#5F51B7', '#776CCF', '#DAD5F2'), // Soft lavender tones
-    indigo: makeStandardTheme('#20124D', '#351C75', '#483CA4', '#D5D0E3'), // Deep blue-purple
-    purple: makeStandardTheme('#2D0A53', '#4B0082', '#6A0DAD', '#E6D5FF'), // Rich royal purple
-    plum: makeStandardTheme('#4E1A45', '#6C3483', '#8E4FA8', '#E7D0EA'), // Warm purple-pink
-    mauve: makeStandardTheme('#682F42', '#8D4659', '#A85475', '#F5D4DC'), // Dusky purple-pink
-
-    // Neutrals    
-    coral: makeStandardTheme('#762F2F', '#AF4A4A', '#D36868', '#FFE0DC'), // Warm reddish-pink
-    terracotta: makeStandardTheme('#713F2D', '#9C5F4E', '#C87561', '#FAD9CE'), // Earthy orange-red
-    bronze: makeStandardTheme('#5D4037', '#895D4D', '#A6705F', '#EAD6C7'), // Metallic brown
-    sand: makeStandardTheme('#6A5D47', '#8C755D', '#B5937A', '#EDE0D2'), // Warm beige tones
-    taupe: makeStandardTheme('#483C32', '#6B5D4F', '#857667', '#E5DBD1'), // Neutral brown-gray
-    gray: makeStandardTheme('#3B3B3B', '#656565', '#7E7E7E', '#E8E8E8'), // Neutral gray shades
-    charcoal: makeStandardTheme('#2A2A2A', '#4D4D4D', '#676767', '#E2E2E2'), // Deep gray tones
-} as const;
-
-export type StandardThemeReference = Reference<keyof typeof StandardThemes>;
 
 
 /* Operators */
@@ -188,9 +186,6 @@ export type Expression<Selector> =
 
 
 /* Data Rules */
-
-// Rule[] => All(Rule) all must pass
-
 export const TemporalStringRegex = /^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}:\d{2})?$/;
 export type DateString = `${number}-${number}-${number}`;
 export type DateTimeString = `${DateString}${'T' | ' '}${number}:${number}:${number}`;
@@ -271,6 +266,25 @@ export type TemporalItem = TemporalUnit | string;
 
 export type TemporalFormat = TemporalItem[];
 
+const tu = (type: TemporalUnitType, length: TemporalUnitLength = 'short'): TemporalUnit => ({ type, length });
+
+export const StandardTemporalFormats = {
+    isodate: [tu('year'), '-', tu('month'), '-', tu('day')], // "YYYY-MM-DD"
+    isodatetime: [tu('year'), '-', tu('month'), '-', tu('day'), 'T', tu('hour'), ':', tu('minute'), ':', tu('second')], // "YYYY-MM-DDTHH:mm:ss"
+
+    eurolongdate: [tu('day'), ' ', tu('monthname', 'long'), ' ', tu('year', 'long')], // "dd MMMM yyyy"
+    euroshortdate: [tu('day'), '/', tu('month'), '/', tu('year')], // "dd/MM/yyyy"
+
+    uslongdate: [tu('monthname', 'long'), ' ', tu('day'), ', ', tu('year', 'long')], // "MMMM dd, yyyy"
+    usshortdate: [tu('month'), '/', tu('day'), '/', tu('year')], // "MM/dd/yyyy"
+
+    textlongdate: [tu('weekday', 'long'), ', ', tu('monthname', 'long'), ' ', tu('day'), ', ', tu('year', 'long')], // "Sunday, September 24, 2023"
+    textshortdate: [tu('weekday'), ', ', tu('monthname'), ' ', tu('day'), ', ', tu('year')], // "Sun, Sep 24, 2023"
+} as const;
+
+export type StandardFormatReference = Reference<keyof typeof StandardTemporalFormats>;
+
+
 /* Data Types */
 export const TextTypeType = 'text';
 export type TextType = {
@@ -295,7 +309,7 @@ export type TemporalType = {
     expression?: Expression<DataSelector>;
     rule?: TemporalRule;
     styles?: ConditionalStyle<TemporalRule>[];
-    format?: TemporalFormat | Reference;
+    format?: TemporalFormat | StandardFormatReference | Reference;
 };
 
 export type EnumItem = string | { value: string; style?: Style | Reference; };
@@ -319,7 +333,7 @@ export type DataType = TextType | NumericType | TemporalType | EnumType | Lookup
 export const TableUnitNameRegex = /^[A-Z](A-Za-z0-9)*$/;
 export type TableUnit = {
     name: string;
-    theme?: Theme | StandardThemeReference | Reference;
+    theme?: Theme | StandardPaletteReference | Reference;
     description?: string; // meta description of column
 };
 
@@ -340,9 +354,9 @@ export type TableSheet = TableUnit & {
 
 // Definitions table allows reuse/inheritence of commonly used colors,styles,themes and types via References
 export type Definitions = {
-    colors?: Record<string, Color>;
+    colors?: Record<string, Color>; // Includes Standard Colors by default
     styles?: Record<string, Style | HeaderStyle>;
-    themes?: Record<string, Theme>; // Includes Standard Themes by default
+    themes?: Record<string, Theme>; // Includes Standard Colors by default
     formats?: {
         numeric?: Record<string, NumericFormat>;
         temporal?: Record<string, TemporalFormat>; // Includes Standard Formats by default
