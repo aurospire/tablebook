@@ -3,11 +3,13 @@
 // Each sheet has one table with at least one column group.
 // TableBook implements a powerful table paradigm - a strict subset of spreadsheets with only vertical relationships.
 // Data relationships and computations are column-based - no cell addresses or horizontal references.
-// Standard components (palettes, formats) should be preferred over definitions, and definitions over inline.
+// Standard components when they exist (ie: palettes) should be preferred over definitions, and definitions over inline.
+// Ideally every Table theme should use its own palette.
+// LLMs or UIs can create in JSON or YAML to be parsed into TableBook for processing.
 
 /* Reference */
 /** Regex pattern for validating Reference strings. Must start with @ followed by allowed characters */
-export const ReferenceRegex = /^@.+$/;
+export const ReferenceRegex = /^@[A-Za-z_][A-Za-z0-9_]+$/;
 
 /** Type for referencing context-dependent items (color, style, theme, type) defined in TableBook */
 export type Reference<Set extends string = string> = `@${Set}`;
@@ -41,12 +43,8 @@ export type UnitPrefix = '$' | '+' | '-';
 /** Targets a single row in a column using absolute ($) or relative (+/-) indexing */
 export type UnitSelector = `${UnitPrefix}${number}`;
 
-/** Type identifier for range row selection */
-export const RangeRowSelectorType = 'range';
 /** Targets a range of rows within a column between two endpoints */
 export type RangeRowSelector = {
-    /** Specifies that this selector targets a range */
-    type: typeof RangeRowSelectorType;
     /** One boundary of the range (compiler determines order) */
     from: UnitSelector;
     /** The other boundary of the range (compiler determines order) */
@@ -167,7 +165,7 @@ export type Partition = {
 };
 
 /** Extended style for headers including partition borders */
-export type HeaderStyle = Style & { partition?: Partition; };
+export type HeaderStyle = Style & Partition;
 
 /** Theme definition for consistent styling */
 export type Theme = {
@@ -375,39 +373,18 @@ export type TemporalItem = TemporalUnit | string;
 /** Complete format pattern for temporal values */
 export type TemporalFormat = TemporalItem[];
 
-/** Helper for creating temporal unit configs */
-const tu = (type: TemporalUnitType, length: TemporalUnitLength = 'short'): TemporalUnit => ({ type, length });
-
-/** Predefined temporal format patterns for common use cases */
-export const StandardTemporalFormats = {
-    isodate: [tu('year'), '-', tu('month'), '-', tu('day')], // "YYYY-MM-DD"
-    isodatetime: [tu('year'), '-', tu('month'), '-', tu('day'), 'T', tu('hour'), ':', tu('minute'), ':', tu('second')], // "YYYY-MM-DDTHH:mm:ss"
-
-    eurolongdate: [tu('day'), ' ', tu('monthname', 'long'), ' ', tu('year', 'long')], // "dd MMMM yyyy"
-    euroshortdate: [tu('day'), '/', tu('month'), '/', tu('year')], // "dd/MM/yyyy"
-
-    uslongdate: [tu('monthname', 'long'), ' ', tu('day'), ', ', tu('year', 'long')], // "MMMM dd, yyyy"
-    usshortdate: [tu('month'), '/', tu('day'), '/', tu('year')], // "MM/dd/yyyy"
-
-    textlongdate: [tu('weekday', 'long'), ', ', tu('monthname', 'long'), ' ', tu('day'), ', ', tu('year', 'long')], // "Sunday, September 24, 2023"
-    textshortdate: [tu('weekday'), ', ', tu('monthname'), ' ', tu('day'), ', ', tu('year')], // "Sun, Sep 24, 2023"
-} as const;
-
-/** Reference to a standard temporal format */
-export type StandardFormatReference = Reference<keyof typeof StandardTemporalFormats>;
-
 
 
 /* Data Types */
 
 /** Identifies a text type in the type system */
-export const TextTypeType = 'text';
+export const TextTypeName = 'text';
 /** 
  * Text data type for string values
  * Supports validation rules, conditional styling, and computed expressions
  */
 export type TextType = {
-    type: typeof TextTypeType;
+    name: typeof TextTypeName;
     /** Optional expression to compute the text value */
     expression?: Expression<DataSelector>;
     /** Optional validation rule for the text content */
@@ -417,13 +394,13 @@ export type TextType = {
 };
 
 /** Identifies a numeric type in the type system */
-export const NumericTypeType = 'numeric';
+export const NumericTypeName = 'numeric';
 /** 
  * Numeric data type for numbers and calculations
  * Supports formatting options, validation rules, and computed expressions
  */
 export type NumericType = {
-    type: typeof NumericTypeType;
+    name: typeof NumericTypeName;
     /** Optional expression to compute the numeric value */
     expression?: Expression<DataSelector>;
     /** Optional validation rule for the numeric value */
@@ -435,13 +412,13 @@ export type NumericType = {
 };
 
 /** Identifies a temporal type in the type system */
-export const TemporalTypeType = 'temporal';
+export const TemporalTypeName = 'temporal';
 /** 
  * Temporal data type for dates and times
  * Supports multiple format options, validation rules, and computed expressions
  */
 export type TemporalType = {
-    type: typeof TemporalTypeType;
+    name: typeof TemporalTypeName;
     /** Optional expression to compute the temporal value */
     expression?: Expression<DataSelector>;
     /** Optional validation rule for the temporal value */
@@ -449,7 +426,7 @@ export type TemporalType = {
     /** Optional array of conditional styles based on temporal rules */
     styles?: ConditionalStyle<TemporalRule>[];
     /** Optional formatting for how the date/time should be displayed */
-    format?: TemporalFormat | StandardFormatReference | Reference;
+    format?: TemporalFormat | Reference;
 };
 
 
@@ -460,13 +437,13 @@ export type TemporalType = {
 export type EnumItem = string | { value: string; style?: Style | Reference; };
 
 /** Identifies an enum type in the type system */
-export const EnumTypeType = 'enum';
+export const EnumTypeName = 'enum';
 /** 
  * Enumerated data type with a fixed set of possible values
  * Each value can have its own style
  */
 export type EnumType = {
-    type: typeof EnumTypeType;
+    name: typeof EnumTypeName;
     /** Array of valid values for this enum */
     values: EnumItem[];
 };
@@ -479,7 +456,7 @@ export const LookupTypeType = 'lookup';
  * Useful for maintaining consistency and relationships between columns
  */
 export type LookupType = {
-    type: typeof LookupTypeType;
+    name: typeof LookupTypeType;
     /** Column containing the valid values for this lookup */
     values: ColumnSelector;
 };
@@ -524,7 +501,7 @@ export type TableColumn = TableUnit & {
 
 /** 
 * Groups related columns together
-* Groups are hidden in the output if there's only one in a sheet
+* Groups are hidden in the output if there's only one in a sheet, so the name doesn't matter (can be '')
 */
 export type TableGroup = TableUnit & {
     /** Array of columns belonging to this group */

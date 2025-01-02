@@ -14,7 +14,7 @@ import {
     DataType,
     Definitions,
     DigitPlaceholder,
-    EnumItem, EnumType, EnumTypeType,
+    EnumItem, EnumType, EnumTypeName,
     Expression,
     FunctionExpression, FunctionExpressionType,
     HeaderStyle,
@@ -27,11 +27,11 @@ import {
     NumberFormat, NumberFormatType,
     NumericFormat,
     NumericRule,
-    NumericType, NumericTypeType,
+    NumericType, NumericTypeName,
     Partition,
     PercentFormat, PercentFormatType,
     RangeOperators,
-    RangeRowSelector, RangeRowSelectorType,
+    RangeRowSelector,
     RangeRule,
     Reference, ReferenceRegex,
     RowSelector,
@@ -46,13 +46,13 @@ import {
     TemporalRule,
     TemporalString,
     TemporalStringRegex,
-    TemporalType, TemporalTypeType,
+    TemporalType, TemporalTypeName,
     TemporalUnit,
     TemporalUnitLength, TemporalUnitLengths,
     TemporalUnitType, TemporalUnitTypes,
     TextForm,
     TextRule,
-    TextType, TextTypeType,
+    TextType, TextTypeName,
     Theme,
     UnitSelector, UnitSelectorRegex
 } from './types';
@@ -71,8 +71,7 @@ const ColumnSelector: z.ZodType<ColumnSelector> = z.object({
 
 const UnitSelector: z.ZodType<UnitSelector> = z.custom<UnitSelector>(value => UnitSelectorRegex.test(value as string));
 
-const RangeRowSelector: z.ZodType<RangeRowSelector> = z.object({
-    type: z.literal(RangeRowSelectorType),
+const RangeRowSelector: z.ZodType<RangeRowSelector> = z.object({    
     from: UnitSelector,
     to: UnitSelector
 });
@@ -118,9 +117,7 @@ const Partition: z.ZodType<Partition> = z.object({
     between: Border.optional()
 });
 
-const HeaderStyle: z.ZodType<HeaderStyle> = Style.and(z.object({
-    partition: Partition.optional()
-}));
+const HeaderStyle: z.ZodType<HeaderStyle> = Style.and(Partition);
 
 const HeaderStyleReference = z.union([HeaderStyle, Reference]);
 const StyleReference = z.union([Style, Reference]);
@@ -262,14 +259,14 @@ const TemporalFormat: z.ZodType<TemporalFormat> = z.array(TemporalItem);
 
 /* Data Types */
 const TextType: z.ZodType<TextType> = z.object({
-    type: z.literal(TextTypeType),
+    name: z.literal(TextTypeName),
     expression: Expression.optional(),
     rule: TextRule.optional(),
     styles: z.array(TextConditionalStyle).optional()
 });
 
 const NumericType: z.ZodType<NumericType> = z.object({
-    type: z.literal(NumericTypeType),
+    name: z.literal(NumericTypeName),
     expression: Expression.optional(),
     rule: NumericRule.optional(),
     styles: z.array(NumericConditionalStyle).optional(),
@@ -277,7 +274,7 @@ const NumericType: z.ZodType<NumericType> = z.object({
 });
 
 const TemporalType: z.ZodType<TemporalType> = z.object({
-    type: z.literal(TemporalTypeType),
+    name: z.literal(TemporalTypeName),
     expression: Expression.optional(),
     rule: TemporalRule.optional(),
     styles: z.array(TemporalConditionalStyle).optional(),
@@ -293,12 +290,12 @@ const EnumItem: z.ZodType<EnumItem> = z.union([
 ]);
 
 const EnumType: z.ZodType<EnumType> = z.object({
-    type: z.literal(EnumTypeType),
+    name: z.literal(EnumTypeName),
     values: z.array(EnumItem)
 });
 
 const LookupType: z.ZodType<LookupType> = z.object({
-    type: z.literal(LookupTypeType),
+    name: z.literal(LookupTypeType),
     values: ColumnSelector
 });
 
