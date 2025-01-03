@@ -14,6 +14,30 @@
  * - Every Table theme should ideally use its own palette
  * - LLMs or UIs can create in JSON or YAML to be parsed into TableBook
  * 
+ * References:
+ * - References are identified by their context and must **always begin with `@`** to denote a link 
+ *   to a predefined entity (e.g., palettes, styles, themes, formats).
+ * 
+ * Contextual Examples:
+ * - **Themes**:
+ *   - `"inherits": ["@blue"]` refers to the `blue` palette defined in `definitions.colors` or built-in palettes.
+ *   - `"theme": "@customTheme"` refers to a theme in `definitions.themes`.
+ * - **Styles**:
+ *   - `"fore": "@green"` references the `green` color from `definitions.colors`.
+ *   - `"style": "@headerStyle"` refers to a predefined style in `definitions.styles`.
+ * - **Formats**:
+ *   - `"format": "@currencyFormat"` references a format in `definitions.formats.numeric`.
+ * 
+ * Direct Values:
+ * - `"#FF0000"`: A direct hex color value (inline specification).
+ * - `{ "bold": true }`: An inline style definition for text formatting.
+ * - `{ "type": "currency", "symbol": "$" }`: An inline numeric format object.
+ * 
+ * Notes:
+ * - The `@` prefix ensures the value is treated as a reference to a predefined entity.
+ * - If a value does not begin with `@`, it is interpreted as a direct, inline specification.
+ * - Always ensure references match names defined in `definitions` or built-in entities.
+ * 
  * Palettes and Themes:
  * Palettes provide consistent color schemes through four shades (darkest, dark, main, lightest).
  * When used in themes, the shades map automatically:

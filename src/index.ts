@@ -89,3 +89,99 @@ const main = async () => {
     }
 };
 
+const tablebook: TableBook = {
+    "name": "Employee Ratings",
+    "description": "A table to manage and display employee ratings.",
+    "theme": {
+        "inherits": ["@blue"],
+        "tab": "@blue"
+    },
+    "definitions": {
+        "colors": {
+            "highRating": "#00FF00",
+            "lowRating": "#FF0000"
+        },
+        "styles": {
+            "highPerformance": {
+                "fore": "@green",
+                "form": { "bold": true }
+            },
+            "lowPerformance": {
+                "fore": "@red",
+                "form": { "italic": true }
+            }
+        },
+        "themes": {
+            "ratingsTheme": {
+                "data": {
+                    "fore": "@slate",
+                    "back": "@cyan"
+                },
+                "header": {
+                    "fore": "@white",
+                    "back": "@blue",
+                    "form": { "bold": true }
+                }
+            }
+        },
+        "formats": {
+            "numeric": {
+                "percent": {
+                    "type": "percent",
+                    "integer": { "fixed": 1 },
+                    "decimal": { "fixed": 2 },
+                    "commas": false
+                }
+            }
+        }
+    },
+    "sheets": [
+        {
+            "name": "Employee Ratings Sheet",
+            "description": "Sheet containing employee ratings data.",
+            "theme": "@ratingsTheme",
+            "rows": 100,
+            "groups": [
+                {
+                    "name": "Employee Data",
+                    "columns": [
+                        {
+                            "name": "Employee Name",
+                            "type": { "name": "text" },
+                            "description": "Name of the employee."
+                        },
+                        {
+                            "name": "Department",
+                            "type": { "name": "enum", "values": ["HR", "Engineering", "Sales", "Marketing"] },
+                            "description": "Department the employee belongs to."
+                        },
+                        {
+                            "name": "Performance Rating",
+                            "type": {
+                                "name": "numeric",
+                                "rule": { "type": "between", "low": 0, "high": 5 },
+                                "styles": [
+                                    {
+                                        "on": { "type": ">=", "to": 4 },
+                                        "style": "@highPerformance"
+                                    },
+                                    {
+                                        "on": { "type": "<", "to": 2 },
+                                        "style": "@lowPerformance"
+                                    }
+                                ]
+                            },
+                            "description": "Performance rating out of 5.",
+                            "expression": { "type": "self" }
+                        },
+                        {
+                            "name": "Feedback",
+                            "type": { "name": "text" },
+                            "description": "Feedback for the employee."
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
