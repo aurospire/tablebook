@@ -33,7 +33,7 @@ export type ColumnSelector = {
     /** The group containing the column; defaults to the element's group */
     group?: string;
     /** The name of the column (required) */
-    column: string;
+    name: string;
 };
 
 /** Regex for validating unit selector syntax ($/+/-)number */
@@ -232,8 +232,10 @@ export type SelectorExpression<Selector> = {
 /** Expression referencing the current element's value */
 export type SelfExpression = { type: typeof SelfLiteral; };
 
+/** Type identifier for literal expressions */
+export const LiteralExpressionType = 'literal';
 /** Direct value expression */
-export type LiteralExpression = string | number | boolean;
+export type LiteralExpression = { type: typeof LiteralExpressionType, value: string | number | boolean; };
 
 /** All possible expression types for data computation and validation */
 export type Expression<Selector> =
@@ -385,8 +387,6 @@ export const TextTypeName = 'text';
  */
 export type TextType = {
     name: typeof TextTypeName;
-    /** Optional expression to compute the text value */
-    expression?: Expression<DataSelector>;
     /** Optional validation rule for the text content */
     rule?: TextRule;
     /** Optional array of conditional styles based on text rules */
@@ -401,8 +401,6 @@ export const NumericTypeName = 'numeric';
  */
 export type NumericType = {
     name: typeof NumericTypeName;
-    /** Optional expression to compute the numeric value */
-    expression?: Expression<DataSelector>;
     /** Optional validation rule for the numeric value */
     rule?: NumericRule;
     /** Optional array of conditional styles based on numeric rules */
@@ -419,8 +417,6 @@ export const TemporalTypeName = 'temporal';
  */
 export type TemporalType = {
     name: typeof TemporalTypeName;
-    /** Optional expression to compute the temporal value */
-    expression?: Expression<DataSelector>;
     /** Optional validation rule for the temporal value */
     rule?: TemporalRule;
     /** Optional array of conditional styles based on temporal rules */
@@ -497,6 +493,8 @@ export type TableColumn = TableUnit & {
     type: DataType;
     /** Optional metadata describing where the column's data comes from */
     source?: string;
+    /** Optional expression to compute the value */
+    expression?: Expression<DataSelector>;
 };
 
 /** 

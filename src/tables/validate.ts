@@ -19,6 +19,7 @@ import {
     FunctionExpression, FunctionExpressionType,
     HeaderStyle,
     LiteralExpression,
+    LiteralExpressionType,
     LookupType, LookupTypeType,
     MatchOperators,
     MatchRule,
@@ -66,12 +67,12 @@ const SelfSelector: z.ZodType<SelfSelector> = z.literal(SelfLiteral);
 const ColumnSelector: z.ZodType<ColumnSelector> = z.object({
     table: z.string().optional(),
     group: z.string().optional(),
-    column: z.string()
+    name: z.string()
 });
 
 const UnitSelector: z.ZodType<UnitSelector> = z.custom<UnitSelector>(value => UnitSelectorRegex.test(value as string));
 
-const RangeRowSelector: z.ZodType<RangeRowSelector> = z.object({    
+const RangeRowSelector: z.ZodType<RangeRowSelector> = z.object({
     from: UnitSelector,
     to: UnitSelector
 });
@@ -152,7 +153,10 @@ const FunctionExpression: z.ZodType<FunctionExpression<DataSelector>> = z.object
     args: z.array(z.lazy(() => Expression))
 });
 
-const LiteralExpression: z.ZodType<LiteralExpression> = z.union([z.string(), z.number(), z.boolean()]);
+const LiteralExpression: z.ZodType<LiteralExpression> = z.object({
+    type: z.literal(LiteralExpressionType),
+    value: z.union([z.string(), z.number(), z.boolean()])
+});
 
 const SelectorExpression: z.ZodType<SelectorExpression<DataSelector>> = z.object({
     type: z.literal(SelectorExpressionType),
@@ -260,14 +264,12 @@ const TemporalFormat: z.ZodType<TemporalFormat> = z.array(TemporalItem);
 /* Data Types */
 const TextType: z.ZodType<TextType> = z.object({
     name: z.literal(TextTypeName),
-    expression: Expression.optional(),
     rule: TextRule.optional(),
     styles: z.array(TextConditionalStyle).optional()
 });
 
 const NumericType: z.ZodType<NumericType> = z.object({
     name: z.literal(NumericTypeName),
-    expression: Expression.optional(),
     rule: NumericRule.optional(),
     styles: z.array(NumericConditionalStyle).optional(),
     format: z.union([NumericFormat, Reference]).optional()
@@ -275,7 +277,6 @@ const NumericType: z.ZodType<NumericType> = z.object({
 
 const TemporalType: z.ZodType<TemporalType> = z.object({
     name: z.literal(TemporalTypeName),
-    expression: Expression.optional(),
     rule: TemporalRule.optional(),
     styles: z.array(TemporalConditionalStyle).optional(),
     format: z.union([TemporalFormat, Reference]).optional()
@@ -317,7 +318,8 @@ const TableUnit: z.ZodType<TableUnit> = z.object({
 
 const TableColumn: z.ZodType<TableColumn> = TableUnit.and(z.object({
     type: DataType,
-    source: z.string().optional()
+    source: z.string().optional(),
+    expression: Expression.optional(),
 }));
 
 const TableGroup: z.ZodType<TableGroup> = TableUnit.and(z.object({

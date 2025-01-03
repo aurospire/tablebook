@@ -2,6 +2,8 @@ import { v } from 'varcor';
 import { GoogleSheet } from './google/GoogleSheet';
 import { SheetPosition, SheetRange, SheetSelector } from './sheets/SheetPosition';
 import { Colors } from './util/Color';
+import { resolveColumns } from './process';
+import { TableBook } from './tables/types';
 
 const serialNumber = (datestring: `${string}-${string}-${string}`) => {
     // Ensure the input is a Date object
@@ -87,5 +89,3 @@ const main = async () => {
     }
 };
 
-
-main();

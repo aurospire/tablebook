@@ -31,25 +31,6 @@
  * - Multiple themes can be combined using the inherits array
  * - Built-in palette references (like @blue) are normal references that can be inherited/extended
  * 
- * Available palettes are categorized by color family:
- * - Reds: pink (rose pink), cranberry (burgundy), red (classic)
- * - Oranges/Yellows: rust (orange-brown), orange (bold), yellow (golden)
- * - Greens: green (forest), moss (cool earthy), sage (muted)
- * - Blues: teal (blue-green), slate (gray-blue), cyan (fresh), blue (classic), azure (bright), skyblue (light)
- * - Purples: lavender (soft), indigo (deep), purple (royal), plum (warm), mauve (dusky)
- * - Neutrals: coral (warm pink), terracotta (earthy), bronze (metallic), sand (warm beige), 
- *            taupe (brown-gray), gray (neutral), charcoal (deep)
- * 
- * Standard Temporal Formats:
- * - isodate: "YYYY-MM-DD"
- * - isodatetime: "YYYY-MM-DDTHH:mm:ss"
- * - eurolongdate: "dd MMMM yyyy"
- * - euroshortdate: "dd/MM/yyyy"
- * - uslongdate: "MMMM dd, yyyy"
- * - usshortdate: "MM/dd/yyyy"
- * - textlongdate: "Sunday, September 24, 2023"
- * - textshortdate: "Sun, Sep 24, 2023"
- * 
  * Formatting Controls:
  * Number formats use placeholder characters to control digit display:
  * - '0': fixed - Always shows digit, displays 0 if no value
@@ -73,10 +54,10 @@
  * - Undefined means "all rows"
  * 
  * Combined Selection:
- * - Full column: { column: "Price" }
- * - Single cell: { column: "Price", row: "$5" }
- * - Cell range: { column: "Price", row: { from: "$1", to: "$5" } }
- * - Relative cells: { column: "Price", row: "+1" }
+ * - Full column: { column: { name: "Price" } }
+ * - Single cell: { column: { name: "Price" }, row: "$5" }
+ * - Cell range: { column: { name: "Price" }, row: { from: "$1", to: "$5" } }
+ * - Relative cells: { column: { name: "Price" }, row: "+1" }
  * - Current cell: "self"
  * 
  * Types are documented with JSON Schema patterns:
@@ -106,16 +87,25 @@
 
 /* Common String Literals */
 export type DataTypeNames = 'text' | 'numeric' | 'temporal' | 'enum' | 'lookup';
+
 export type RangeType = 'between' | 'outside';
+
 export type MatchType = 'contains' | 'begins' | 'ends';
+
 export type ExpressionType = 'compound' | 'negated' | 'function' | 'selector' | 'self';
+
 export type BorderStyle = 'none' | 'thin' | 'medium' | 'thick' | 'dotted' | 'dashed' | 'double';
+
 export type NumberFormatType = 'number' | 'percent' | 'currency';
+
 export type CurrencyPosition = 'prefix' | 'suffix';
+
 export type TemporalLength = 'short' | 'long';
-export type TemporalUnit = 'year' | 'month' | 'monthname' | 'weekday' | 'day' |
-    'hour' | 'meridiem' | 'minute' | 'second';
+
+export type TemporalUnit = 'year' | 'month' | 'monthname' | 'weekday' | 'day' | 'hour' | 'meridiem' | 'minute' | 'second';
+
 export type CompareOp = '=' | '<>' | '>' | '<' | '>=' | '<=';
+
 export type MergeOp = '+' | '-' | '*' | '/' | '^' | '&';
 
 /* References */
@@ -124,15 +114,12 @@ export type PaletteReference = '@pink' | '@cranberry' | '@red' | '@rust' | '@ora
     '@lavender' | '@indigo' | '@purple' | '@plum' | '@mauve' | '@coral' | '@terracotta' | '@bronze' |
     '@sand' | '@taupe' | '@gray' | '@charcoal';
 
-export type TemporalFormatReference = '@isodate' | '@isodatetime' | '@eurolongdate' | '@euroshortdate' |
-    '@uslongdate' | '@usshortdate' | '@textlongdate' | '@textshortdate';
-
 export type Reference = `@${string}`;
 
 /* Data Selection Types */
 export type SelfSelector = 'self';
 
-export type ColumnSelector = { table?: string; group?: string; column: string; };
+export type ColumnSelector = { table?: string; group?: string; name: string; };
 
 export type UnitSelector = `$${number}` | `+${number}` | `-${number}`;
 
@@ -147,11 +134,7 @@ export type Color = `#${string}`;
 
 export type TextForm = boolean | { bold?: boolean; italic?: boolean; };
 
-export type Style = {
-    fore?: Color | PaletteReference | Reference;
-    back?: Color | PaletteReference | Reference;
-    form?: TextForm;
-};
+export type Style = { fore?: Color | PaletteReference | Reference; back?: Color | PaletteReference | Reference; form?: TextForm; };
 
 export type Border = { type: BorderStyle; color?: Color | PaletteReference | Reference; };
 
@@ -191,12 +174,13 @@ export type SelfExpression = { type: 'self'; };
 
 export type LiteralExpression = string | number | boolean;
 
-export type Expression<T> = CompoundExpression<T> | NegatedExpression<T> | FunctionExpression<T> |
-    SelectorExpression<T> | LiteralExpression | SelfExpression;
+export type Expression<T> = CompoundExpression<T> | NegatedExpression<T> | FunctionExpression<T> | SelectorExpression<T> | LiteralExpression | SelfExpression;
 
 /* Data Rule Types */
 export type DateString = `${number}-${number}-${number}`;
+
 export type DateTimeString = `${DateString}${'T' | ' '}${number}:${number}:${number}`;
+
 export type TemporalString = DateString | DateTimeString;
 
 export type ComparisonRule<T> = { type: CompareOp; to: T; };
@@ -208,27 +192,23 @@ export type RangeRule<T> = { type: RangeType; low: T; high: T; };
 export type MatchRule = { type: MatchType; value: string; };
 
 export type NumericRule = ComparisonRule<number> | RangeRule<number> | CustomRule;
+
 export type TemporalRule = ComparisonRule<TemporalString> | RangeRule<TemporalString> | CustomRule;
+
 export type TextRule = MatchRule | CustomRule;
 
 export type ConditionalStyle<T> = { on: T; style: Style | Reference; };
 
 /* Format Types */
-export type DigitPlaceholder = {
-    fixed?: number;
-    flex?: number;
-    align?: number;
-};
+export type DigitPlaceholder = { fixed?: number; flex?: number; align?: number; };
 
-export type BaseNumberFormat<T extends NumberFormatType> = {
-    type: T;
-    integer?: number | DigitPlaceholder;
-    decimal?: number | DigitPlaceholder;
-    commas?: boolean;
-};
+// numbers instead of Placeholders => { fixed: number }
+export type BaseNumberFormat<T extends NumberFormatType> = { type: T; integer?: number | DigitPlaceholder; decimal?: number | DigitPlaceholder; commas?: boolean; };
 
 export type NumberFormat = BaseNumberFormat<'number'>;
+
 export type PercentFormat = BaseNumberFormat<'percent'>;
+
 export type CurrencyFormat = BaseNumberFormat<'currency'> & { symbol?: string; position?: CurrencyPosition; };
 
 export type NumericFormat = NumberFormat | PercentFormat | CurrencyFormat;
@@ -239,28 +219,11 @@ export type TemporalItem = TemporalUnitConfig | string;
 export type TemporalFormat = TemporalItem[];
 
 /* Data Types */
-export type TextType = {
-    name: 'text';
-    expression?: Expression<DataSelector>;
-    rule?: TextRule;
-    styles?: ConditionalStyle<TextRule>[];
-};
+export type TextType = { name: 'text'; rule?: TextRule; styles?: ConditionalStyle<TextRule>[]; };
 
-export type NumericType = {
-    name: 'numeric';
-    expression?: Expression<DataSelector>;
-    rule?: NumericRule;
-    styles?: ConditionalStyle<NumericRule>[];
-    format?: NumericFormat | Reference;
-};
+export type NumericType = { name: 'numeric'; rule?: NumericRule; styles?: ConditionalStyle<NumericRule>[]; format?: NumericFormat | Reference; };
 
-export type TemporalType = {
-    name: 'temporal';
-    expression?: Expression<DataSelector>;
-    rule?: TemporalRule;
-    styles?: ConditionalStyle<TemporalRule>[];
-    format?: TemporalFormat | TemporalFormatReference | Reference;
-};
+export type TemporalType = { name: 'temporal'; rule?: TemporalRule; styles?: ConditionalStyle<TemporalRule>[]; format?: TemporalFormat | Reference; };
 
 export type EnumItem = string | { value: string; style?: Style | Reference; };
 
@@ -273,7 +236,7 @@ export type DataType = TextType | NumericType | TemporalType | EnumType | Lookup
 /* Table Structure Types */
 export type TableUnit = { name: string; theme?: Theme | PaletteReference | Reference; description?: string; };
 
-export type TableColumn = TableUnit & { type: DataType; source?: string; };
+export type TableColumn = TableUnit & { type: DataType; expression?: Expression<DataSelector>; };
 
 export type TableGroup = TableUnit & { columns: TableColumn[]; };
 
@@ -283,10 +246,7 @@ export type Definitions = {
     colors?: Record<string, Color>;
     styles?: Record<string, Style | HeaderStyle>;
     themes?: Record<string, Theme>;
-    formats?: {
-        numeric?: Record<string, NumericFormat>;
-        temporal?: Record<string, TemporalFormat>;
-    };
+    formats?: { numeric?: Record<string, NumericFormat>; temporal?: Record<string, TemporalFormat>; };
     types?: Record<string, DataType>;
 };
 
