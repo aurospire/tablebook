@@ -18,25 +18,27 @@ const toFormulaString = (value: string): string => {
 };
 
 export const toFormula = (exp: SheetExpression, position: SheetPosition): string => {
-    switch (typeof exp) {
-        case 'string':
-            return toFormulaString(exp);
-        case 'number':
-            return exp.toString();
-        case 'boolean':
-            return exp.toString();
-        case 'object':
-            switch (exp.type) {
-                case 'compound':
-                    return exp.items.map(item => toFormula(item, position)).join(exp.with);
-                case 'function':
-                    return `${exp.name}(${exp.args.map(arg => toFormula(arg, position)).join(',')})`;
-                case 'negated':
-                    return `-(${toFormula(exp.on, position)})`;
-                case 'self':
-                    return SheetSelector().toAddress(null, position);
-                case 'selector':
-                    return SheetSelector().toAddress(exp.from, position);
+
+    switch (exp.type) {
+        case 'literal':
+            switch (typeof exp.value) {
+                case "string":
+                    return toFormulaString(exp.value);
+                case "number":
+                    return exp.value.toString();
+                case "boolean":
+                    return exp.value ? 'TRUE' : 'FALSE';
             }
+        case 'compound':
+            return exp.items.map(item => toFormula(item, position)).join(exp.with);
+        case 'function':
+            return `${exp.name}(${exp.args.map(arg => toFormula(arg, position)).join(',')})`;
+        case 'negated':
+            return `-(${toFormula(exp.on, position)})`;
+        case 'self':
+            return SheetSelector().toAddress(null, position);
+        case 'selector':
+            return SheetSelector().toAddress(exp.from, position);
     }
+
 };

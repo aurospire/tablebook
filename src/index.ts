@@ -90,98 +90,349 @@ const main = async () => {
 };
 
 const tablebook: TableBook = {
-    "name": "Employee Ratings",
-    "description": "A table to manage and display employee ratings.",
-    "theme": {
-        "inherits": ["@blue"],
-        "tab": "@blue"
-    },
-    "definitions": {
-        "colors": {
-            "highRating": "#00FF00",
-            "lowRating": "#FF0000"
+    name: "QuarterlyBusinessReport",
+    theme: "@business",
+    definitions: {
+        colors: {
+            headerBlue: "#2C5282",
+            lightBlue: "#EBF8FF",
+            successGreen: "#48BB78",
+            warningRed: "#F56565",
+            neutral: "#718096"
         },
-        "styles": {
-            "highPerformance": {
-                "fore": "@green",
-                "form": { "bold": true }
+        styles: {
+            header: {
+                fore: "@headerBlue",
+                back: "@lightBlue",
+                form: { bold: true },
+                below: { type: "medium", color: "@headerBlue" }
             },
-            "lowPerformance": {
-                "fore": "@red",
-                "form": { "italic": true }
+            success: {
+                fore: "@successGreen",
+                form: { bold: true }
+            },
+            warning: {
+                fore: "@warningRed",
+                form: { bold: true }
             }
         },
-        "themes": {
-            "ratingsTheme": {
-                "data": {
-                    "fore": "@slate",
-                    "back": "@cyan"
+        themes: {
+            business: {
+                inherits: ["@blue"],
+                tab: "@headerBlue",
+                header: "@header",
+                group: {
+                    fore: "@headerBlue",
+                    back: "@lightBlue",
+                    form: { bold: true },
+                    below: { type: "thick", color: "@headerBlue" }
+                }
+            }
+        },
+        formats: {
+            numeric: {
+                currency: {
+                    type: "currency",
+                    integer: { fixed: 1, align: 3 },
+                    decimal: { fixed: 2 },
+                    symbol: "$",
+                    position: "prefix",
+                    commas: true
                 },
-                "header": {
-                    "fore": "@white",
-                    "back": "@blue",
-                    "form": { "bold": true }
+                percent: {
+                    type: "percent",
+                    integer: { fixed: 2 },
+                    decimal: { fixed: 1 }
                 }
+            },
+            temporal: {
+                shortDate: [
+                    { type: "year", length: "short" },
+                    "-",
+                    { type: "month", length: "short" },
+                    "-",
+                    { type: "day", length: "short" }
+                ]
             }
         },
-        "formats": {
-            "numeric": {
-                "percent": {
-                    "type": "percent",
-                    "integer": { "fixed": 1 },
-                    "decimal": { "fixed": 2 },
-                    "commas": false
-                }
+        types: {
+            money: {
+                name: "numeric",
+                format: "@currency",
+                styles: [
+                    {
+                        on: { type: "<", to: 0 },
+                        style: "@warning"
+                    },
+                    {
+                        on: { type: ">", to: 1000000 },
+                        style: "@success"
+                    }
+                ]
             }
         }
     },
-    "sheets": [
+    sheets: [
         {
-            "name": "Employee Ratings Sheet",
-            "description": "Sheet containing employee ratings data.",
-            "theme": "@ratingsTheme",
-            "rows": 100,
-            "groups": [
+            name: "FinancialSummary",
+            rows: 12,
+            groups: [
                 {
-                    "name": "Employee Data",
-                    "columns": [
+                    name: "Revenue",
+                    columns: [
                         {
-                            "name": "Employee Name",
-                            "type": { "name": "text" },
-                            "description": "Name of the employee."
+                            name: "Month",
+                            type: {
+                                name: "temporal",
+                                format: "@shortDate"
+                            }
                         },
                         {
-                            "name": "Department",
-                            "type": { "name": "enum", "values": ["HR", "Engineering", "Sales", "Marketing"] },
-                            "description": "Department the employee belongs to."
+                            name: "GrossRevenue",
+                            type: "@money",
+                            description: "Total revenue before deductions"
                         },
                         {
-                            "name": "Performance Rating",
-                            "type": {
-                                "name": "numeric",
-                                "rule": { "type": "between", "low": 0, "high": 5 },
-                                "styles": [
+                            name: "Deductions",
+                            type: "@money",
+                            description: "Returns, discounts, and allowances"
+                        },
+                        {
+                            name: "NetRevenue",
+                            type: "@money",
+                            expression: {
+                                type: "compound",
+                                with: "-",
+                                items: [
                                     {
-                                        "on": { "type": ">=", "to": 4 },
-                                        "style": "@highPerformance"
+                                        type: "selector",
+                                        from: { column: { name: "GrossRevenue" } }
                                     },
                                     {
-                                        "on": { "type": "<", "to": 2 },
-                                        "style": "@lowPerformance"
+                                        type: "selector",
+                                        from: { column: { name: "Deductions" } }
                                     }
                                 ]
-                            },
-                            "description": "Performance rating out of 5.",
-                            "expression": { "type": "self" }
+                            }
+                        }
+                    ]
+                },
+                {
+                    name: "Expenses",
+                    columns: [
+                        {
+                            name: "Month",
+                            type: {
+                                name: "temporal",
+                                format: "@shortDate"
+                            }
                         },
                         {
-                            "name": "Feedback",
-                            "type": { "name": "text" },
-                            "description": "Feedback for the employee."
+                            name: "OperatingExpenses",
+                            type: "@money"
+                        },
+                        {
+                            name: "AdminExpenses",
+                            type: "@money"
+                        },
+                        {
+                            name: "MarketingExpenses",
+                            type: "@money"
+                        },
+                        {
+                            name: "TotalExpenses",
+                            type: "@money",
+                            expression: {
+                                type: "compound",
+                                with: "+",
+                                items: [
+                                    {
+                                        type: "selector",
+                                        from: { column: { name: "OperatingExpenses" } }
+                                    },
+                                    {
+                                        type: "selector",
+                                        from: { column: { name: "AdminExpenses" } }
+                                    },
+                                    {
+                                        type: "selector",
+                                        from: { column: { name: "MarketingExpenses" } }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    name: "Profitability",
+                    columns: [
+                        {
+                            name: "Month",
+                            type: {
+                                name: "temporal",
+                                format: "@shortDate"
+                            }
+                        },
+                        {
+                            name: "GrossProfit",
+                            type: "@money",
+                            expression: {
+                                type: "selector",
+                                from: {
+                                    column: { group: "Revenue", name: "NetRevenue" }
+                                }
+                            }
+                        },
+                        {
+                            name: "NetProfit",
+                            type: "@money",
+                            expression: {
+                                type: "compound",
+                                with: "-",
+                                items: [
+                                    {
+                                        type: "selector",
+                                        from: { column: { name: "GrossProfit" } }
+                                    },
+                                    {
+                                        type: "selector",
+                                        from: {
+                                            column: { group: "Expenses", name: "TotalExpenses" }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            name: "ProfitMargin",
+                            type: {
+                                name: "numeric",
+                                format: "@percent",
+                                rule: {
+                                    type: "between",
+                                    low: 0,
+                                    high: 100
+                                }
+                            },
+                            expression: {
+                                type: "compound",
+                                with: "/",
+                                items: [
+                                    {
+                                        type: "selector",
+                                        from: { column: { name: "NetProfit" } }
+                                    },
+                                    {
+                                        type: "selector",
+                                        from: {
+                                            column: { group: "Revenue", name: "NetRevenue" }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            name: "OperationalMetrics",
+            rows: 12,
+            groups: [
+                {
+                    name: "CustomerMetrics",
+                    columns: [
+                        {
+                            name: "Month",
+                            type: {
+                                name: "temporal",
+                                format: "@shortDate"
+                            }
+                        },
+                        {
+                            name: "NewCustomers",
+                            type: {
+                                name: "numeric",
+                                format: {
+                                    type: "number",
+                                    integer: { fixed: 1, align: 3 },
+                                    decimal: { fixed: 0 },
+                                    commas: true
+                                }
+                            }
+                        },
+                        {
+                            name: "ChurnRate",
+                            type: {
+                                name: "numeric",
+                                format: "@percent",
+                                rule: {
+                                    type: "between",
+                                    low: 0,
+                                    high: 100
+                                },
+                                styles: [
+                                    {
+                                        on: { type: ">", to: 5 },
+                                        style: "@warning"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    name: "ProductivityMetrics",
+                    columns: [
+                        {
+                            name: "Month",
+                            type: {
+                                name: "temporal",
+                                format: "@shortDate"
+                            }
+                        },
+                        {
+                            name: "EmployeeCount",
+                            type: {
+                                name: "numeric",
+                                format: {
+                                    type: "number",
+                                    integer: { fixed: 1, align: 3 },
+                                    decimal: { fixed: 0 },
+                                    commas: true
+                                }
+                            }
+                        },
+                        {
+                            name: "RevenuePerEmployee",
+                            type: "@money",
+                            expression: {
+                                type: "compound",
+                                with: "/",
+                                items: [
+                                    {
+                                        type: "selector",
+                                        from: {
+                                            column: {
+                                                table: "FinancialSummary",
+                                                group: "Revenue",
+                                                name: "NetRevenue"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        type: "selector",
+                                        from: { column: { name: "EmployeeCount" } }
+                                    }
+                                ]
+                            }
                         }
                     ]
                 }
             ]
         }
     ]
-}
+};
+
+
+console.log(resolveColumns(tablebook));

@@ -9,51 +9,45 @@
  * - Groups are hidden in output if there's only one in a sheet
  * 
  * Design Principles:
- * - Standard components (palettes, formats) should be preferred over definitions
- * - Definitions should be preferred over inline specifications
- * - Every Table theme should ideally use its own palette
+ * - Standard Palettes should be ALWAYS BE USED over custom colors and themes
+ * - If wanting to utilize a custom theme, it should be defined in the definitions object.
+ * - Every Table theme should ideally use its own theme, but can inherit from others.
  * - LLMs or UIs can create in JSON or YAML to be parsed into TableBook
  * 
  * References:
  * - References are identified by their context and must **always begin with `@`** to denote a link 
- *   to a predefined entity (e.g., palettes, styles, themes, formats).
+ *   to the definitions object in the root TableBook object (e.g., palettes, styles, themes, formats).
  * 
  * Contextual Examples:
  * - **Themes**:
- *   - `"inherits": ["@blue"]` refers to the `blue` palette defined in `definitions.colors` or built-in palettes.
- *   - `"theme": "@customTheme"` refers to a theme in `definitions.themes`.
- * - **Styles**:
+ *   - `"theme": "@business"` refers to a theme in `definitions.themes`.
+ *   - `"inherits": ["@basic"]` refers to the `basic` theme defined in `definitions.themes`. it can inherit from multiple themes, with each theme overriding the previous one's properties.
+ * - **Colors**:
  *   - `"fore": "@green"` references the `green` color from `definitions.colors`.
- *   - `"style": "@headerStyle"` refers to a predefined style in `definitions.styles`.
+ * - **Styles**:
+ *   - `"style": "@header"` refers to a predefined style in `definitions.styles`.
  * - **Formats**:
- *   - `"format": "@currencyFormat"` references a format in `definitions.formats.numeric`.
+ *   - `"format": "@currency"` references a format in `definitions.formats.numeric`. (if the parent type is numeric)
+ * * - **Type**:
+ *   - `"type": "@currency"` references a format in `definitions.types`. (we see that each type has its own namespace)
  * 
- * Direct Values:
- * - `"#FF0000"`: A direct hex color value (inline specification).
- * - `{ "bold": true }`: An inline style definition for text formatting.
- * - `{ "type": "currency", "symbol": "$" }`: An inline numeric format object.
  * 
- * Notes:
- * - The `@` prefix ensures the value is treated as a reference to a predefined entity.
- * - If a value does not begin with `@`, it is interpreted as a direct, inline specification.
- * - Always ensure references match names defined in `definitions` or built-in entities.
- * 
- * Palettes and Themes:
- * Palettes provide consistent color schemes through four shades (darkest, dark, main, lightest).
- * When used in themes, the shades map automatically:
+ * Predefined Palettes:
+ * Palettes provide consistent color schemes
+ * When used in themes, the palette is expanded to its individual colors 
  * - Darkest -> header.back
  * - Dark -> group.back
  * - Main -> tab
  * - Lightest -> data.back
  * 
- * When referenced as a color (not in theme), only the 'main' shade is used.
+ * When referenced as a color (not in theme), only the 'Main' shade is used.
+ * Palettes are simple predefined definitons in the .colors and .themes objects, and are treated exactly like other definitions.
  * 
  * Theme Inheritance:
  * - Themes cascade down through the structure (TableBook -> TableSheet -> TableGroup -> TableColumn)
  * - Each level can override the theme from its parent by providing an explicit theme
  * - undefined/missing theme does not override parent theme
- * - Multiple themes can be combined using the inherits array
- * - Built-in palette references (like @blue) are normal references that can be inherited/extended
+ * - Multiple themes can be combined using the inherits array using a deep order-matters override
  * 
  * Formatting Controls:
  * Number formats use placeholder characters to control digit display:
@@ -63,46 +57,55 @@
  * 
  * Data Selection:
  * The selector system enables precise targeting of data within tables using column and row references:
+ * Since TableBook is column-based, all data selection is done by selecting subsets of named columns.
+ * Columns are selected by name, and rows are selected by position or range within the column, either absolute or relative.
  * 
  * Column Selection:
- * - Can reference any column by name: { column: "Price" }
- * - Optionally specify group/table for disambiguation: { table: "Sales", group: "Monthly", column: "Price" }
- * - 'self' refers to the current column: { column: "self" }
+ * - Made up of three parts: table, group, and column
+ * - If table or group is missing, it refers to the current table or group
+ * - ex: { table: "Sales", group: "Revenue", name: "Price" } - fully qualified
+ * - ex: { group: "Revenue", name: "Price" } - within the current table
+ * - ex: { name: "Price" } - within the current table and group
  * 
  * Row Selection:
+ * - Rows are zero-based, with negative values not allowed
  * - Absolute position: "$n" refers to nth row (1-based)
  * - Relative forward: "+n" refers to n rows after current
  * - Relative backward: "-n" refers to n rows before current
  * - Range between positions: { from: "$1", to: "$5" } includes rows 1-5
+ * - Range between relative positions: { from: "+1", to: "+5" } includes rows 1-5 after current
  * - 'self' refers to current row in scope
  * - Undefined means "all rows"
  * 
- * Combined Selection:
+ * Data Selection:
  * - Full column: { column: { name: "Price" } }
  * - Single cell: { column: { name: "Price" }, row: "$5" }
  * - Cell range: { column: { name: "Price" }, row: { from: "$1", to: "$5" } }
  * - Relative cells: { column: { name: "Price" }, row: "+1" }
  * - Current cell: "self"
  * 
+ * From Expressions:
+ * - Require full DataSelectors - not simply ColumnSelectors.
+ * 
  * Types are documented with JSON Schema patterns:
  * {
- *   "references": {
+ *   "Reference": {
  *     "pattern": "^@[A-Za-z_][A-Za-z0-9_]+$",
  *     "description": "References start with @ followed by allowed characters"
  *   },
- *   "tableUnitNames": {
+ *   "TableUnitName": {
  *     "pattern": "^[A-Z][A-Za-z0-9]*$", 
  *     "description": "Must start with uppercase, followed by alphanumeric"
  *   },
- *   "temporalStrings": {
+ *   "TemporalString": {
  *     "pattern": "^\\d{4}-\\d{2}-\\d{2}(?:[T ]\\d{2}:\\d{2}:\\d{2})?$",
  *     "description": "ISO format for dates and times"
  *   },
- *   "colors": {
+ *   "Color": {
  *     "pattern": "^#[A-Fa-f0-9]{6}$",
  *     "description": "6-digit hex color code"
  *   },
- *   "unitSelectors": {
+ *   "UnitSelector": {
  *     "pattern": "^[$+\\-]\\d+$",
  *     "description": "Absolute ($) or relative (+/-) row index"
  *   }
