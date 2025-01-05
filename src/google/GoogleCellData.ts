@@ -1,4 +1,5 @@
-import { SheetAlign, SheetData, SheetValue, SheetWrap } from "../sheets/SheetData";
+import { SheetData, SheetValue } from "../sheets/SheetData";
+import { SheetAlign, SheetWrap } from "../sheets/SheetStyle";
 import { toFormula } from "../sheets/SheetExpression";
 import { SheetType, toPattern } from "../sheets/SheetKind";
 import { SheetPosition } from "../sheets/SheetPosition";

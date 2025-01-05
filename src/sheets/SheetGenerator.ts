@@ -1,5 +1,5 @@
 import { SheetColumnConfig } from "./SheetColumns";
-import { SheetBorderSet, SheetStyle } from "./SheetData";
+import { SheetBorderSet, SheetStyle } from "./SheetStyle";
 import { ColorObject } from "../util/Color";
 
 // Core generator interface for platform implementations

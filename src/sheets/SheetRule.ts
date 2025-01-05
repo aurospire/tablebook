@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import { ComparisonOperator, Expression, MatchOperator, RangeOperator } from "../tables/types";
-import { SheetStyle } from './SheetData';
+import { SheetStyle } from "./SheetStyle";
 import { SheetSelector } from "./SheetPosition";
 
 // Common Targets

@@ -1,4 +1,4 @@
-import { SheetBorder } from "../sheets/SheetData";
+import { SheetBorder } from "../sheets/SheetStyle";
 import { BorderType } from "../tables/types";
 import { ColorObject, Colors } from "../util/Color";
 import { GoogleBorder, GoogleColorStyle } from "./GoogleTypes";

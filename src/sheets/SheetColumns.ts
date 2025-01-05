@@ -1,5 +1,5 @@
 import { Expression, NumericFormat } from "../tables/types";
-import { SheetBorder, SheetStyle } from "./SheetData";
+import { SheetBorder, SheetStyle } from "./SheetStyle";
 import { SheetSelector } from "./SheetPosition";
 import { SheetConditionalFormat, SheetRule } from "./SheetRule";
 

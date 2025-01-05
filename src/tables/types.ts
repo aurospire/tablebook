@@ -235,7 +235,7 @@ export type SelfExpression = { type: typeof SelfLiteral; };
 /** Type identifier for literal expressions */
 export const LiteralExpressionType = 'literal';
 /** Direct value expression */
-export type LiteralExpression = { type: typeof LiteralExpressionType, value: string | number | boolean; };
+export type LiteralExpression = { type: typeof LiteralExpressionType , value: string | number | boolean; };
 
 /** All possible expression types for data computation and validation */
 export type Expression<Selector> =

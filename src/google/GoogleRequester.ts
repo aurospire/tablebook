@@ -1,5 +1,6 @@
 import { inspect } from "util";
-import { SheetBorderSet, SheetData } from "../sheets/SheetData";
+import { SheetData } from "../sheets/SheetData";
+import { SheetBorderSet } from "../sheets/SheetStyle";
 import { SheetRange } from "../sheets/SheetPosition";
 import { SheetConditionalFormat, SheetRule } from "../sheets/SheetRule";
 import { getFields, toCellFormat, toCellValue } from "./GoogleCellData";

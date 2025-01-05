@@ -1,7 +1,7 @@
 import { GoogleSheet } from "./GoogleSheet";
 import { SheetGenerator } from "../sheets/SheetGenerator";
 import { SheetColumnConfig } from "../sheets/SheetColumns";
-import { SheetBorderSet, SheetStyle } from "../sheets/SheetData";
+import { SheetBorderSet, SheetStyle } from "../sheets/SheetStyle";
 import { ColorObject } from "../util/Color";
 import { SheetRange } from "../sheets/SheetPosition";
 
