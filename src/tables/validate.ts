@@ -221,9 +221,9 @@ const TemporalConditionalStyle = makeConditionalStyle(TemporalRule);
 
 /* Numeric Formats */
 const DigitPlaceholder: z.ZodType<DigitPlaceholder> = z.object({
-    fixed: z.number().int().positive().optional(),
-    flex: z.number().int().positive().optional(),
-    align: z.number().int().positive().optional(),
+    fixed: z.number().int().min(0).optional(),
+    flex: z.number().int().min(0).optional(),
+    align: z.number().int().min(0).optional(),
 });
 
 const NumberOrDigitPlaceholder = z.union([z.number(), DigitPlaceholder]);

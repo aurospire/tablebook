@@ -469,7 +469,7 @@ export type DataType = TextType | NumericType | TemporalType | EnumType | Lookup
 /* Table Structures */
 
 /** Regex pattern validating table unit names: must start with uppercase, followed by alphanumeric */
-export const TableUnitNameRegex = /^[A-Z](A-Za-z0-9)*$/;
+export const TableUnitNameRegex = /^[A-Z][A-Za-z0-9]+$/;
 
 /** 
 * Base type for all table structural elements (column, group, sheet)
