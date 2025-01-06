@@ -158,8 +158,8 @@ export type Border = {
 
 /** Group and column partition styling */
 export type Partition = {
-    /** Border below the Group-Header or Column-Header */
-    below?: Border;
+    /** Border beneath the Group-Header or Column-Header */
+    beneath?: Border;
     /** Border between the Groups-Columns or individual Columns */
     between?: Border;
 };

@@ -114,7 +114,7 @@ const Border: z.ZodType<Border> = z.object({
 });
 
 const Partition: z.ZodType<Partition> = z.object({
-    below: Border.optional(),
+    beneath: Border.optional(),
     between: Border.optional()
 });
 

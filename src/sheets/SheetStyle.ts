@@ -11,7 +11,7 @@ export type SheetStyle = {
 
 export type SheetBorder = {
     type: BorderType;
-    color: ColorObject;
+    color?: ColorObject;
 };
 
 export type SheetBorderSet = {

@@ -8,18 +8,11 @@ export type SheetHeaderPartitions = {
     between?: SheetBorder;
 };
 
-export type SheetHeaderStyle = {
-    style: SheetStyle;
-    borders?: SheetHeaderPartitions;
-};
+export type SheetHeaderStyle = SheetStyle & SheetHeaderPartitions;
 
 export type SheetColumnConfig = {
-    header: SheetHeaderStyle;
-    data: SheetDataConfig;
-};
-
-export type SheetDataConfig = {
-    style: SheetStyle;
+    headerStyle?: SheetHeaderStyle;
+    dataStyle?: SheetStyle;
     format?: NumericFormat;
     validation?: SheetRule;
     formula?: Expression<SheetSelector>;

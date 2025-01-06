@@ -2,8 +2,20 @@ import { v } from 'varcor';
 import { GoogleSheet } from './google/GoogleSheet';
 import { SheetPosition, SheetRange, SheetSelector } from './sheets/SheetPosition';
 import { Colors } from './util/Color';
-import { resolveColumns } from './process';
+import { processTableBook, resolveColumns } from './process';
 import { TableBook } from './tables/types';
+import { TableBookValidator } from './tables/validate';
+import { inspect } from 'util';
+import { GoogleGenerator } from './google/GoogleGenerator';
+
+const vars = v.values({
+    email: v.string().email(),
+    key: v.string(),
+    sheetid: v.string()
+}, v.data.jsonFile('.env.json').toDataObject());
+
+console.log(vars);
+
 
 const serialNumber = (datestring: `${string}-${string}-${string}`) => {
     // Ensure the input is a Date object
@@ -23,15 +35,7 @@ const serialNumber = (datestring: `${string}-${string}-${string}`) => {
 };
 
 
-const main = async () => {
-
-    const vars = v.values({
-        email: v.string().email(),
-        key: v.string(),
-        sheetid: v.string()
-    }, v.data.jsonFile('.env.json').toDataObject());
-
-    console.log(vars);
+const testGoogleSheet = async () => {
 
     // const api = await GoogleSheetGenerator.login(vars.email, vars.key);
 
@@ -89,6 +93,24 @@ const main = async () => {
     }
 };
 
+const testTablebook = async (tablebook: TableBook) => {
+
+    const result = TableBookValidator.safeParse(tablebook);
+    if (result.success) {
+        const sheet = await GoogleSheet.open(vars.email, vars.key, vars.sheetid);
+
+        await sheet.reset();
+
+        const generator = new GoogleGenerator(sheet);
+
+        await processTableBook(result.data, generator);
+    }
+    else {
+        console.log('Tablebook validation failed');
+        console.log(inspect(result.error, { depth: null, colors: true }));
+    }
+};
+
 const tablebook: TableBook = {
     name: "QuarterlyBusinessReport",
     theme: "@business",
@@ -105,7 +127,7 @@ const tablebook: TableBook = {
                 fore: "@headerBlue",
                 back: "@lightBlue",
                 form: { bold: true },
-                below: { type: "medium", color: "@headerBlue" }
+                beneath: { type: "medium", color: "@headerBlue" }
             },
             success: {
                 fore: "@successGreen",
@@ -125,7 +147,7 @@ const tablebook: TableBook = {
                     fore: "@headerBlue",
                     back: "@lightBlue",
                     form: { bold: true },
-                    below: { type: "thick", color: "@headerBlue" }
+                    beneath: { type: "thick", color: "@headerBlue" }
                 }
             }
         },
@@ -434,5 +456,4 @@ const tablebook: TableBook = {
     ]
 };
 
-
-console.log(resolveColumns(tablebook));
+testTablebook(tablebook);

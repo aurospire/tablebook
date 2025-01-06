@@ -165,7 +165,7 @@ export type Style = { fore?: Color | PaletteReference | Reference; back?: Color 
 
 export type Border = { type: BorderStyle; color?: Color | PaletteReference | Reference; };
 
-export type Partition = { below?: Border; between?: Border; };
+export type Partition = { beneath?: Border; between?: Border; };
 
 export type HeaderStyle = Style & Partition;
 
