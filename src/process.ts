@@ -238,6 +238,7 @@ export const processTableBook = async (book: TableBook, generator: SheetGenerato
 
             const groupTheme = resolveTheme(`${sheet.name}.${group.name}`, group.theme ?? {}, colors, styles, themes, groupParents);
 
+            console.log(inspect(groupTheme, { depth: null, colors: true }));
             const grouped = sheet.groups.length > 1;
 
             if (grouped) {

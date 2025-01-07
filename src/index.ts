@@ -105,7 +105,7 @@ const testTablebook = async (tablebook: TableBook) => {
 
         await processTableBook(result.data, generator);
 
-        await sheet.modify(r => r.dropSheets(page))
+        await sheet.modify(r => r.dropSheets(page));
     }
     else {
         console.log('Tablebook validation failed');
@@ -128,6 +128,7 @@ const tablebook: TableBook = {
             header: {
                 fore: '#ffffff',
                 form: { bold: true },
+                beneath: { type: 'medium', color: '#ffffff' }
             },
             data: {
                 fore: '#000000',

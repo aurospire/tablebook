@@ -3,12 +3,10 @@ import { SheetBorder, SheetStyle } from "./SheetStyle";
 import { SheetSelector } from "./SheetPosition";
 import { SheetConditionalFormat, SheetRule } from "./SheetRule";
 
-export type SheetHeaderPartitions = {
+export type SheetHeaderStyle = SheetStyle & {
     beneath?: SheetBorder;
     between?: SheetBorder;
 };
-
-export type SheetHeaderStyle = SheetStyle & SheetHeaderPartitions;
 
 export type SheetColumnConfig = {
     headerStyle?: SheetHeaderStyle;
