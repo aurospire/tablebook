@@ -26,7 +26,7 @@ export type SheetPartition = {
     between?: SheetBorder;
 };
 
-export type SheetHeaderStyle = SheetStyle & SheetPartition;
+export type SheetTitleStyle = SheetStyle & SheetPartition;
 
 export type SheetAlign = 'start' | 'middle' | 'end';
 
