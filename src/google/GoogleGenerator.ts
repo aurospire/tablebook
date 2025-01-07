@@ -1,9 +1,9 @@
-import { GoogleSheet } from "./GoogleSheet";
-import { SheetGenerator } from "../sheets/SheetGenerator";
-import { SheetColumnConfig } from "../sheets/SheetColumns";
-import { SheetBorderSet, SheetStyle } from "../sheets/SheetStyle";
-import { ColorObject } from "../util/Color";
+import { SheetColumnConfig, SheetHeaderPartitions } from "../sheets/SheetColumns";
+import { SheetGenerator, SheetGeneratorColumnData, SheetGeneratorGroupData, SheetGeneratorSheetData } from "../sheets/SheetGenerator";
 import { SheetRange } from "../sheets/SheetPosition";
+import { SheetAlign, SheetStyle } from "../sheets/SheetStyle";
+import { ColorObject } from "../util/Color";
+import { GoogleSheet } from "./GoogleSheet";
 
 export class GoogleGenerator implements SheetGenerator {
     #sheet: GoogleSheet;
@@ -18,8 +18,8 @@ export class GoogleGenerator implements SheetGenerator {
         this.#sheet.modify(r => r.setTitle(title));
     }
 
-    async addSheet(title: string, rows: number, columns: number, color?: ColorObject): Promise<number> {
-        let resultId: number | undefined = await this.#sheet.addSheet({ title, rows, columns, color });
+    async addSheet(data: SheetGeneratorSheetData): Promise<number> {
+        let resultId: number | undefined = await this.#sheet.addSheet(data);
 
         if (resultId == undefined)
             throw new Error("Failed to add sheet");
@@ -27,31 +27,46 @@ export class GoogleGenerator implements SheetGenerator {
         return resultId;
     }
 
-    async addGroup(sheetId: number, name: string, columnStart: number, columnCount: number, style?: SheetStyle, borders?: SheetBorderSet): Promise<void> {
+    async addGroup({ sheetId, title, columnCount, columnStart, style }: SheetGeneratorGroupData): Promise<void> {
         this.#sheet.modify(r => {
             r = r
                 .mergeCells(sheetId, SheetRange.row(0, columnStart, columnCount))
-                .updateCells(sheetId, SheetRange.cell(columnStart, 0), { value: name, ...style, horizontal: 'middle', vertical: 'middle' });
+                .updateCells(sheetId, SheetRange.cell(columnStart, 0), { value: title, ...style, horizontal: 'middle', vertical: 'middle' });
 
-            if (borders)
-                r = r.setBorder(sheetId, SheetRange.row(0, columnStart, columnCount), borders);
+            if (style?.beneath)
+                r = r.setBorder(sheetId, SheetRange.row(0, columnStart, columnCount), { bottom: style.beneath });
+
+            if (style?.between)
+                r = r.setBorder(sheetId, SheetRange.row(0, columnStart, columnCount), { left: style.between, right: style.between });
 
             return r;
         });
     }
 
-    async addColumn(sheetId: number, name: string, rows: number, columnIndex: number, inGroup: boolean, config: SheetColumnConfig): Promise<void> {
-        const offset = inGroup ? 1 : 0;
-        this.#sheet.modify(r => r
-            .updateCells(sheetId, SheetRange.cell(columnIndex, offset), {
-                value: name,
-                horizontal: 'middle', vertical: 'middle',
-                ...config.headerStyle
-            })
-            .updateCells(sheetId, SheetRange.column(columnIndex, offset + 1, rows - 1 - offset), {
-                horizontal: 'middle', vertical: 'middle',
-                ...config.dataStyle
-            })
-        );
+    async addColumn({ sheetId, title, rows, columnIndex, rowOffset, groupCount, groupIndex, config }: SheetGeneratorColumnData): Promise<void> {
+        console.log({ title, rows, columnIndex, rowOffset, groupCount, groupIndex });
+        this.#sheet.modify(r => {
+            r = r
+                .updateCells(sheetId, SheetRange.cell(columnIndex, rowOffset), {
+                    value: title,
+                    horizontal: 'middle', vertical: 'middle',
+                    ...config.headerStyle
+                })
+                .updateCells(sheetId, SheetRange.column(columnIndex, rowOffset + 1, rows - 1 - rowOffset), {
+                    horizontal: 'middle', vertical: 'middle',
+                    ...config.dataStyle
+                });
+
+            if (config.headerStyle?.beneath)
+                r = r.setBorder(sheetId, SheetRange.cell(columnIndex, rowOffset), { bottom: config.headerStyle.beneath });
+
+            if (config.headerStyle?.between)
+                r = r.setBorder(sheetId, SheetRange.cell(columnIndex, rowOffset), {
+                    left: groupIndex !== 0 ? config.headerStyle.between : undefined,
+                    right: groupIndex != groupCount - 1 ? config.headerStyle.between : undefined
+                });
+
+            return r;
+        });
     }
 }

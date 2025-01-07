@@ -229,9 +229,7 @@ export const processTableBook = async (book: TableBook, generator: SheetGenerato
 
         console.log(`Processing sheet: '${sheet.name}' ${columns} columns, ${sheet.rows} rows`);
 
-        console.log(sheetTheme);
-
-        const sheetId = await generator.addSheet(sheet.name, sheet.rows, columns, sheetTheme.tab || undefined);
+        const sheetId = await generator.addSheet({ title: sheet.name, rows: sheet.rows, columns, color: sheetTheme.tab || undefined });
 
         let index = 0;
 
@@ -244,18 +242,28 @@ export const processTableBook = async (book: TableBook, generator: SheetGenerato
 
             if (grouped) {
                 console.log(`Processing group: '${group.name}' ${group.columns.length} columns`);
-                console.log(groupTheme);
-                await generator.addGroup(sheetId, group.name, index, group.columns.length, groupTheme.group);
+
+                await generator.addGroup({ sheetId, title: group.name, columnStart: index, columnCount: group.columns.length, style: groupTheme.group });
             }
 
-            for (const column of group.columns) {
+            for (let i = 0; i < group.columns.length; i++) {
+                const column = group.columns[i];
                 const columnParents = [...groupParents, ...(group.theme ? [group.theme] : [])];
                 const fullname = grouped ? `${sheet.name}.${group.name}.${column.name}` : `${sheet.name}.${column.name}`;
                 const columnTheme = resolveTheme(fullname, column.theme ?? {}, colors, styles, themes, columnParents);
 
-                await generator.addColumn(sheetId, column.name, sheet.rows, index, grouped, {
-                    headerStyle: columnTheme.header,
-                    dataStyle: columnTheme.data,
+                await generator.addColumn({
+                    sheetId,
+                    title: column.name,
+                    rows: sheet.rows,
+                    columnIndex: index,
+                    rowOffset: grouped ? 1 : 0,
+                    groupIndex: i,
+                    groupCount: group.columns.length,
+                    config: {
+                        headerStyle: columnTheme.header,
+                        dataStyle: columnTheme.data,
+                    }
                 });
 
                 index++;
