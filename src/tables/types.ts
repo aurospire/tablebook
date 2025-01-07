@@ -152,8 +152,8 @@ export type BorderType = typeof BorderTypes[number];
 export type Border = {
     /** Border line style */
     type: BorderType;
-    /** Border color, defaults to black */
-    color?: Color | StandardPaletteReference | Reference;
+    /** Border color */
+    color: Color | StandardPaletteReference | Reference;
 };
 
 /** Group and column partition styling */

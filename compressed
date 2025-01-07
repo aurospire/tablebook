@@ -163,7 +163,7 @@ export type TextForm = boolean | { bold?: boolean; italic?: boolean; };
 
 export type Style = { fore?: Color | PaletteReference | Reference; back?: Color | PaletteReference | Reference; form?: TextForm; };
 
-export type Border = { type: BorderStyle; color?: Color | PaletteReference | Reference; };
+export type Border = { type: BorderStyle; color: Color | PaletteReference | Reference; };
 
 export type Partition = { beneath?: Border; between?: Border; };
 

@@ -134,7 +134,7 @@ const resolveTheme = (
     }
 
     if (chain.includes(theme))
-        throw new Error('Circular theme reference for ' + name + JSON.stringify(theme, null, 2));
+        throw new Error('Circular theme reference for ' + name + JSON.stringify({ chain, theme }, null, 2));
 
     const branchChain = [...chain, theme];
 
@@ -147,8 +147,9 @@ const resolveTheme = (
         data: {}
     };
 
-    for (const inherit of inherits) {
-        const resolved = resolveTheme(name, inherit, colors, styles, themes, parents, branchChain);
+    for (let i = 0; i < inherits.length; i++) {
+        const inherit = inherits[i];
+        const resolved = resolveTheme(`${name}:${i}`, inherit, colors, styles, themes, [], branchChain);
 
         result = {
             tab: resolved.tab ?? result.tab,

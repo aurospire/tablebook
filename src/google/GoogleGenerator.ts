@@ -31,7 +31,7 @@ export class GoogleGenerator implements SheetGenerator {
         this.#sheet.modify(r => {
             r = r
                 .mergeCells(sheetId, SheetRange.row(0, columnStart, columnCount))
-                .updateCells(sheetId, SheetRange.cell(columnStart, 0), { value: name, ...style });
+                .updateCells(sheetId, SheetRange.cell(columnStart, 0), { value: name, ...style, horizontal: 'middle', vertical: 'middle' });
 
             if (borders)
                 r = r.setBorder(sheetId, SheetRange.row(0, columnStart, columnCount), borders);
@@ -41,6 +41,10 @@ export class GoogleGenerator implements SheetGenerator {
     }
 
     async addColumn(sheetId: number, name: string, columnIndex: number, inGroup: boolean, config: SheetColumnConfig): Promise<void> {
-        this.#sheet.modify(r => r.updateCells(sheetId, SheetRange.cell(columnIndex, inGroup ? 1 : 0), { value: name, ...config }));
+        this.#sheet.modify(r => r.updateCells(sheetId, SheetRange.cell(columnIndex, inGroup ? 1 : 0), {
+            value: name,
+            horizontal: 'middle', vertical: 'middle',
+            ...config,
+        }));
     }
 }

@@ -124,10 +124,12 @@ const tablebook: TableBook = {
         },
         styles: {
             header: {
-                fore: "@headerBlue",
-                back: "@lightBlue",
+                fore: '#ffffff',
                 form: { bold: true },
-                beneath: { type: "medium", color: "@headerBlue" }
+            },
+            data: {
+                fore: '#000000',
+                form: false
             },
             success: {
                 fore: "@successGreen",
@@ -140,15 +142,9 @@ const tablebook: TableBook = {
         },
         themes: {
             business: {
-                inherits: ["@blue"],
-                tab: "@headerBlue",
                 header: "@header",
-                group: {
-                    fore: "@headerBlue",
-                    back: "@lightBlue",
-                    form: { bold: true },
-                    beneath: { type: "thick", color: "@headerBlue" }
-                }
+                group: "@header",
+                data: "@data"
             }
         },
         formats: {
@@ -197,6 +193,7 @@ const tablebook: TableBook = {
     sheets: [
         {
             name: "FinancialSummary",
+            theme: '@blue',
             rows: 12,
             groups: [
                 {
@@ -360,6 +357,7 @@ const tablebook: TableBook = {
         {
             name: "OperationalMetrics",
             rows: 12,
+            theme: '@green',
             groups: [
                 {
                     name: "CustomerMetrics",

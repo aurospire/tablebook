@@ -110,7 +110,7 @@ const BorderType: z.ZodType<BorderType> = z.enum(BorderTypes);
 
 const Border: z.ZodType<Border> = z.object({
     type: BorderType,
-    color: ColorReference.optional(),
+    color: ColorReference,
 });
 
 const Partition: z.ZodType<Partition> = z.object({
