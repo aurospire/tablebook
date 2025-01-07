@@ -21,6 +21,13 @@ export type SheetBorderSet = {
     right?: SheetBorder;
 };
 
+export type SheetPartition = {
+    beneath?: SheetBorder;
+    between?: SheetBorder;
+};
+
+export type SheetHeaderStyle = SheetStyle & SheetPartition;
+
 export type SheetAlign = 'start' | 'middle' | 'end';
 
 export type SheetWrap = 'overflow' | 'clip' | 'wrap';

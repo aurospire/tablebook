@@ -193,7 +193,7 @@ const tablebook: TableBook = {
             }
         }
     },
-    sheets: [
+    pages: [
         {
             name: "FinancialSummary",
             theme: '@blue',

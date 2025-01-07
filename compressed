@@ -6,7 +6,7 @@
  * - Implements a table paradigm that is a strict subset of spreadsheets with only vertical relationships
  * - Data relationships and computations are column-based - no cell addresses or horizontal references
  * - Each sheet has one table with at least one column group
- * - Groups are hidden in output if there's only one in a sheet
+ * - Group headers are hidden in output if there's only one in a table
  * 
  * Design Principles:
  * - Standard Palettes should be ALWAYS BE USED over custom colors and themes
@@ -44,7 +44,7 @@
  * Palettes are simple predefined definitons in the .colors and .themes objects, and are treated exactly like other definitions.
  * 
  * Theme Inheritance:
- * - Themes cascade down through the structure (TableBook -> TableSheet -> TableGroup -> TableColumn)
+ * - Themes cascade down through the structure (TableBook -> TablePage -> TableGroup -> TableColumn)
  * - Each level can override the theme from its parent by providing an explicit theme
  * - undefined/missing theme does not override parent theme
  * - Multiple themes can be combined using the inherits array using a deep order-matters override
@@ -267,7 +267,7 @@ export type TableColumn = TableUnit & { type: DataType; expression?: Expression<
 
 export type TableGroup = TableUnit & { columns: TableColumn[]; };
 
-export type TableSheet = TableUnit & { groups: TableGroup[]; rows: number; };
+export type TablePage = TableUnit & { groups: TableGroup[]; rows: number; };
 
 export type Definitions = {
     colors?: Record<string, Color>;
@@ -277,4 +277,4 @@ export type Definitions = {
     types?: Record<string, DataType>;
 };
 
-export type TableBook = TableUnit & { sheets: TableSheet[]; definitions?: Definitions; };
+export type TableBook = TableUnit & { pages: TablePage[]; definitions?: Definitions; };

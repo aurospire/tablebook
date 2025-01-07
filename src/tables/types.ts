@@ -507,10 +507,10 @@ export type TableGroup = TableUnit & {
 };
 
 /** 
-* Definition of a single sheet in the workbook
+* Definition of a single page in the workbook
 * Contains one table with one or more column groups
 */
-export type TableSheet = TableUnit & {
+export type TablePage = TableUnit & {
     /** Array of column groups in this sheet's table */
     groups: TableGroup[];
     /** Number of data rows in the table */
@@ -541,11 +541,11 @@ export type Definitions = {
 
 /** 
 * Root type representing an entire workbook
-* Contains all sheets and shared definitions
+* Contains all pages and shared definitions
 */
 export type TableBook = TableUnit & {
-    /** Array of sheets in this workbook */
-    sheets: TableSheet[];
+    /** Array of pages in this workbook */
+    pages: TablePage[];
     /** Optional container for reusable definitions */
     definitions?: Definitions;
 };

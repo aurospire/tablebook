@@ -40,7 +40,7 @@ import {
     SelfExpression, SelfLiteral, SelfSelector,
     Style,
     TableBook, TableColumn,
-    TableGroup, TableSheet,
+    TableGroup, TablePage,
     TableUnit, TableUnitNameRegex,
     TemporalFormat,
     TemporalItem,
@@ -326,7 +326,7 @@ const TableGroup: z.ZodType<TableGroup> = TableUnit.and(z.object({
     columns: z.array(TableColumn).min(1)
 }));
 
-const TableSheet: z.ZodType<TableSheet> = TableUnit.and(z.object({
+const TablePage: z.ZodType<TablePage> = TableUnit.and(z.object({
     groups: z.array(TableGroup).min(1),
     rows: z.number().int().positive()
 }));
@@ -341,7 +341,7 @@ const Definitions: z.ZodType<Definitions> = z.object({
 });
 
 const TableBook: z.ZodType<TableBook> = TableUnit.and(z.object({
-    sheets: z.array(TableSheet),
+    sheets: z.array(TablePage),
     definitions: Definitions.optional()
 }));
 

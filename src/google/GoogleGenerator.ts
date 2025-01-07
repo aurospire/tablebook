@@ -46,20 +46,20 @@ export class GoogleGenerator implements SheetGenerator {
                 .updateCells(sheetId, SheetRange.cell(columnIndex, rowOffset), {
                     value: title,
                     horizontal: 'middle', vertical: 'middle',
-                    ...config.headerStyle
+                    ...config.titleStyle
                 })
                 .updateCells(sheetId, SheetRange.column(columnIndex, rowOffset + 1, rows - 1 - rowOffset), {
                     horizontal: 'middle', vertical: 'middle',
                     ...config.dataStyle
                 });
 
-            if (config.headerStyle?.beneath)
-                r = r.setBorder(sheetId, SheetRange.cell(columnIndex, rowOffset), { bottom: config.headerStyle.beneath });
+            if (config.titleStyle?.beneath)
+                r = r.setBorder(sheetId, SheetRange.cell(columnIndex, rowOffset), { bottom: config.titleStyle.beneath });
 
-            if (config.headerStyle?.between)
+            if (config.titleStyle?.between)
                 r = r.setBorder(sheetId, SheetRange.cell(columnIndex, rowOffset), {
-                    left: groupIndex !== 0 ? config.headerStyle.between : undefined,
-                    right: groupIndex != groupCount - 1 ? config.headerStyle.between : undefined
+                    left: groupIndex !== 0 ? config.titleStyle.between : undefined,
+                    right: groupIndex != groupCount - 1 ? config.titleStyle.between : undefined
                 });
 
             return r;

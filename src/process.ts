@@ -17,9 +17,9 @@ export const resolveColumns = (tablebook: TableBook): Map<string, ResolvedColumn
 
     const sheets = new Set<string>();
 
-    for (let s = 0; s < tablebook.sheets.length; s++) {
+    for (let s = 0; s < tablebook.pages.length; s++) {
 
-        const sheet = tablebook.sheets[s];
+        const sheet = tablebook.pages[s];
 
         if (sheets.has(sheet.name))
             throw new Error(`Duplicate sheet name: ${sheet.name}`);
@@ -221,7 +221,7 @@ export const processTableBook = async (book: TableBook, generator: SheetGenerato
     const types = book.definitions?.types ?? {};
 
 
-    for (const sheet of book.sheets) {
+    for (const sheet of book.pages) {
         const sheetParents: (Theme | Reference)[] = book.theme ? [book.theme] : [];
         const sheetTheme = resolveTheme(sheet.name, sheet.theme ?? {}, colors, styles, themes, sheetParents);
 
@@ -262,7 +262,7 @@ export const processTableBook = async (book: TableBook, generator: SheetGenerato
                     groupIndex: i,
                     groupCount: group.columns.length,
                     config: {
-                        headerStyle: columnTheme.header,
+                        titleStyle: columnTheme.header,
                         dataStyle: columnTheme.data,
                     }
                 });
