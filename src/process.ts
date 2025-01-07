@@ -1,3 +1,4 @@
+import { inspect } from "util";
 import { SheetHeaderStyle } from "./sheets/SheetColumns";
 import { SheetGenerator } from "./sheets/SheetGenerator";
 import { SheetBorder, SheetStyle } from "./sheets/SheetStyle";
@@ -114,6 +115,34 @@ type SheetTheme = {
     data: SheetStyle;
 };
 
+const mergeThemes = (base: SheetTheme, override: SheetTheme): SheetTheme => {
+    return {
+        tab: override.tab ?? base.tab,
+        header: {
+            fore: override.header.fore ?? base.header.fore,
+            back: override.header.back ?? base.header.back,
+            bold: override.header.bold ?? base.header.bold,
+            italic: override.header.italic ?? base.header.italic,
+            beneath: override.header.beneath ?? base.header.beneath,
+            between: override.header.between ?? base.header.between
+        },
+        group: {
+            fore: override.group.fore ?? base.group.fore,
+            back: override.group.back ?? base.group.back,
+            bold: override.group.bold ?? base.group.bold,
+            italic: override.group.italic ?? base.group.italic,
+            beneath: override.group.beneath ?? base.group.beneath,
+            between: override.group.between ?? base.group.between
+        },
+        data: {
+            fore: override.data.fore ?? base.data.fore,
+            back: override.data.back ?? base.data.back,
+            bold: override.data.bold ?? base.data.bold,
+            italic: override.data.italic ?? base.data.italic
+        }
+    };
+};
+
 const resolveTheme = (
     name: string,
     theme: Theme | Reference,
@@ -149,24 +178,19 @@ const resolveTheme = (
 
     for (let i = 0; i < inherits.length; i++) {
         const inherit = inherits[i];
-        const resolved = resolveTheme(`${name}:${i}`, inherit, colors, styles, themes, [], branchChain);
+        const subname = `${name}:${i}`;
+        const resolved = resolveTheme(subname, inherit, colors, styles, themes, [], branchChain);
 
-        result = {
-            tab: resolved.tab ?? result.tab,
-            header: { ...result.header, ...resolved.header },
-            group: { ...result.group, ...resolved.group },
-            data: { ...result.data, ...resolved.data }
-        };
+        result = mergeThemes(result, resolved);
     }
 
-    if (theme.tab)
-        result.tab = resolveColors(theme.tab, colors);
-    if (theme.header)
-        result.header = { ...result.header, ...resolveStyle(theme.header, colors, styles) };
-    if (theme.group)
-        result.group = { ...result.group, ...resolveStyle(theme.group, colors, styles) };
-    if (theme.data)
-        result.data = { ...result.data, ...resolveStyle(theme.data, colors, styles) };
+
+    result = mergeThemes(result, {
+        tab: theme.tab ? resolveColors(theme.tab, colors) : undefined,
+        header: theme.header ? resolveStyle(theme.header, colors, styles) : {},
+        group: theme.group ? resolveStyle(theme.group, colors, styles) : {},
+        data: theme.data ? resolveStyle(theme.data, colors, styles) : {},
+    });
 
     return result;
 };
@@ -214,7 +238,7 @@ export const processTableBook = async (book: TableBook, generator: SheetGenerato
         for (const group of sheet.groups) {
             const groupParents = [...sheetParents, ...(sheet.theme ? [sheet.theme] : [])];
 
-            const groupTheme = resolveTheme(sheet.name + '.' + group.name, group.theme ?? {}, colors, styles, themes, groupParents);
+            const groupTheme = resolveTheme(`${sheet.name}.${group.name}`, group.theme ?? {}, colors, styles, themes, groupParents);
 
             const grouped = sheet.groups.length > 1;
 
@@ -225,7 +249,14 @@ export const processTableBook = async (book: TableBook, generator: SheetGenerato
             }
 
             for (const column of group.columns) {
-                await generator.addColumn(sheetId, column.name, index, grouped, {});
+                const columnParents = [...groupParents, ...(group.theme ? [group.theme] : [])];
+                const fullname = grouped ? `${sheet.name}.${group.name}.${column.name}` : `${sheet.name}.${column.name}`;
+                const columnTheme = resolveTheme(fullname, column.theme ?? {}, colors, styles, themes, columnParents);
+
+                await generator.addColumn(sheetId, column.name, sheet.rows, index, grouped, {
+                    headerStyle: columnTheme.header,
+                    dataStyle: columnTheme.data,
+                });
 
                 index++;
             }

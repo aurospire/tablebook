@@ -40,11 +40,18 @@ export class GoogleGenerator implements SheetGenerator {
         });
     }
 
-    async addColumn(sheetId: number, name: string, columnIndex: number, inGroup: boolean, config: SheetColumnConfig): Promise<void> {
-        this.#sheet.modify(r => r.updateCells(sheetId, SheetRange.cell(columnIndex, inGroup ? 1 : 0), {
-            value: name,
-            horizontal: 'middle', vertical: 'middle',
-            ...config,
-        }));
+    async addColumn(sheetId: number, name: string, rows: number, columnIndex: number, inGroup: boolean, config: SheetColumnConfig): Promise<void> {
+        const offset = inGroup ? 1 : 0;
+        this.#sheet.modify(r => r
+            .updateCells(sheetId, SheetRange.cell(columnIndex, offset), {
+                value: name,
+                horizontal: 'middle', vertical: 'middle',
+                ...config.headerStyle
+            })
+            .updateCells(sheetId, SheetRange.column(columnIndex, offset + 1, rows - 1 - offset), {
+                horizontal: 'middle', vertical: 'middle',
+                ...config.dataStyle
+            })
+        );
     }
 }

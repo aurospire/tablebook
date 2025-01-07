@@ -25,6 +25,7 @@ export interface SheetGenerator {
     addColumn(
         sheetId: number,
         title: string,
+        rows: number,
         columnIndex: number,
         inGroup: boolean,
         config: SheetColumnConfig
