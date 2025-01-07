@@ -99,11 +99,13 @@ const testTablebook = async (tablebook: TableBook) => {
     if (result.success) {
         const sheet = await GoogleSheet.open(vars.email, vars.key, vars.sheetid);
 
-        await sheet.reset();
+        const page = await sheet.reset();
 
         const generator = new GoogleGenerator(sheet);
 
         await processTableBook(result.data, generator);
+
+        await sheet.modify(r => r.dropSheets(page))
     }
     else {
         console.log('Tablebook validation failed');
