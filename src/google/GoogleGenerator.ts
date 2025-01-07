@@ -1,8 +1,5 @@
-import { SheetColumnConfig, SheetHeaderPartitions } from "../sheets/SheetColumns";
 import { SheetGenerator, SheetGeneratorColumnData, SheetGeneratorGroupData, SheetGeneratorSheetData } from "../sheets/SheetGenerator";
 import { SheetRange } from "../sheets/SheetPosition";
-import { SheetAlign, SheetStyle } from "../sheets/SheetStyle";
-import { ColorObject } from "../util/Color";
 import { GoogleSheet } from "./GoogleSheet";
 
 export class GoogleGenerator implements SheetGenerator {
