@@ -1,6 +1,5 @@
 import { BaseNumberFormat, DigitPlaceholder, NumericFormat, TemporalFormat, TemporalUnitLength, TemporalUnitType } from "../tables/types";
 
-
 export type SheetType = 'text' | 'number' | 'percent' | 'currency' | 'date' | 'time' | 'datetime';
 
 export type SheetKind = {

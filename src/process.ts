@@ -1,7 +1,5 @@
-import { inspect } from "util";
-import { SheetHeaderStyle } from "./sheets/SheetColumns";
-import { SheetGenerator } from "./sheets/SheetGenerator";
-import { SheetBorder, SheetStyle } from "./sheets/SheetStyle";
+import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "./sheets/SheetBook";
+import { SheetBorder, SheetStyle, SheetTitleStyle } from "./sheets/SheetStyle";
 import { Color, HeaderStyle, Reference, StandardPalettes, Style, TableBook, Theme } from "./tables/types";
 import { ColorObject, Colors } from "./util/Color";
 
@@ -50,7 +48,7 @@ export const resolveColumns = (tablebook: TableBook): Map<string, ResolvedColumn
     return resolved;
 };
 
-export const resolveColors = (color: Color | Reference, colors: Record<string, Color>): ColorObject => {
+export const resolveColor = (color: Color | Reference, colors: Record<string, Color>): ColorObject => {
     if (color.startsWith('#')) {
         return Colors.toObject(color as Color);
     }
@@ -66,7 +64,7 @@ export const resolveColors = (color: Color | Reference, colors: Record<string, C
         throw new Error(`Invalid color: ${color}`);
 };
 
-export const resolveStyle = (style: HeaderStyle | Reference, colors: Record<string, Color>, styles: Record<string, Style>): SheetHeaderStyle => {
+export const resolveStyle = (style: HeaderStyle | Reference, colors: Record<string, Color>, styles: Record<string, Style>): SheetTitleStyle => {
     if (typeof style === 'string') {
         if (style.startsWith('@')) {
             const resolved = styles[style.substring(1)];
@@ -77,8 +75,8 @@ export const resolveStyle = (style: HeaderStyle | Reference, colors: Record<stri
         throw new Error(`Invalid reference: ${style}`);
     }
 
-    const fore: ColorObject | undefined = style.fore ? resolveColors(style.fore, colors) : undefined;
-    const back: ColorObject | undefined = style.back ? resolveColors(style.back, colors) : undefined;
+    const fore: ColorObject | undefined = style.fore ? resolveColor(style.fore, colors) : undefined;
+    const back: ColorObject | undefined = style.back ? resolveColor(style.back, colors) : undefined;
 
     let bold, italic;
 
@@ -94,14 +92,14 @@ export const resolveStyle = (style: HeaderStyle | Reference, colors: Record<stri
     if (style.beneath)
         beneath = {
             type: style.beneath.type,
-            color: style.beneath.color ? resolveColors(style.beneath.color, colors) : undefined
+            color: style.beneath.color ? resolveColor(style.beneath.color, colors) : undefined
         };
 
     let between: SheetBorder | undefined;
     if (style.between)
         between = {
             type: style.between.type,
-            color: style.between.color ? resolveColors(style.between.color, colors) : undefined
+            color: style.between.color ? resolveColor(style.between.color, colors) : undefined
         };
 
 
@@ -110,8 +108,8 @@ export const resolveStyle = (style: HeaderStyle | Reference, colors: Record<stri
 
 type SheetTheme = {
     tab?: ColorObject | null,
-    header: SheetHeaderStyle,
-    group: SheetHeaderStyle,
+    group: SheetTitleStyle,
+    header: SheetTitleStyle,
     data: SheetStyle;
 };
 
@@ -186,7 +184,7 @@ const resolveTheme = (
 
 
     result = mergeThemes(result, {
-        tab: theme.tab ? resolveColors(theme.tab, colors) : undefined,
+        tab: theme.tab ? resolveColor(theme.tab, colors) : undefined,
         header: theme.header ? resolveStyle(theme.header, colors, styles) : {},
         group: theme.group ? resolveStyle(theme.group, colors, styles) : {},
         data: theme.data ? resolveStyle(theme.data, colors, styles) : {},
@@ -207,11 +205,16 @@ const standardThemes: Record<string, Theme> = Object.fromEntries(
         data: { back: palette.lightest },
     }])
 );
-export const processTableBook = async (book: TableBook, generator: SheetGenerator) => {
-    const resolved = resolveColumns(book);
+export const processTableBook = (book: TableBook): SheetBook => {
 
     console.log(`Processing book: '${book.name}'`);
-    generator.setTitle(book.name);
+
+    const resultBook: SheetBook = {
+        title: book.name,
+        pages: []
+    };
+
+    const resolved = resolveColumns(book);
 
     const colors = { ...(book.definitions?.colors ?? {}), ...standardColors };
     const styles = book.definitions?.styles ?? {};
@@ -220,56 +223,61 @@ export const processTableBook = async (book: TableBook, generator: SheetGenerato
     const temporal = book.definitions?.formats?.temporal ?? {};
     const types = book.definitions?.types ?? {};
 
+    for (const page of book.pages) {
 
-    for (const sheet of book.pages) {
-        const sheetParents: (Theme | Reference)[] = book.theme ? [book.theme] : [];
-        const sheetTheme = resolveTheme(sheet.name, sheet.theme ?? {}, colors, styles, themes, sheetParents);
+        console.log(`Processing page: '${page.name}'`);
 
-        const columns: number = sheet.groups.reduce((acc, group) => acc + group.columns.length, 0);
+        const pageParents: (Theme | Reference)[] = book.theme ? [book.theme] : [];
 
-        console.log(`Processing sheet: '${sheet.name}' ${columns} columns, ${sheet.rows} rows`);
+        const pageTheme = resolveTheme(page.name, page.theme ?? {}, colors, styles, themes, pageParents);
 
-        const sheetId = await generator.addSheet({ title: sheet.name, rows: sheet.rows, columns, color: sheetTheme.tab || undefined });
 
-        let index = 0;
+        const resultPage: SheetPage = {
+            title: page.name,
+            tabColor: pageTheme.tab ?? undefined,
+            groups: []
+        };
 
-        for (const group of sheet.groups) {
-            const groupParents = [...sheetParents, ...(sheet.theme ? [sheet.theme] : [])];
+        resultBook.pages.push(resultPage);
 
-            const groupTheme = resolveTheme(`${sheet.name}.${group.name}`, group.theme ?? {}, colors, styles, themes, groupParents);
 
-            console.log(inspect(groupTheme, { depth: null, colors: true }));
-            const grouped = sheet.groups.length > 1;
+        for (const group of page.groups) {
+            console.log(`Processing group: '${group.name}'`);
 
-            if (grouped) {
-                console.log(`Processing group: '${group.name}' ${group.columns.length} columns`);
+            const groupParents = [...pageParents, ...(page.theme ? [page.theme] : [])];
 
-                await generator.addGroup({ sheetId, title: group.name, columnStart: index, columnCount: group.columns.length, style: groupTheme.group });
-            }
+            const groupTheme = resolveTheme(`${page.name}.${group.name}`, group.theme ?? {}, colors, styles, themes, groupParents);
 
-            for (let i = 0; i < group.columns.length; i++) {
-                const column = group.columns[i];
+            const resultGroup: SheetGroup = {
+                title: group.name,
+                titleStyle: groupTheme.group,
+                columns: []
+            };
+
+            resultPage.groups.push(resultGroup);
+
+            for (const column of group.columns) {
+                console.log(`Processing column: '${column.name}'`);
+
                 const columnParents = [...groupParents, ...(group.theme ? [group.theme] : [])];
-                const fullname = grouped ? `${sheet.name}.${group.name}.${column.name}` : `${sheet.name}.${column.name}`;
-                const columnTheme = resolveTheme(fullname, column.theme ?? {}, colors, styles, themes, columnParents);
 
-                await generator.addColumn({
-                    sheetId,
+                const columnTheme = resolveTheme(`${page.name}.${group.name}.${column.name}`, column.theme ?? {}, colors, styles, themes, columnParents);
+
+                const resultColumn: SheetColumn = {
                     title: column.name,
-                    rows: sheet.rows,
-                    columnIndex: index,
-                    rowOffset: grouped ? 1 : 0,
-                    groupIndex: i,
-                    groupCount: group.columns.length,
-                    config: {
-                        titleStyle: columnTheme.header,
-                        dataStyle: columnTheme.data,
-                    }
-                });
+                    titleStyle: columnTheme.header,
+                    dataStyle: columnTheme.data,
+                    type: undefined,
+                    format: undefined,
+                    conditionalFormats: undefined,
+                    formula: undefined,
+                    validation: undefined
+                };
 
-                index++;
+                resultGroup.columns.push(resultColumn);
             }
         }
     };
 
+    return resultBook;
 };

@@ -532,7 +532,7 @@ export type Definitions = {
     formats?: {
         /** Custom numeric format definitions */
         numeric?: Record<string, NumericFormat>;
-        /** Custom temporal format definitions supplementing StandardTemporalFormats */
+        /** Custom temporal format definitions */
         temporal?: Record<string, TemporalFormat>;
     };
     /** Reusable type definitions */
