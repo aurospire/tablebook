@@ -325,13 +325,13 @@ export type TemporalFormat = TemporalItem[];
 /* Data Types */
 
 /** Identifies a text type in the type system */
-export const TextTypeName = 'text';
+export const TextTypeKind = 'text';
 /** 
  * Text data type for string values
  * Supports validation rules, conditional styling, and computed expressions
  */
 export type TextType = {
-    name: typeof TextTypeName;
+    kind: typeof TextTypeKind;
     /** Optional validation rule for the text content */
     rule?: TextRule;
     /** Optional array of conditional styles based on text rules */
@@ -339,13 +339,13 @@ export type TextType = {
 };
 
 /** Identifies a numeric type in the type system */
-export const NumericTypeName = 'numeric';
+export const NumericTypeKind = 'numeric';
 /** 
  * Numeric data type for numbers and calculations
  * Supports formatting options, validation rules, and computed expressions
  */
 export type NumericType = {
-    name: typeof NumericTypeName;
+    kind: typeof NumericTypeKind;
     /** Optional validation rule for the numeric value */
     rule?: NumericRule;
     /** Optional array of conditional styles based on numeric rules */
@@ -355,13 +355,13 @@ export type NumericType = {
 };
 
 /** Identifies a temporal type in the type system */
-export const TemporalTypeName = 'temporal';
+export const TemporalTypeKind = 'temporal';
 /** 
  * Temporal data type for dates and times
  * Supports multiple format options, validation rules, and computed expressions
  */
 export type TemporalType = {
-    name: typeof TemporalTypeName;
+    kind: typeof TemporalTypeKind;
     /** Optional validation rule for the temporal value */
     rule?: TemporalRule;
     /** Optional array of conditional styles based on temporal rules */

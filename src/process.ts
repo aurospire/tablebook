@@ -272,7 +272,7 @@ export const processTableBook = (book: TableBook): SheetBook => {
 
                 const type = isReference(column.type) ? resolveReference(column.type, types, v => typeof v === 'string') : column.type;
 
-                type.name;
+                type.kind;
 
                 const resultColumn: SheetColumn = {
                     title: column.name,

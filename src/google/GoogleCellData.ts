@@ -1,8 +1,8 @@
 import { SheetData, SheetValue } from "../sheets/SheetData";
-import { SheetAlign, SheetWrap } from "../sheets/SheetStyle";
 import { toFormula } from "../sheets/SheetExpression";
-import { SheetType, toPattern } from "../sheets/SheetKind";
+import { SheetKind, toPattern } from "../sheets/SheetKind";
 import { SheetPosition } from "../sheets/SheetPosition";
+import { SheetAlign, SheetWrap } from "../sheets/SheetStyle";
 import { toWeightedColorStyle } from "./GoogleStyles";
 import { GoogleCellFormat, GoogleCellValue, GoogleNumberFormat, GoogleTextFormat } from "./GoogleTypes";
 
@@ -14,7 +14,7 @@ export const GoogleFieldMap: Record<string, string[]> = {
     horizontal: ['userEnteredFormat.horizontalAlignment'],
     vertical: ['userEnteredFormat.verticalAlignment'],
     wrap: ['userEnteredFormat.wrapStrategy'],
-    type: ['userEnteredFormat.numberFormat.type', 'userEnteredFormat.numberFormat.pattern'],
+    kind: ['userEnteredFormat.numberFormat.type', 'userEnteredFormat.numberFormat.pattern'],
     format: ['userEnteredFormat.numberFormat.type', 'userEnteredFormat.numberFormat.pattern'],
     value: ['userEnteredValue'],
 } satisfies Record<keyof SheetData, string[]>;
@@ -45,7 +45,7 @@ export const GoogleCellTypeMap = {
     date: 'DATE',
     time: 'TIME',
     datetime: 'DATE_TIME',
-} satisfies Record<SheetType, string>;
+} satisfies Record<SheetKind, string>;
 
 
 export const getExtendedValue = (value: SheetValue, position: SheetPosition): GoogleCellValue | undefined => {
@@ -137,10 +137,10 @@ export const toCellFormat = (data: SheetData): GoogleCellFormat | undefined => {
             }
         }
 
-        if (data.type !== undefined || data.format !== undefined) {
-            if (data.type !== null || data.format !== null) {
+        if (data.kind !== undefined || data.format !== undefined) {
+            if (data.kind !== null || data.format !== null) {
                 numberFormat ??= {};
-                numberFormat.type = data.type ? GoogleCellTypeMap[data.type] : GoogleCellTypeMap.text;
+                numberFormat.type = data.kind ? GoogleCellTypeMap[data.kind] : GoogleCellTypeMap.text;
                 numberFormat.pattern = data.format ? toPattern(data.format) : '';
             }
         }

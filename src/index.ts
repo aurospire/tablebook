@@ -79,7 +79,7 @@ const testGoogleSheet = async () => {
                 }
             })
             .updateCells(id, SheetRange.cell(0, 6), {
-                value: serialNumber('2024-01-02'), type: 'time', format: [
+                value: serialNumber('2024-01-02'), kind: 'time', format: [
                     { type: 'year', length: 'long' }, '-', { type: 'month', length: 'short' }, '-', { type: 'day', length: 'short' },
                     { type: 'weekday', length: 'long' }, ' | ', { type: 'hour', length: 'long' }, ':', { type: 'minute', length: 'long' }, { type: 'meridiem', length: 'long' }
                 ]
@@ -190,7 +190,7 @@ const tablebook0: TableBook = {
         },
         types: {
             money: {
-                name: "numeric",
+                kind: "numeric",
                 format: "@currency",
                 styles: [
                     {
@@ -218,7 +218,7 @@ const tablebook0: TableBook = {
                         {
                             name: "Month",
                             type: {
-                                name: "temporal",
+                                kind: "temporal",
                                 format: "@shortDate"
                             }
                         },
@@ -259,7 +259,7 @@ const tablebook0: TableBook = {
                         {
                             name: "Month",
                             type: {
-                                name: "temporal",
+                                kind: "temporal",
                                 format: "@shortDate"
                             }
                         },
@@ -306,7 +306,7 @@ const tablebook0: TableBook = {
                         {
                             name: "Month",
                             type: {
-                                name: "temporal",
+                                kind: "temporal",
                                 format: "@shortDate"
                             }
                         },
@@ -343,7 +343,7 @@ const tablebook0: TableBook = {
                         {
                             name: "ProfitMargin",
                             type: {
-                                name: "numeric",
+                                kind: "numeric",
                                 format: "@percent",
                                 rule: {
                                     type: "between",
@@ -383,14 +383,14 @@ const tablebook0: TableBook = {
                         {
                             name: "Month",
                             type: {
-                                name: "temporal",
+                                kind: "temporal",
                                 format: "@shortDate"
                             }
                         },
                         {
                             name: "NewCustomers",
                             type: {
-                                name: "numeric",
+                                kind: "numeric",
                                 format: {
                                     type: "number",
                                     integer: { fixed: 1, align: 3 },
@@ -402,7 +402,7 @@ const tablebook0: TableBook = {
                         {
                             name: "ChurnRate",
                             type: {
-                                name: "numeric",
+                                kind: "numeric",
                                 format: "@percent",
                                 rule: {
                                     type: "between",
@@ -425,14 +425,14 @@ const tablebook0: TableBook = {
                         {
                             name: "Month",
                             type: {
-                                name: "temporal",
+                                kind: "temporal",
                                 format: "@shortDate"
                             }
                         },
                         {
                             name: "EmployeeCount",
                             type: {
-                                name: "numeric",
+                                kind: "numeric",
                                 format: {
                                     type: "number",
                                     integer: { fixed: 1, align: 3 },
@@ -492,137 +492,137 @@ const tablebook: TableBook = {
                 {
                     name: "PinkFamily",
                     theme: "@pink",
-                    columns: [{ name: "Pink", type: { name: "text" } }]
+                    columns: [{ name: "Pink", type: { kind: "text" } }]
                 },
                 {
                     name: "CranberryFamily",
                     theme: "@cranberry",
-                    columns: [{ name: "Cranberry", type: { name: "text" } }]
+                    columns: [{ name: "Cranberry", type: { kind: "text" } }]
                 },
                 {
                     name: "RedFamily",
                     theme: "@red",
-                    columns: [{ name: "Red", type: { name: "text" } }]
+                    columns: [{ name: "Red", type: { kind: "text" } }]
                 },
                 {
                     name: "RustFamily",
                     theme: "@rust",
-                    columns: [{ name: "Rust", type: { name: "text" } }]
+                    columns: [{ name: "Rust", type: { kind: "text" } }]
                 },
                 {
                     name: "OrangeFamily",
                     theme: "@orange",
-                    columns: [{ name: "Orange", type: { name: "text" } }]
+                    columns: [{ name: "Orange", type: { kind: "text" } }]
                 },
                 {
                     name: "YellowFamily",
                     theme: "@yellow",
-                    columns: [{ name: "Yellow", type: { name: "text" } }]
+                    columns: [{ name: "Yellow", type: { kind: "text" } }]
                 },
                 {
                     name: "GreenFamily",
                     theme: "@green",
-                    columns: [{ name: "Green", type: { name: "text" } }]
+                    columns: [{ name: "Green", type: { kind: "text" } }]
                 },
                 {
                     name: "MossFamily",
                     theme: "@moss",
-                    columns: [{ name: "Moss", type: { name: "text" } }]
+                    columns: [{ name: "Moss", type: { kind: "text" } }]
                 },
                 {
                     name: "SageFamily",
                     theme: "@sage",
-                    columns: [{ name: "Sage", type: { name: "text" } }]
+                    columns: [{ name: "Sage", type: { kind: "text" } }]
                 },
                 {
                     name: "TealFamily",
                     theme: "@teal",
-                    columns: [{ name: "Teal", type: { name: "text" } }]
+                    columns: [{ name: "Teal", type: { kind: "text" } }]
                 },
                 {
                     name: "SlateFamily",
                     theme: "@slate",
-                    columns: [{ name: "Slate", type: { name: "text" } }]
+                    columns: [{ name: "Slate", type: { kind: "text" } }]
                 },
                 {
                     name: "CyanFamily",
                     theme: "@cyan",
-                    columns: [{ name: "Cyan", type: { name: "text" } }]
+                    columns: [{ name: "Cyan", type: { kind: "text" } }]
                 },
                 {
                     name: "BlueFamily",
                     theme: "@blue",
-                    columns: [{ name: "Blue", type: { name: "text" } }]
+                    columns: [{ name: "Blue", type: { kind: "text" } }]
                 },
                 {
                     name: "AzureFamily",
                     theme: "@azure",
-                    columns: [{ name: "Azure", type: { name: "text" } }]
+                    columns: [{ name: "Azure", type: { kind: "text" } }]
                 },
                 {
                     name: "SkyblueFamily",
                     theme: "@skyblue",
-                    columns: [{ name: "Skyblue", type: { name: "text" } }]
+                    columns: [{ name: "Skyblue", type: { kind: "text" } }]
                 },
                 {
                     name: "LavenderFamily",
                     theme: "@lavender",
-                    columns: [{ name: "Lavender", type: { name: "text" } }]
+                    columns: [{ name: "Lavender", type: { kind: "text" } }]
                 },
                 {
                     name: "IndigoFamily",
                     theme: "@indigo",
-                    columns: [{ name: "Indigo", type: { name: "text" } }]
+                    columns: [{ name: "Indigo", type: { kind: "text" } }]
                 },
                 {
                     name: "PurpleFamily",
                     theme: "@purple",
-                    columns: [{ name: "Purple", type: { name: "text" } }]
+                    columns: [{ name: "Purple", type: { kind: "text" } }]
                 },
                 {
                     name: "PlumFamily",
                     theme: "@plum",
-                    columns: [{ name: "Plum", type: { name: "text" } }]
+                    columns: [{ name: "Plum", type: { kind: "text" } }]
                 },
                 {
                     name: "MauveFamily",
                     theme: "@mauve",
-                    columns: [{ name: "Mauve", type: { name: "text" } }]
+                    columns: [{ name: "Mauve", type: { kind: "text" } }]
                 },
                 {
                     name: "CoralFamily",
                     theme: "@coral",
-                    columns: [{ name: "Coral", type: { name: "text" } }]
+                    columns: [{ name: "Coral", type: { kind: "text" } }]
                 },
                 {
                     name: "TerracottaFamily",
                     theme: "@terracotta",
-                    columns: [{ name: "Terracotta", type: { name: "text" } }]
+                    columns: [{ name: "Terracotta", type: { kind: "text" } }]
                 },
                 {
                     name: "BronzeFamily",
                     theme: "@bronze",
-                    columns: [{ name: "Bronze", type: { name: "text" } }]
+                    columns: [{ name: "Bronze", type: { kind: "text" } }]
                 },
                 {
                     name: "SandFamily",
                     theme: "@sand",
-                    columns: [{ name: "Sand", type: { name: "text" } }]
+                    columns: [{ name: "Sand", type: { kind: "text" } }]
                 },
                 {
                     name: "TaupeFamily",
                     theme: "@taupe",
-                    columns: [{ name: "Taupe", type: { name: "text" } }]
+                    columns: [{ name: "Taupe", type: { kind: "text" } }]
                 },
                 {
                     name: "GrayFamily",
                     theme: "@gray",
-                    columns: [{ name: "Gray", type: { name: "text" } }]
+                    columns: [{ name: "Gray", type: { kind: "text" } }]
                 },
                 {
                     name: "CharcoalFamily",
                     theme: "@charcoal",
-                    columns: [{ name: "Charcoal", type: { name: "text" } }]
+                    columns: [{ name: "Charcoal", type: { kind: "text" } }]
                 }
             ]
         }

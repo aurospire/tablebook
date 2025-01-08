@@ -28,7 +28,7 @@ import {
     NumberFormat, NumberFormatType,
     NumericFormat,
     NumericRule,
-    NumericType, NumericTypeName,
+    NumericType, NumericTypeKind,
     Partition,
     PercentFormat, PercentFormatType,
     RangeOperators,
@@ -47,13 +47,13 @@ import {
     TemporalRule,
     TemporalString,
     TemporalStringRegex,
-    TemporalType, TemporalTypeName,
+    TemporalType, TemporalTypeKind,
     TemporalUnit,
     TemporalUnitLength, TemporalUnitLengths,
     TemporalUnitType, TemporalUnitTypes,
     TextForm,
     TextRule,
-    TextType, TextTypeName,
+    TextType, TextTypeKind,
     Theme,
     UnitSelector, UnitSelectorRegex
 } from './types';
@@ -263,20 +263,20 @@ const TemporalFormat: z.ZodType<TemporalFormat> = z.array(TemporalItem);
 
 /* Data Types */
 const TextType: z.ZodType<TextType> = z.object({
-    name: z.literal(TextTypeName),
+    kind: z.literal(TextTypeKind),
     rule: TextRule.optional(),
     styles: z.array(TextConditionalStyle).optional()
 });
 
 const NumericType: z.ZodType<NumericType> = z.object({
-    name: z.literal(NumericTypeName),
+    kind: z.literal(NumericTypeKind),
     rule: NumericRule.optional(),
     styles: z.array(NumericConditionalStyle).optional(),
     format: z.union([NumericFormat, Reference]).optional()
 });
 
 const TemporalType: z.ZodType<TemporalType> = z.object({
-    name: z.literal(TemporalTypeName),
+    kind: z.literal(TemporalTypeKind),
     rule: TemporalRule.optional(),
     styles: z.array(TemporalConditionalStyle).optional(),
     format: z.union([TemporalFormat, Reference]).optional()
