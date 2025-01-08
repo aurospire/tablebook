@@ -122,14 +122,21 @@ const tablebook: TableBook = {
             lightBlue: "#EBF8FF",
             successGreen: "#48BB78",
             warningRed: "#F56565",
-            neutral: "#718096"
+            neutral: "#718096",
+            border: '#000000'            
         },
         styles: {
+            group: {
+                fore: '#ffffff',
+                form: { bold: true },
+                beneath: { type: 'medium', color: '@border' },
+                between: { type: 'medium', color: '@border' }
+            },
             header: {
                 fore: '#ffffff',
                 form: { bold: true },
-                beneath: { type: 'medium', color: '#ffffff' },
-                between: { type: 'medium', color: '#ffffff' }
+                beneath: { type: 'dotted', color: '@border' },
+                between: { type: 'dotted', color: '@border' }
             },
             data: {
                 fore: '#000000',
@@ -146,8 +153,8 @@ const tablebook: TableBook = {
         },
         themes: {
             business: {
+                group: "@group",
                 header: "@header",
-                group: "@header",
                 data: "@data"
             }
         },

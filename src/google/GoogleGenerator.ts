@@ -43,10 +43,41 @@ export class GoogleGenerator implements SheetGenerator {
                             r = r.setBorder(sheetId, SheetRange.row(0, index, group.columns.length), { bottom: group.titleStyle.beneath });
 
                         if (group.titleStyle?.between)
-                            r = r.setBorder(sheetId, SheetRange.row(0, index, group.columns.length), { left: group.titleStyle.between, right: group.titleStyle.between });
+                            r = r.setBorder(sheetId, SheetRange.region(index, 0, group.columns.length, page.rows), { left: group.titleStyle.between, right: group.titleStyle.between });
                     }
 
-                    index += group.columns.length;
+                    for (let c = 0; c < group.columns.length; c++) {
+                        const rowOffset = multigroup ? 1 : 0;
+
+                        const column = group.columns[c];
+
+                        r = r
+                            .updateCells(sheetId, SheetRange.cell(index, rowOffset), {
+                                value: column.title,
+                                horizontal: 'middle', vertical: 'middle',
+                                ...column.titleStyle
+                            })
+                            .updateCells(sheetId, SheetRange.column(index, rowOffset + 1, page.rows - 1 - rowOffset), {
+                                horizontal: 'middle', vertical: 'middle',
+                                ...column.dataStyle
+                            });
+
+                        if (column.titleStyle?.beneath)
+                            r = r.setBorder(sheetId, SheetRange.cell(index, rowOffset), { bottom: column.titleStyle.beneath });
+
+
+                        if (column.titleStyle?.between) {
+                            const showLeft = c !== 0;
+                            const showRight = c != group.columns.length - 1;
+
+                            if (showLeft || showRight)
+                                r = r.setBorder(sheetId, SheetRange.region(index, rowOffset, 1, page.rows - rowOffset), {
+                                    left: showLeft ? column.titleStyle.between : undefined,
+                                    right: showRight ? column.titleStyle.between : undefined
+                                });
+                        }
+                        index++;
+                    }
                 }
 
                 return r;
