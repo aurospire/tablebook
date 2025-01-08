@@ -48,7 +48,7 @@ const resolveColumns = (tablebook: TableBook): Map<string, ResolvedColumn> => {
     return resolved;
 };
 
-const resolveColor = (color: Color | Reference, colors: Record<string, Color>): ColorObject => {
+const resolveColor = (color: Color | Reference, colors: Record<string, Color|Reference>): ColorObject => {
     if (color.startsWith('#')) {
         return Colors.toObject(color as Color);
     }
@@ -56,7 +56,7 @@ const resolveColor = (color: Color | Reference, colors: Record<string, Color>): 
         const resolved = colors[color.substring(1)];
 
         if (resolved)
-            return Colors.toObject(resolved);
+            return resolveColor(resolved, colors);
         else
             throw new Error(`Invalid reference: ${color}`);
     }
@@ -64,7 +64,7 @@ const resolveColor = (color: Color | Reference, colors: Record<string, Color>): 
         throw new Error(`Invalid color: ${color}`);
 };
 
-export const resolveStyle = (style: HeaderStyle | Reference, colors: Record<string, Color>, styles: Record<string, Style>): SheetTitleStyle => {
+export const resolveStyle = (style: HeaderStyle | Reference, colors: Record<string, Color|Reference>, styles: Record<string, Style|Reference>): SheetTitleStyle => {
     if (typeof style === 'string') {
         if (style.startsWith('@')) {
             const resolved = styles[style.substring(1)];
@@ -144,9 +144,9 @@ const mergeThemes = (base: SheetTheme, override: SheetTheme): SheetTheme => {
 const resolveTheme = (
     name: string,
     theme: Theme | Reference,
-    colors: Record<string, Color>,
-    styles: Record<string, Style>,
-    themes: Record<string, Theme>,
+    colors: Record<string, Color|Reference>,
+    styles: Record<string, Style|Reference>,
+    themes: Record<string, Theme|Reference>,
     parents: (Theme | Reference)[],
     chain: Theme[] = []
 ): SheetTheme => {
@@ -163,9 +163,6 @@ const resolveTheme = (
     if (chain.includes(theme))
         throw new Error('Circular theme reference for ' + name + JSON.stringify({ chain, theme }, null, 2));
 
-    const branchChain = [...chain, theme];
-
-    const inherits = [...parents, ...(theme.inherits ?? [])];
 
     let result: SheetTheme = {
         tab: undefined,
@@ -173,15 +170,26 @@ const resolveTheme = (
         group: {},
         data: {}
     };
-
-    for (let i = 0; i < inherits.length; i++) {
-        const inherit = inherits[i];
-        const subname = `${name}:${i}`;
-        const resolved = resolveTheme(subname, inherit, colors, styles, themes, [], branchChain);
+    
+    for (let i = 0; i < parents.length; i++) {
+        const parent = parents[i];
+        const subname = `${name}:parent[${i}]`;
+        const resolved = resolveTheme(subname, parent, colors, styles, themes, [], []);
 
         result = mergeThemes(result, resolved);
     }
 
+    if (theme.inherits) {
+        const branchChain = [...chain, theme];
+
+        for (let i = 0; i < theme.inherits.length; i++) {
+            const inherit = theme.inherits[i];
+            const subname = `${name}:inherits[${i}]`;
+            const resolved = resolveTheme(subname, inherit, colors, styles, themes, [], branchChain);
+
+            result = mergeThemes(result, resolved);
+        }
+    }
 
     result = mergeThemes(result, {
         tab: theme.tab ? resolveColor(theme.tab, colors) : undefined,

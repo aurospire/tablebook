@@ -332,12 +332,12 @@ const TablePage: z.ZodType<TablePage> = TableUnit.and(z.object({
 }));
 
 const Definitions: z.ZodType<Definitions> = z.object({
-    colors: z.record(z.string(), Color).optional(),
-    styles: z.record(z.string(), HeaderStyle).optional(),
-    themes: z.record(z.string(), Theme).optional(),
-    numerics: z.record(z.string(), NumericFormat).optional(),
-    temporals: z.record(z.string(), TemporalFormat).optional(),
-    types: z.record(z.string(), DataType).optional()
+    colors: z.record(z.string(), z.union([Color, Reference])).optional(),
+    styles: z.record(z.string(), z.union([HeaderStyle, Reference])).optional(),
+    themes: z.record(z.string(), z.union([Theme, Reference])).optional(),
+    numerics: z.record(z.string(), z.union([NumericFormat, Reference])).optional(),
+    temporals: z.record(z.string(), z.union([TemporalFormat, Reference])).optional(),
+    types: z.record(z.string(), z.union([DataType, Reference])).optional()
 });
 
 const TableBook: z.ZodType<TableBook> = TableUnit.and(z.object({

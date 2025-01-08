@@ -235,7 +235,7 @@ export type SelfExpression = { type: typeof SelfLiteral; };
 /** Type identifier for literal expressions */
 export const LiteralExpressionType = 'literal';
 /** Direct value expression */
-export type LiteralExpression = { type: typeof LiteralExpressionType , value: string | number | boolean; };
+export type LiteralExpression = { type: typeof LiteralExpressionType, value: string | number | boolean; };
 
 /** All possible expression types for data computation and validation */
 export type Expression<Selector> =
@@ -523,20 +523,20 @@ export type TablePage = TableUnit & {
 */
 export type Definitions = {
     /** Custom color definitions supplementing StandardPalettes */
-    colors?: Record<string, Color>;
+    colors?: Record<string, Color | Reference>;
     /** Reusable style definitions */
-    styles?: Record<string, Style | HeaderStyle>;
+    styles?: Record<string, HeaderStyle | Reference>;
     /** Custom theme definitions supplementing standard palettes */
-    themes?: Record<string, Theme>;
+    themes?: Record<string, Theme | Reference>;
     /** Format definitions for numbers and dates */
     formats?: {
         /** Custom numeric format definitions */
-        numeric?: Record<string, NumericFormat>;
+        numeric?: Record<string, NumericFormat | Reference>;
         /** Custom temporal format definitions */
-        temporal?: Record<string, TemporalFormat>;
+        temporal?: Record<string, TemporalFormat | Reference>;
     };
     /** Reusable type definitions */
-    types?: Record<string, DataType>;
+    types?: Record<string, DataType | Reference>;
 };
 
 /** 

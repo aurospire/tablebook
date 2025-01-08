@@ -156,7 +156,11 @@ const tablebook: TableBook = {
                 group: "@group",
                 header: "@header",
                 data: "@data"
-            }
+            },
+            one: '@blue',
+            two: '@slate',
+            three: '@cyan'
+
         },
         formats: {
             numeric: {
@@ -209,6 +213,7 @@ const tablebook: TableBook = {
             groups: [
                 {
                     name: "Revenue",
+                    theme: '@one',
                     columns: [
                         {
                             name: "Month",
@@ -249,6 +254,7 @@ const tablebook: TableBook = {
                 },
                 {
                     name: "Expenses",
+                    theme: '@two',
                     columns: [
                         {
                             name: "Month",
@@ -295,6 +301,7 @@ const tablebook: TableBook = {
                 },
                 {
                     name: "Profitability",
+                    theme: '@three',
                     columns: [
                         {
                             name: "Month",
