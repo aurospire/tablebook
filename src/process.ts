@@ -10,6 +10,33 @@ type ResolvedColumn = {
     index: number;
 };
 
+const isReference = (value: unknown): value is Reference => typeof value === 'string' && value.startsWith('@');
+
+const resolveReference = <T>(ref: Reference, map: Record<string, T | Reference>, is: (value: unknown) => boolean): T => {
+    const visited = [ref];
+
+    const checker = is as (value: unknown) => value is T;
+
+    while (true) {
+        const result = map[ref.substring(1)];
+
+        if (result === undefined)
+            throw new Error(`Missing reference: ${ref}`);
+        else if (checker(result))
+            return result as T;
+        else if (isReference(result)) {
+            if (visited.includes(result))
+                throw new Error(`Circular reference: ${Array.from(visited).join(' -> ')}`);
+
+            visited.push(result);
+
+            ref = result;
+        }
+        else
+            throw new Error(`Invalid reference: ${ref}`);
+    }
+};
+
 const resolveColumns = (tablebook: TableBook): Map<string, ResolvedColumn> => {
     const resolved: Map<string, ResolvedColumn> = new Map();
 
@@ -48,32 +75,18 @@ const resolveColumns = (tablebook: TableBook): Map<string, ResolvedColumn> => {
     return resolved;
 };
 
-const resolveColor = (color: Color | Reference, colors: Record<string, Color|Reference>): ColorObject => {
-    if (color.startsWith('#')) {
+const resolveColor = (color: Color | Reference, colors: Record<string, Color | Reference>): ColorObject => {
+    if (color.startsWith('#'))
         return Colors.toObject(color as Color);
-    }
-    else if (color.startsWith('@')) {
-        const resolved = colors[color.substring(1)];
-
-        if (resolved)
-            return resolveColor(resolved, colors);
-        else
-            throw new Error(`Invalid reference: ${color}`);
-    }
+    else if (isReference(color))
+        return resolveColor(resolveReference(color, colors, v => typeof v === 'string' && v.startsWith('#')), colors);
     else
         throw new Error(`Invalid color: ${color}`);
 };
 
-export const resolveStyle = (style: HeaderStyle | Reference, colors: Record<string, Color|Reference>, styles: Record<string, Style|Reference>): SheetTitleStyle => {
-    if (typeof style === 'string') {
-        if (style.startsWith('@')) {
-            const resolved = styles[style.substring(1)];
-            if (resolved)
-                return resolveStyle(resolved, colors, styles);
-        }
-
-        throw new Error(`Invalid reference: ${style}`);
-    }
+const resolveStyle = (style: HeaderStyle | Reference, colors: Record<string, Color | Reference>, styles: Record<string, Style | Reference>): SheetTitleStyle => {
+    if (isReference(style))
+        return resolveStyle(resolveReference(style, styles, v => typeof v === 'object'), colors, styles);
 
     const fore: ColorObject | undefined = style.fore ? resolveColor(style.fore, colors) : undefined;
     const back: ColorObject | undefined = style.back ? resolveColor(style.back, colors) : undefined;
@@ -144,25 +157,17 @@ const mergeThemes = (base: SheetTheme, override: SheetTheme): SheetTheme => {
 const resolveTheme = (
     name: string,
     theme: Theme | Reference,
-    colors: Record<string, Color|Reference>,
-    styles: Record<string, Style|Reference>,
-    themes: Record<string, Theme|Reference>,
+    colors: Record<string, Color | Reference>,
+    styles: Record<string, Style | Reference>,
+    themes: Record<string, Theme | Reference>,
     parents: (Theme | Reference)[],
     chain: Theme[] = []
 ): SheetTheme => {
-    if (typeof theme === 'string') {
-        if (theme.startsWith('@')) {
-            const resolved = themes[theme.substring(1)];
-            if (resolved)
-                return resolveTheme(name, resolved, colors, styles, themes, parents, chain);
-        }
-
-        throw new Error(`Invalid reference: ${theme}`);
-    }
+    if (isReference(theme))
+        return resolveTheme(name, resolveReference(theme, themes, v => typeof v === 'object'), colors, styles, themes, parents, chain);
 
     if (chain.includes(theme))
         throw new Error('Circular theme reference for ' + name + JSON.stringify({ chain, theme }, null, 2));
-
 
     let result: SheetTheme = {
         tab: undefined,
@@ -170,7 +175,7 @@ const resolveTheme = (
         group: {},
         data: {}
     };
-    
+
     for (let i = 0; i < parents.length; i++) {
         const parent = parents[i];
         const subname = `${name}:parent[${i}]`;
