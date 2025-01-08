@@ -272,17 +272,12 @@ export const processTableBook = (book: TableBook): SheetBook => {
 
                 const type = isReference(column.type) ? resolveReference(column.type, types, v => typeof v === 'string') : column.type;
 
-                type.kind;
+
 
                 const resultColumn: SheetColumn = {
                     title: column.name,
                     titleStyle: columnTheme.header,
                     dataStyle: columnTheme.data,
-                    type: undefined,
-                    format: undefined,
-                    conditionalFormats: undefined,
-                    formula: undefined,
-                    validation: undefined
                 };
 
                 resultGroup.columns.push(resultColumn);

@@ -1,8 +1,5 @@
-import { Expression, NumericFormat, TemporalFormat } from "../tables/types";
 import { ColorObject } from "../util/Color";
-import { SheetType } from "./SheetKind";
-import { SheetSelector } from "./SheetPosition";
-import { SheetConditionalFormat, SheetRule } from "./SheetRule";
+import { SheetBehavior } from "./SheetBehavior";
 import { SheetTitleStyle, SheetStyle } from "./SheetStyle";
 
 export type SheetBook = {
@@ -26,11 +23,6 @@ export type SheetGroup = {
 export type SheetColumn = {
     title: string;
     titleStyle?: SheetTitleStyle;
-
     dataStyle?: SheetStyle;
-    type?: SheetType;
-    format?: NumericFormat | TemporalFormat;
-    validation?: SheetRule;
-    formula?: Expression<SheetSelector>;
-    conditionalFormats?: SheetConditionalFormat[];
+    behavior?: SheetBehavior;
 };
