@@ -27,14 +27,17 @@ export class GoogleGenerator implements SheetGenerator {
             if (sheetId == undefined)
                 throw new Error("Failed to add sheet");
 
-            let index = 0;
             await sheet.modify(r => {
                 const multigroup = page.groups.length > 1;
 
+                let index = 0;
+
                 for (const group of page.groups) {
                     if (multigroup) {
-                        r = r.mergeCells(sheetId, SheetRange.row(0, index, group.columns.length))
-                            .updateCells(sheetId, SheetRange.cell(index, 0), { value: group.title, horizontal: 'middle', vertical: 'middle' });
+                        console.log('Merge', index, group.columns.length);
+                        r = r
+                            .mergeCells(sheetId, SheetRange.row(0, index, group.columns.length))
+                            .updateCells(sheetId, SheetRange.cell(index, 0), { value: group.title, horizontal: 'middle', vertical: 'middle', ...group.titleStyle });
 
                         if (group.titleStyle?.beneath)
                             r = r.setBorder(sheetId, SheetRange.row(0, index, group.columns.length), { bottom: group.titleStyle.beneath });
@@ -42,6 +45,8 @@ export class GoogleGenerator implements SheetGenerator {
                         if (group.titleStyle?.between)
                             r = r.setBorder(sheetId, SheetRange.row(0, index, group.columns.length), { left: group.titleStyle.between, right: group.titleStyle.between });
                     }
+
+                    index += group.columns.length;
                 }
 
                 return r;

@@ -103,7 +103,9 @@ const testTablebook = async (tablebook: TableBook) => {
 
         const sheetbook = processTableBook(result.data);
 
-        console.log(inspect(sheetbook, { depth: null, colors: true }));
+        await generator.generate(sheetbook);
+
+        // console.log(inspect(sheetbook, { depth: null, colors: true }));
     }
     else {
         console.log('Tablebook validation failed');
@@ -126,7 +128,8 @@ const tablebook: TableBook = {
             header: {
                 fore: '#ffffff',
                 form: { bold: true },
-                beneath: { type: 'medium', color: '#ffffff' }
+                beneath: { type: 'medium', color: '#ffffff' },
+                between: { type: 'medium', color: '#ffffff' }
             },
             data: {
                 fore: '#000000',

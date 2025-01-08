@@ -9,6 +9,7 @@ import { toGridRange } from "./GoogleGridRange";
 import { toSheetsBorder, toWeightedColorStyle } from "./GoogleStyles";
 import { GoogleAddSheetOptions, GoogleAddSheetReply, GoogleApi, GoogleReply, GoogleRequest } from "./GoogleTypes";
 
+const exp = <T>(value: T) => { console.log(inspect(value, { depth: null, colors: true })); return value; };
 export type GoogleReplyProcessor<Reply = GoogleReply> = (reply: Reply | undefined) => void;
 
 export class GoogleRequester {
