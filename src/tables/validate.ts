@@ -11,7 +11,7 @@ import {
     CurrencyFormat, CurrencyFormatType, CurrencySymbolPositions,
     CustomRule, CustomRuleType,
     DataSelector,
-    DataType,
+    ColumnType,
     Definitions,
     DigitPlaceholder,
     EnumItem, EnumType, EnumTypeName,
@@ -300,7 +300,7 @@ const LookupType: z.ZodType<LookupType> = z.object({
     values: ColumnSelector
 });
 
-const DataType: z.ZodType<DataType> = z.union([
+const ColumnType: z.ZodType<ColumnType> = z.union([
     TextType,
     NumericType,
     TemporalType,
@@ -317,7 +317,7 @@ const TableUnit: z.ZodType<TableUnit> = z.object({
 });
 
 const TableColumn: z.ZodType<TableColumn> = TableUnit.and(z.object({
-    type: DataType,
+    type: ColumnType,
     source: z.string().optional(),
     expression: Expression.optional(),
 }));
@@ -337,7 +337,7 @@ const Definitions: z.ZodType<Definitions> = z.object({
     themes: z.record(z.string(), z.union([Theme, Reference])).optional(),
     numerics: z.record(z.string(), z.union([NumericFormat, Reference])).optional(),
     temporals: z.record(z.string(), z.union([TemporalFormat, Reference])).optional(),
-    types: z.record(z.string(), z.union([DataType, Reference])).optional()
+    types: z.record(z.string(), z.union([ColumnType, Reference])).optional()
 });
 
 const TableBook: z.ZodType<TableBook> = TableUnit.and(z.object({

@@ -113,7 +113,7 @@ const testTablebook = async (tablebook: TableBook) => {
     }
 };
 
-const tablebook: TableBook = {
+const tablebook0: TableBook = {
     name: "QuarterlyBusinessReport",
     theme: "@business",
     definitions: {
@@ -123,7 +123,7 @@ const tablebook: TableBook = {
             successGreen: "#48BB78",
             warningRed: "#F56565",
             neutral: "#718096",
-            border: '#000000'            
+            border: '#000000'
         },
         styles: {
             group: {
@@ -466,6 +466,163 @@ const tablebook: TableBook = {
                             }
                         }
                     ]
+                }
+            ]
+        }
+    ]
+};
+
+const tablebook: TableBook = {
+    name: "PaletteLibrary",
+    theme: {
+        group: {
+            fore: "#ffffff",
+            form: { bold: true },
+        },
+        header: {
+            fore: "#ffffff",
+            form: { bold: true },
+        }
+    },
+    pages: [
+        {
+            name: "AllPalettes",
+            rows: 10,
+            groups: [
+                {
+                    name: "PinkFamily",
+                    theme: "@pink",
+                    columns: [{ name: "Pink", type: { name: "text" } }]
+                },
+                {
+                    name: "CranberryFamily",
+                    theme: "@cranberry",
+                    columns: [{ name: "Cranberry", type: { name: "text" } }]
+                },
+                {
+                    name: "RedFamily",
+                    theme: "@red",
+                    columns: [{ name: "Red", type: { name: "text" } }]
+                },
+                {
+                    name: "RustFamily",
+                    theme: "@rust",
+                    columns: [{ name: "Rust", type: { name: "text" } }]
+                },
+                {
+                    name: "OrangeFamily",
+                    theme: "@orange",
+                    columns: [{ name: "Orange", type: { name: "text" } }]
+                },
+                {
+                    name: "YellowFamily",
+                    theme: "@yellow",
+                    columns: [{ name: "Yellow", type: { name: "text" } }]
+                },
+                {
+                    name: "GreenFamily",
+                    theme: "@green",
+                    columns: [{ name: "Green", type: { name: "text" } }]
+                },
+                {
+                    name: "MossFamily",
+                    theme: "@moss",
+                    columns: [{ name: "Moss", type: { name: "text" } }]
+                },
+                {
+                    name: "SageFamily",
+                    theme: "@sage",
+                    columns: [{ name: "Sage", type: { name: "text" } }]
+                },
+                {
+                    name: "TealFamily",
+                    theme: "@teal",
+                    columns: [{ name: "Teal", type: { name: "text" } }]
+                },
+                {
+                    name: "SlateFamily",
+                    theme: "@slate",
+                    columns: [{ name: "Slate", type: { name: "text" } }]
+                },
+                {
+                    name: "CyanFamily",
+                    theme: "@cyan",
+                    columns: [{ name: "Cyan", type: { name: "text" } }]
+                },
+                {
+                    name: "BlueFamily",
+                    theme: "@blue",
+                    columns: [{ name: "Blue", type: { name: "text" } }]
+                },
+                {
+                    name: "AzureFamily",
+                    theme: "@azure",
+                    columns: [{ name: "Azure", type: { name: "text" } }]
+                },
+                {
+                    name: "SkyblueFamily",
+                    theme: "@skyblue",
+                    columns: [{ name: "Skyblue", type: { name: "text" } }]
+                },
+                {
+                    name: "LavenderFamily",
+                    theme: "@lavender",
+                    columns: [{ name: "Lavender", type: { name: "text" } }]
+                },
+                {
+                    name: "IndigoFamily",
+                    theme: "@indigo",
+                    columns: [{ name: "Indigo", type: { name: "text" } }]
+                },
+                {
+                    name: "PurpleFamily",
+                    theme: "@purple",
+                    columns: [{ name: "Purple", type: { name: "text" } }]
+                },
+                {
+                    name: "PlumFamily",
+                    theme: "@plum",
+                    columns: [{ name: "Plum", type: { name: "text" } }]
+                },
+                {
+                    name: "MauveFamily",
+                    theme: "@mauve",
+                    columns: [{ name: "Mauve", type: { name: "text" } }]
+                },
+                {
+                    name: "CoralFamily",
+                    theme: "@coral",
+                    columns: [{ name: "Coral", type: { name: "text" } }]
+                },
+                {
+                    name: "TerracottaFamily",
+                    theme: "@terracotta",
+                    columns: [{ name: "Terracotta", type: { name: "text" } }]
+                },
+                {
+                    name: "BronzeFamily",
+                    theme: "@bronze",
+                    columns: [{ name: "Bronze", type: { name: "text" } }]
+                },
+                {
+                    name: "SandFamily",
+                    theme: "@sand",
+                    columns: [{ name: "Sand", type: { name: "text" } }]
+                },
+                {
+                    name: "TaupeFamily",
+                    theme: "@taupe",
+                    columns: [{ name: "Taupe", type: { name: "text" } }]
+                },
+                {
+                    name: "GrayFamily",
+                    theme: "@gray",
+                    columns: [{ name: "Gray", type: { name: "text" } }]
+                },
+                {
+                    name: "CharcoalFamily",
+                    theme: "@charcoal",
+                    columns: [{ name: "Charcoal", type: { name: "text" } }]
                 }
             ]
         }

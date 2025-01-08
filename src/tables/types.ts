@@ -462,7 +462,7 @@ export type LookupType = {
  * Union of all possible data types in the system
  * Can be a concrete type definition or a reference to a predefined type
  */
-export type DataType = TextType | NumericType | TemporalType | EnumType | LookupType | Reference;
+export type ColumnType = TextType | NumericType | TemporalType | EnumType | LookupType | Reference;
 
 
 
@@ -490,7 +490,7 @@ export type TableUnit = {
 */
 export type TableColumn = TableUnit & {
     /** Data type defining the content and behavior of this column */
-    type: DataType;
+    type: ColumnType;
     /** Optional metadata describing where the column's data comes from */
     source?: string;
     /** Optional expression to compute the value */
@@ -536,7 +536,7 @@ export type Definitions = {
         temporal?: Record<string, TemporalFormat | Reference>;
     };
     /** Reusable type definitions */
-    types?: Record<string, DataType | Reference>;
+    types?: Record<string, ColumnType | Reference>;
 };
 
 /** 
