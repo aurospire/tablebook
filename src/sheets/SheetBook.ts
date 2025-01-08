@@ -14,6 +14,7 @@ export type SheetPage = {
     title: string;
     tabColor?: ColorObject;
     groups: SheetGroup[];
+    rows: number;
 };
 
 export type SheetGroup = {

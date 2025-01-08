@@ -10,7 +10,7 @@ type ResolvedColumn = {
     index: number;
 };
 
-export const resolveColumns = (tablebook: TableBook): Map<string, ResolvedColumn> => {
+const resolveColumns = (tablebook: TableBook): Map<string, ResolvedColumn> => {
     const resolved: Map<string, ResolvedColumn> = new Map();
 
     const sheets = new Set<string>();
@@ -48,7 +48,7 @@ export const resolveColumns = (tablebook: TableBook): Map<string, ResolvedColumn
     return resolved;
 };
 
-export const resolveColor = (color: Color | Reference, colors: Record<string, Color>): ColorObject => {
+const resolveColor = (color: Color | Reference, colors: Record<string, Color>): ColorObject => {
     if (color.startsWith('#')) {
         return Colors.toObject(color as Color);
     }
@@ -235,6 +235,7 @@ export const processTableBook = (book: TableBook): SheetBook => {
         const resultPage: SheetPage = {
             title: page.name,
             tabColor: pageTheme.tab ?? undefined,
+            rows: page.rows,
             groups: []
         };
 

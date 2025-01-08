@@ -11,7 +11,45 @@ export class GoogleGenerator implements SheetGenerator {
     }
 
     async generate(book: SheetBook): Promise<void> {
-        throw new Error("Method not implemented.");
+        const sheet = this.#sheet;
+
+        // clear the sheet
+        const resetSheetId = await sheet.reset();
+
+        await sheet.modify(r => r.setTitle(book.title));
+
+
+        for (const page of book.pages) {
+            const columnCount = page.groups.reduce((acc, group) => acc + group.columns.length, 0);
+
+            const sheetId = await sheet.addSheet({ title: page.title, columns: columnCount, rows: page.rows });
+
+            if (sheetId == undefined)
+                throw new Error("Failed to add sheet");
+
+            let index = 0;
+            await sheet.modify(r => {
+                const multigroup = page.groups.length > 1;
+
+                for (const group of page.groups) {
+                    if (multigroup) {
+                        r = r.mergeCells(sheetId, SheetRange.row(0, index, group.columns.length))
+                            .updateCells(sheetId, SheetRange.cell(index, 0), { value: group.title, horizontal: 'middle', vertical: 'middle' });
+
+                        if (group.titleStyle?.beneath)
+                            r = r.setBorder(sheetId, SheetRange.row(0, index, group.columns.length), { bottom: group.titleStyle.beneath });
+
+                        if (group.titleStyle?.between)
+                            r = r.setBorder(sheetId, SheetRange.row(0, index, group.columns.length), { left: group.titleStyle.between, right: group.titleStyle.between });
+                    }
+                }
+
+                return r;
+            });
+        }
+
+        // remove the reset sheet
+        await sheet.modify(r => r.dropSheets(resetSheetId));
     }
 }
 
