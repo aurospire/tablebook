@@ -1,7 +1,8 @@
 import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "./sheets/SheetBook";
 import { SheetType } from "./sheets/SheetKind";
 import { SheetBorder, SheetStyle, SheetTitleStyle } from "./sheets/SheetStyle";
-import { Color, ColumnType, HeaderStyle, Reference, StandardPalettes, Style, TableBook, Theme } from "./tables/types";
+import { Color, ColumnType, HeaderStyle, Reference, Style, TableBook, Theme } from "./tables/types";
+import { standardColors, StandardPalettes, standardThemes } from "./tables/palettes";
 import { ColorObject, Colors } from "./util/Color";
 
 
@@ -208,22 +209,6 @@ const resolveTheme = (
     return result;
 };
 
-
-
-
-const standardColors: Record<string, Color> = Object.fromEntries(
-    Object.entries(StandardPalettes).map(([key, palette]) => [key, palette.main])
-);
-
-const standardThemes: Record<string, Theme> = Object.fromEntries(
-    Object.entries(StandardPalettes).map(([key, palette]) => [key, {
-        tab: palette.main,
-        group: { back: palette.darkest },
-        header: { back: palette.dark },
-        data: { back: palette.lightest },
-    }])
-);
-
 export const processTableBook = (book: TableBook): SheetBook => {
 
     console.log(`Processing book: '${book.name}'`);
@@ -281,13 +266,13 @@ export const processTableBook = (book: TableBook): SheetBook => {
 
                 const columnParents = [...groupParents, ...(group.theme ? [group.theme] : [])];
 
-                const columnTheme = resolveTheme(`${page.name}.${group.name}.${column.name}`, column.theme ?? {}, colors, styles, themes, columnParents);                
+                const columnTheme = resolveTheme(`${page.name}.${group.name}.${column.name}`, column.theme ?? {}, colors, styles, themes, columnParents);
 
 
 
                 const type = isReference(column.type) ? resolveReference(column.type, types, v => typeof v === 'string') : column.type;
 
-                type.name
+                type.name;
 
                 const resultColumn: SheetColumn = {
                     title: column.name,
