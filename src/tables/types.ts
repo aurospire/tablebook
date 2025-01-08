@@ -12,7 +12,7 @@
 export const ReferenceRegex = /^@[A-Za-z_][A-Za-z0-9_]+$/;
 
 /** Type for referencing context-dependent items (color, style, theme, type) defined in TableBook */
-export type Reference<Set extends string = string> = `@${Set}`;
+export type Reference<Of extends string = string> = `@${Of}`;
 
 
 
