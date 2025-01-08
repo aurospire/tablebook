@@ -270,11 +270,11 @@ export type TableGroup = TableUnit & { columns: TableColumn[]; };
 export type TablePage = TableUnit & { groups: TableGroup[]; rows: number; };
 
 export type Definitions = {
-    colors?: Record<string, Color>;
-    styles?: Record<string, Style | HeaderStyle>;
-    themes?: Record<string, Theme>;
-    formats?: { numeric?: Record<string, NumericFormat>; temporal?: Record<string, TemporalFormat>; };
-    types?: Record<string, DataType>;
+    colors?: Record<string, Color | Reference>;
+    styles?: Record<string, Style | HeaderStyle | Reference>;
+    themes?: Record<string, Theme | Reference>;
+    formats?: { numeric?: Record<string, NumericFormat | Reference>; temporal?: Record<string, TemporalFormat | Reference>; };
+    types?: Record<string, DataType | Reference>;
 };
 
 export type TableBook = TableUnit & { pages: TablePage[]; definitions?: Definitions; };
