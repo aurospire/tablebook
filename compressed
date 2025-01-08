@@ -197,11 +197,9 @@ export type FunctionExpression<T> = { type: 'function'; name: string; args: Expr
 
 export type SelectorExpression<T> = { type: 'selector'; from: T; };
 
-export type SelfExpression = { type: 'self'; };
-
 export type LiteralExpression = string | number | boolean;
 
-export type Expression<T> = CompoundExpression<T> | NegatedExpression<T> | FunctionExpression<T> | SelectorExpression<T> | LiteralExpression | SelfExpression;
+export type Expression<T> = CompoundExpression<T> | NegatedExpression<T> | FunctionExpression<T> | SelectorExpression<T> | LiteralExpression;
 
 /* Data Rule Types */
 export type DateString = `${number}-${number}-${number}`;
@@ -243,20 +241,21 @@ export type NumericFormat = NumberFormat | PercentFormat | CurrencyFormat;
 export type TemporalUnitConfig = { type: TemporalUnit; length: TemporalLength; };
 
 export type TemporalItem = TemporalUnitConfig | string;
+
 export type TemporalFormat = TemporalItem[];
 
 /* Data Types */
-export type TextType = { name: 'text'; rule?: TextRule; styles?: ConditionalStyle<TextRule>[]; };
+export type TextType = { kind: 'text'; rule?: TextRule; styles?: ConditionalStyle<TextRule>[]; };
 
-export type NumericType = { name: 'numeric'; rule?: NumericRule; styles?: ConditionalStyle<NumericRule>[]; format?: NumericFormat | Reference; };
+export type NumericType = { kind: 'numeric'; rule?: NumericRule; styles?: ConditionalStyle<NumericRule>[]; format?: NumericFormat | Reference; };
 
-export type TemporalType = { name: 'temporal'; rule?: TemporalRule; styles?: ConditionalStyle<TemporalRule>[]; format?: TemporalFormat | Reference; };
+export type TemporalType = { kind: 'temporal'; rule?: TemporalRule; styles?: ConditionalStyle<TemporalRule>[]; format?: TemporalFormat | Reference; };
 
 export type EnumItem = string | { value: string; style?: Style | Reference; };
 
-export type EnumType = { name: 'enum'; values: EnumItem[]; };
+export type EnumType = { kind: 'enum'; values: EnumItem[]; };
 
-export type LookupType = { name: 'lookup'; values: ColumnSelector; };
+export type LookupType = { kind: 'lookup'; values: ColumnSelector; };
 
 export type DataType = TextType | NumericType | TemporalType | EnumType | LookupType | Reference;
 

@@ -1,5 +1,7 @@
+import { Expression } from "../tables/types";
 import { ColorObject } from "../util/Color";
 import { SheetBehavior } from "./SheetBehavior";
+import { SheetSelector } from "./SheetPosition";
 import { SheetTitleStyle, SheetStyle } from "./SheetStyle";
 
 export type SheetBook = {
@@ -24,5 +26,6 @@ export type SheetColumn = {
     title: string;
     titleStyle?: SheetTitleStyle;
     dataStyle?: SheetStyle;
+    formula?: Expression<SheetSelector>;
     behavior?: SheetBehavior;
 };

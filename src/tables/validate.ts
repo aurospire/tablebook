@@ -37,7 +37,7 @@ import {
     Reference, ReferenceRegex,
     RowSelector,
     SelectorExpression, SelectorExpressionType,
-    SelfExpression, SelfLiteral, SelfSelector,
+    SelfLiteral, SelfSelector,
     Style,
     TableBook, TableColumn,
     TableGroup, TablePage,
@@ -163,17 +163,12 @@ const SelectorExpression: z.ZodType<SelectorExpression<DataSelector>> = z.object
     from: DataSelector
 });
 
-const SelfExpression: z.ZodType<SelfExpression> = z.object({
-    type: SelfSelector
-});
-
 const Expression: z.ZodType<Expression<DataSelector>> = z.union([
     CompoundExpression,
     NegatedExpression,
     FunctionExpression,
     LiteralExpression,
-    SelectorExpression,
-    SelfExpression
+    SelectorExpression
 ]);
 
 /* Data Rules */

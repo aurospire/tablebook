@@ -1,8 +1,8 @@
 import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "./sheets/SheetBook";
-import { SheetType } from "./sheets/SheetKind";
+import { SheetSelector } from "./sheets/SheetPosition";
 import { SheetBorder, SheetStyle, SheetTitleStyle } from "./sheets/SheetStyle";
-import { Color, ColumnType, HeaderStyle, Reference, Style, TableBook, Theme } from "./tables/types";
-import { standardColors, StandardPalettes, standardThemes } from "./tables/palettes";
+import { standardColors, standardThemes } from "./tables/palettes";
+import { Color, DataSelector, Expression, HeaderStyle, Reference, Style, TableBook, Theme } from "./tables/types";
 import { ColorObject, Colors } from "./util/Color";
 
 
@@ -10,6 +10,45 @@ type ResolvedColumn = {
     sheet: string;
     group: boolean;
     index: number;
+};
+
+
+const resolveColumns = (tablebook: TableBook): Map<string, ResolvedColumn> => {
+    const resolved: Map<string, ResolvedColumn> = new Map();
+
+    const sheets = new Set<string>();
+
+    for (let s = 0; s < tablebook.pages.length; s++) {
+
+        const sheet = tablebook.pages[s];
+
+        if (sheets.has(sheet.name))
+            throw new Error(`Duplicate sheet name: ${sheet.name}`);
+
+        sheets.add(sheet.name);
+
+        const groups = new Set<string>();
+
+        for (let g = 0; g < sheet.groups.length; g++) {
+            const group = sheet.groups[g];
+
+            if (groups.has(group.name))
+                throw new Error(`Duplicate group name: ${group.name}`);
+
+            for (let c = 0; c < group.columns.length; c++) {
+                const column = group.columns[c];
+
+                const fullname = `${sheet.name}.${group.name}.${column.name}`;
+
+                if (resolved.has(fullname))
+                    throw new Error(`Duplicate column name: ${fullname}`);
+
+                resolved.set(fullname, { sheet: sheet.name, group: sheet.groups.length > 1, index: c });
+            }
+        }
+    }
+
+    return resolved;
 };
 
 const isReference = (value: unknown): value is Reference => typeof value === 'string' && value.startsWith('@');
@@ -39,44 +78,6 @@ const resolveReference = <T>(ref: Reference, map: Record<string, T | Reference>,
     }
 };
 
-
-const resolveColumns = (tablebook: TableBook): Map<string, ResolvedColumn> => {
-    const resolved: Map<string, ResolvedColumn> = new Map();
-
-    const sheets = new Set<string>();
-
-    for (let s = 0; s < tablebook.pages.length; s++) {
-
-        const sheet = tablebook.pages[s];
-
-        if (sheets.has(sheet.name))
-            throw new Error(`Duplicate sheet name: ${sheet.name}`);
-
-        sheets.add(sheet.name);
-
-        const groups = new Set<string>();
-
-        for (let g = 0; g < sheet.groups.length; g++) {
-            const group = sheet.groups[g];
-
-            if (groups.has(group.name))
-                throw new Error(`Duplicate group name: ${group.name}`);
-
-            for (let c = 0; c < group.columns.length; c++) {
-                const column = group.columns[c];
-
-                const fullname = sheet.groups.length > 1 ? `${sheet.name}.${group.name}.${column.name}` : `${sheet.name}.${column.name}`;
-
-                if (resolved.has(fullname))
-                    throw new Error(`Duplicate column name: ${fullname}`);
-
-                resolved.set(fullname, { sheet: sheet.name, group: sheet.groups.length > 1, index: c });
-            }
-        }
-    }
-
-    return resolved;
-};
 
 const resolveColor = (color: Color | Reference, colors: Record<string, Color | Reference>): ColorObject => {
     if (color.startsWith('#'))
@@ -268,16 +269,18 @@ export const processTableBook = (book: TableBook): SheetBook => {
 
                 const columnTheme = resolveTheme(`${page.name}.${group.name}.${column.name}`, column.theme ?? {}, colors, styles, themes, columnParents);
 
-
-
                 const type = isReference(column.type) ? resolveReference(column.type, types, v => typeof v === 'string') : column.type;
 
 
+                //const behavior = resolveBehavior(column.type, types, numeric, temporal)
+
+                const formula = column.expression ? resolveExpression(column.expression, page.name, group.name, resolved) : undefined;
 
                 const resultColumn: SheetColumn = {
                     title: column.name,
                     titleStyle: columnTheme.header,
                     dataStyle: columnTheme.data,
+                    formula,
                 };
 
                 resultGroup.columns.push(resultColumn);
@@ -286,4 +289,31 @@ export const processTableBook = (book: TableBook): SheetBook => {
     };
 
     return resultBook;
+};
+
+const resolveExpression = (expression: Expression<DataSelector>, page: string, group: string, resolved: Map<string, ResolvedColumn>): Expression<SheetSelector> => {
+    switch (expression.type) {        
+        case "literal":
+            return expression;
+        case "function":
+            return {
+                type: "function",
+                name: expression.name,
+                args: expression.args.map(arg => resolveExpression(arg, page, group, resolved))
+            };
+        case "compound":
+            return {
+                type: "compound",
+                with: expression.with,
+                items: expression.items.map(item => resolveExpression(item, page, group, resolved))
+            };
+        case "negated":
+            return {
+                type: 'negated',
+                on: resolveExpression(expression.on, page, group, resolved)
+            };
+        case "selector": {
+            if (expression.from)
+        }
+    }
 };

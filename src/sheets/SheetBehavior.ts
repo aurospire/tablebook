@@ -1,13 +1,11 @@
-import { NumericFormat, TemporalFormat, Expression } from "../tables/types";
+import { NumericFormat, TemporalFormat } from "../tables/types";
 import { SheetType } from "./SheetKind";
-import { SheetSelector } from "./SheetPosition";
-import { SheetRule, SheetConditionalFormat } from "./SheetRule";
+import { SheetConditionalFormat, SheetRule } from "./SheetRule";
 
 
 export type SheetBehavior = {
     type?: SheetType;
-    format?: NumericFormat | TemporalFormat;
-    formula?: Expression<SheetSelector>;
+    format?: NumericFormat | TemporalFormat;    
     validation?: SheetRule;
     conditionalFormats?: SheetConditionalFormat[];
 };
