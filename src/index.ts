@@ -1,12 +1,12 @@
+import { inspect } from 'util';
 import { v } from 'varcor';
+import { GoogleGenerator } from './google/GoogleGenerator';
 import { GoogleSheet } from './google/GoogleSheet';
-import { SheetPosition, SheetRange, SheetSelector } from './sheets/SheetPosition';
-import { Colors } from './util/Color';
-import { processTableBook, resolveColumns } from './process';
+import { processTableBook } from './process';
+import { SheetRange } from './sheets/SheetPosition';
 import { TableBook } from './tables/types';
 import { TableBookValidator } from './tables/validate';
-import { inspect } from 'util';
-import { GoogleGenerator } from './google/GoogleGenerator';
+import { Colors } from './util/Color';
 
 const vars = v.values({
     email: v.string().email(),
@@ -99,13 +99,11 @@ const testTablebook = async (tablebook: TableBook) => {
     if (result.success) {
         const sheet = await GoogleSheet.open(vars.email, vars.key, vars.sheetid);
 
-        const page = await sheet.reset();
-
         const generator = new GoogleGenerator(sheet);
 
-        await processTableBook(result.data, generator);
+        const sheetbook = processTableBook(result.data);
 
-        await sheet.modify(r => r.dropSheets(page));
+        console.log(inspect(sheetbook, { depth: null, colors: true }));
     }
     else {
         console.log('Tablebook validation failed');
