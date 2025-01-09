@@ -28,8 +28,8 @@ export type SelfSelector = 'self';
 
 /** Identifies a specific column by name, optionally specifying its table and group */
 export type ColumnSelector = {
-    /** The table containing the column; defaults to the element's table */
-    table?: string;
+    /** The table containing the column; defaults to the element's page */
+    page?: string;
     /** The group containing the column; defaults to the element's group */
     group?: string;
     /** The name of the column (required) */
@@ -174,6 +174,9 @@ export type SelectorExpression<Selector> = {
     from: Selector;
 };
 
+/** Expression referencing the current element's value */
+export type SelfExpression = { type: typeof SelfLiteral; };
+
 /** Type identifier for literal expressions */
 export const LiteralExpressionType = 'literal';
 /** Direct value expression */
@@ -186,6 +189,7 @@ export type Expression<Selector> =
     | FunctionExpression<Selector>
     | SelectorExpression<Selector>
     | LiteralExpression
+    | SelfExpression;
 
 
 

@@ -452,7 +452,7 @@ const tablebook0: TableBook = {
                                         type: "selector",
                                         from: {
                                             column: {
-                                                table: "FinancialSummary",
+                                                page: "FinancialSummary",
                                                 group: "Revenue",
                                                 name: "NetRevenue"
                                             }

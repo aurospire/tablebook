@@ -2,7 +2,7 @@ import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "./sheets/SheetBoo
 import { SheetSelector } from "./sheets/SheetPosition";
 import { SheetBorder, SheetStyle, SheetTitleStyle } from "./sheets/SheetStyle";
 import { standardColors, standardThemes } from "./tables/palettes";
-import { Color, DataSelector, Expression, HeaderStyle, Reference, Style, TableBook, Theme } from "./tables/types";
+import { Color, DataSelector, Expression, HeaderStyle, Reference, Style, TableBook, Theme, UnitSelector } from "./tables/types";
 import { ColorObject, Colors } from "./util/Color";
 
 
@@ -12,6 +12,7 @@ type ResolvedColumn = {
     index: number;
 };
 
+const lookupName = (page: string, group: string, name: string) => `${page}.${group}.${name}`;
 
 const resolveColumns = (tablebook: TableBook): Map<string, ResolvedColumn> => {
     const resolved: Map<string, ResolvedColumn> = new Map();
@@ -38,7 +39,7 @@ const resolveColumns = (tablebook: TableBook): Map<string, ResolvedColumn> => {
             for (let c = 0; c < group.columns.length; c++) {
                 const column = group.columns[c];
 
-                const fullname = `${sheet.name}.${group.name}.${column.name}`;
+                const fullname = lookupName(sheet.name, group.name, column.name);
 
                 if (resolved.has(fullname))
                     throw new Error(`Duplicate column name: ${fullname}`);
@@ -274,7 +275,7 @@ export const processTableBook = (book: TableBook): SheetBook => {
 
                 //const behavior = resolveBehavior(column.type, types, numeric, temporal)
 
-                const formula = column.expression ? resolveExpression(column.expression, page.name, group.name, resolved) : undefined;
+                const formula = column.expression ? resolveExpression(column.expression, page.name, group.name, column.name, resolved) : undefined;
 
                 const resultColumn: SheetColumn = {
                     title: column.name,
@@ -291,29 +292,86 @@ export const processTableBook = (book: TableBook): SheetBook => {
     return resultBook;
 };
 
-const resolveExpression = (expression: Expression<DataSelector>, page: string, group: string, resolved: Map<string, ResolvedColumn>): Expression<SheetSelector> => {
-    switch (expression.type) {        
+const resolveExpression = (expression: Expression<DataSelector>, page: string, group: string, name: string, columns: Map<string, ResolvedColumn>): Expression<SheetSelector> => {
+    switch (expression.type) {
+        case 'self':
         case "literal":
             return expression;
         case "function":
             return {
                 type: "function",
                 name: expression.name,
-                args: expression.args.map(arg => resolveExpression(arg, page, group, resolved))
+                args: expression.args.map(arg => resolveExpression(arg, page, group, name, columns))
             };
         case "compound":
             return {
                 type: "compound",
                 with: expression.with,
-                items: expression.items.map(item => resolveExpression(item, page, group, resolved))
+                items: expression.items.map(item => resolveExpression(item, page, group, name, columns))
             };
         case "negated":
             return {
                 type: 'negated',
-                on: resolveExpression(expression.on, page, group, resolved)
+                on: resolveExpression(expression.on, page, group, name, columns)
             };
         case "selector": {
-            if (expression.from)
+            if (typeof expression.from === 'string')
+                return { type: 'self' };
+
+
+            const { column, row } = expression.from;
+
+            let selectedPage: string | undefined;
+            let selectedColumn: ResolvedColumn;
+
+            if (typeof column === 'string')
+                selectedColumn = columns.get(lookupName(page, group, name))!;
+            else {
+                const fullname = lookupName(
+                    column.page ?? page,
+                    column.group ?? group,
+                    column.name
+                );
+
+                if (!columns.has(fullname))
+                    throw new Error(`Invalid column: ${fullname}`);
+
+                selectedColumn = columns.get(fullname)!;
+
+                selectedPage = column.page;
+            }
+
+            let selectedRowStart: UnitSelector;
+            let selectedRowEnd: UnitSelector | undefined;
+
+            if (typeof row === 'string') {
+                if (row === 'self')
+                    selectedRowStart = '+0';
+                else
+                    selectedRowStart = row;
+            }
+            else if (row !== undefined) {
+                if (row.from < row.to) {
+                    selectedRowStart = row.from;
+                    selectedRowEnd = row.to;
+                }
+                else {
+                    selectedRowStart = row.to;
+                    selectedRowEnd = row.from;
+                }
+            }
+            else {
+                selectedRowStart = '$0';
+            }
+
+            return {
+                type: 'selector',
+                from: {
+                    sheet: selectedPage,
+                    start: { col: `$${selectedColumn.index}`, row: selectedRowStart },
+                    end: selectedRowEnd ? { col: `$${selectedColumn.index}`, row: selectedRowEnd } : undefined
+                }
+            };
         }
     }
 };
