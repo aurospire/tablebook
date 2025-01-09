@@ -197,11 +197,9 @@ export type FunctionExpression<T> = { type: 'function'; name: string; args: Expr
 
 export type SelectorExpression<T> = { type: 'selector'; from: T; };
 
-export type SelfExpression = { type: 'self'; };
+export type LiteralExpression = { type: 'literal', of: string | number | boolean; };
 
-export type LiteralExpression = string | number | boolean;
-
-export type Expression<T> = CompoundExpression<T> | NegatedExpression<T> | FunctionExpression<T> | SelectorExpression<T> | LiteralExpression | SelfExpression;
+export type Expression<T> = CompoundExpression<T> | NegatedExpression<T> | FunctionExpression<T> | SelectorExpression<T> | LiteralExpression;
 
 /* Data Rule Types */
 export type DateString = `${number}-${number}-${number}`;

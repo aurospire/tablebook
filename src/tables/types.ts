@@ -177,7 +177,7 @@ export type SelectorExpression<Selector> = {
 /** Type identifier for literal expressions */
 export const LiteralExpressionType = 'literal';
 /** Direct value expression */
-export type LiteralExpression = { type: typeof LiteralExpressionType, value: string | number | boolean; };
+export type LiteralExpression = { type: typeof LiteralExpressionType, of: string | number | boolean; };
 
 /** All possible expression types for data computation and validation */
 export type Expression<Selector> =
@@ -186,8 +186,7 @@ export type Expression<Selector> =
     | FunctionExpression<Selector>
     | SelectorExpression<Selector>
     | LiteralExpression
-
-
+    ;
 
 /* Data Rules */
 
@@ -242,8 +241,6 @@ export type ConditionalStyle<Rule> = {
     on: Rule;
     style: Style | Reference;
 };
-
-
 
 /* Numeric Formats */
 

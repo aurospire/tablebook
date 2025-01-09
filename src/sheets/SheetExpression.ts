@@ -21,22 +21,20 @@ export const toFormula = (exp: SheetExpression, position: SheetPosition): string
 
     switch (exp.type) {
         case 'literal':
-            switch (typeof exp.value) {
+            switch (typeof exp.of) {
                 case "string":
-                    return toFormulaString(exp.value);
+                    return toFormulaString(exp.of);
                 case "number":
-                    return exp.value.toString();
+                    return exp.of.toString();
                 case "boolean":
-                    return exp.value ? 'TRUE' : 'FALSE';
+                    return exp.of ? 'TRUE' : 'FALSE';
             }
         case 'compound':
             return exp.items.map(item => toFormula(item, position)).join(exp.with);
         case 'function':
             return `${exp.name}(${exp.args.map(arg => toFormula(arg, position)).join(',')})`;
         case 'negated':
-            return `-(${toFormula(exp.on, position)})`;
-        case 'self':
-            return SheetSelector().toAddress(null, position);
+            return `-(${toFormula(exp.on, position)})`;        
         case 'selector':
             return SheetSelector().toAddress(exp.from, position);
     }

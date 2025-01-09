@@ -134,7 +134,7 @@ export const SheetSelector = (sheet?: string) => Object.freeze({
         };
     },
 
-    toAddress(selector?: SheetSelector | null, from?: SheetPosition): string {
+    toAddress(selector?: SheetSelector, from?: SheetPosition): string {
         let result = '';
 
         if (selector?.sheet)

@@ -155,7 +155,7 @@ const FunctionExpression: z.ZodType<FunctionExpression<DataSelector>> = z.object
 
 const LiteralExpression: z.ZodType<LiteralExpression> = z.object({
     type: z.literal(LiteralExpressionType),
-    value: z.union([z.string(), z.number(), z.boolean()])
+    of: z.union([z.string(), z.number(), z.boolean()])
 });
 
 const SelectorExpression: z.ZodType<SelectorExpression<DataSelector>> = z.object({
