@@ -68,7 +68,7 @@
  * - ex: { name: "Price" } - within the current page and group
  * 
  * Row Selection:
- * - Rows are zero-based, with negative values not allowed
+ * - Rows are 0-based, with negative values not allowed
  * - Absolute position: "$n" refers to nth row (1-based)
  * - Relative forward: "+n" refers to n rows after current
  * - Relative backward: "-n" refers to n rows before current
@@ -146,7 +146,7 @@ export type Reference = `@${string}`;
 /* Data Selection Types */
 export type SelfSelector = 'self';
 
-export type ColumnSelector = { table?: string; group?: string; name: string; };
+export type ColumnSelector = { page?: string; group?: string; name: string; };
 
 export type UnitSelector = `$${number}` | `+${number}` | `-${number}`;
 
@@ -159,9 +159,7 @@ export type DataSelector = { column: ColumnSelector | SelfSelector; row?: RowSel
 /* Styling Types */
 export type Color = `#${string}`;
 
-export type TextForm = boolean | { bold?: boolean; italic?: boolean; };
-
-export type Style = { fore?: Color | PaletteReference | Reference; back?: Color | PaletteReference | Reference; form?: TextForm; };
+export type Style = { fore?: Color | PaletteReference | Reference; back?: Color | PaletteReference | Reference; bold?: boolean; italic?: boolean; };
 
 export type Border = { type: BorderStyle; color: Color | PaletteReference | Reference; };
 
@@ -245,17 +243,17 @@ export type TemporalItem = TemporalUnitConfig | string;
 export type TemporalFormat = TemporalItem[];
 
 /* Data Types */
-export type TextType = { name: 'text'; rule?: TextRule; styles?: ConditionalStyle<TextRule>[]; };
+export type TextType = { kind: 'text'; rule?: TextRule; styles?: ConditionalStyle<TextRule>[]; };
 
-export type NumericType = { name: 'numeric'; rule?: NumericRule; styles?: ConditionalStyle<NumericRule>[]; format?: NumericFormat | Reference; };
+export type NumericType = { kind: 'numeric'; rule?: NumericRule; styles?: ConditionalStyle<NumericRule>[]; format?: NumericFormat | Reference; };
 
-export type TemporalType = { name: 'temporal'; rule?: TemporalRule; styles?: ConditionalStyle<TemporalRule>[]; format?: TemporalFormat | Reference; };
+export type TemporalType = { kind: 'temporal'; rule?: TemporalRule; styles?: ConditionalStyle<TemporalRule>[]; format?: TemporalFormat | Reference; };
 
 export type EnumItem = string | { value: string; style?: Style | Reference; };
 
-export type EnumType = { name: 'enum'; values: EnumItem[]; };
+export type EnumType = { kind: 'enum'; values: EnumItem[]; };
 
-export type LookupType = { name: 'lookup'; values: ColumnSelector; };
+export type LookupType = { kind: 'lookup'; values: ColumnSelector; };
 
 export type DataType = TextType | NumericType | TemporalType | EnumType | LookupType | Reference;
 

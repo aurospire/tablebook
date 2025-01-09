@@ -128,27 +128,27 @@ const tablebook0: TableBook = {
         styles: {
             group: {
                 fore: '#ffffff',
-                form: { bold: true },
+                bold: true,
                 beneath: { type: 'medium', color: '@border' },
                 between: { type: 'medium', color: '@border' }
             },
             header: {
                 fore: '#ffffff',
-                form: { bold: true },
+                bold: true,
                 beneath: { type: 'dotted', color: '@border' },
                 between: { type: 'dotted', color: '@border' }
             },
             data: {
                 fore: '#000000',
-                form: false
+                bold: false
             },
             success: {
                 fore: "@successGreen",
-                form: { bold: true }
+                bold: true
             },
             warning: {
                 fore: "@warningRed",
-                form: { bold: true }
+                bold: true
             }
         },
         themes: {
@@ -472,16 +472,16 @@ const tablebook0: TableBook = {
     ]
 };
 
-const tablebook: TableBook = {
+const tablebook1: TableBook = {
     name: "PaletteLibrary",
     theme: {
         group: {
             fore: "#ffffff",
-            form: { bold: true },
+            bold: true,
         },
         header: {
             fore: "#ffffff",
-            form: { bold: true },
+            bold: true,
         }
     },
     pages: [
@@ -623,6 +623,615 @@ const tablebook: TableBook = {
                     name: "CharcoalFamily",
                     theme: "@charcoal",
                     columns: [{ name: "Charcoal", type: { kind: "text" } }]
+                }
+            ]
+        }
+    ]
+};
+
+const tablebook2: TableBook = {
+    name: "ExpressionTest",
+    theme: "@business",
+    definitions: {
+        colors: {
+            primaryBack: "#f5f5f5",
+            primaryFore: "#333333",
+            highlightBack: "#e3f2fd",
+        },
+        formats: {
+            numeric: {
+                money: {
+                    type: "currency",
+                    integer: { fixed: 1 },
+                    decimal: { fixed: 2 },
+                    symbol: "$",
+                    position: "prefix"
+                },
+                percent: {
+                    type: "percent",
+                    integer: { fixed: 1 },
+                    decimal: { fixed: 1 }
+                }
+            }
+        },
+        themes: {
+            business: {
+                tab: "@blue",
+                header: {
+                    fore: "#ffffff",
+                    back: "@blue",
+                    bold: true,
+                    beneath: {
+                        type: "thin",
+                        color: "@blue"
+                    }
+                },
+                data: {
+                    fore: "@primaryFore",
+                    back: "@primaryBack"
+                }
+            }
+        }
+    },
+    pages: [
+        {
+            name: "Calculations",
+            rows: 10,
+            groups: [
+                {
+                    name: "BasicInputs",
+                    columns: [
+                        {
+                            name: "Quantity",
+                            type: {
+                                kind: "numeric",
+                                rule: {
+                                    type: ">=",
+                                    to: 0
+                                }
+                            }
+                        },
+                        {
+                            name: "UnitPrice",
+                            type: {
+                                kind: "numeric",
+                                format: "@money",
+                                rule: {
+                                    type: ">",
+                                    to: 0
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    name: "Computations",
+                    columns: [
+                        {
+                            name: "Revenue",
+                            type: {
+                                kind: "numeric",
+                                format: "@money"
+                            },
+                            expression: {
+                                type: "compound",
+                                with: "*",
+                                items: [
+                                    {
+                                        type: "selector",
+                                        from: {
+                                            column: {
+                                                group: "BasicInputs",
+                                                name: "Quantity"
+                                            },
+                                            row: "self"
+                                        }
+                                    },
+                                    {
+                                        type: "selector",
+                                        from: {
+                                            column: {
+                                                group: "BasicInputs",
+                                                name: "UnitPrice"
+                                            },
+                                            row: "self"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            name: "Discount",
+                            type: {
+                                kind: "numeric",
+                                format: "@percent"
+                            },
+                            expression: {
+                                type: "function",
+                                name: "if",
+                                args: [
+                                    {
+                                        type: "compound",
+                                        with: ">=",
+                                        items: [
+                                            {
+                                                type: "selector",
+                                                from: {
+                                                    column: {
+                                                        group: "BasicInputs",
+                                                        name: "Quantity"
+                                                    },
+                                                    row: "self"
+                                                }
+                                            },
+                                            {
+                                                type: "literal",
+                                                of: 5
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        type: "literal",
+                                        of: 0.1
+                                    },
+                                    {
+                                        type: "literal",
+                                        of: 0
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            name: "NetRevenue",
+                            type: {
+                                kind: "numeric",
+                                format: "@money"
+                            },
+                            expression: {
+                                type: "compound",
+                                with: "*",
+                                items: [
+                                    {
+                                        type: "selector",
+                                        from: {
+                                            column: {
+                                                group: "Computations",
+                                                name: "Revenue"
+                                            },
+                                            row: "self"
+                                        }
+                                    },
+                                    {
+                                        type: "compound",
+                                        with: "-",
+                                        items: [
+                                            {
+                                                type: "literal",
+                                                of: 1
+                                            },
+                                            {
+                                                type: "selector",
+                                                from: {
+                                                    column: {
+                                                        group: "Computations",
+                                                        name: "Discount"
+                                                    },
+                                                    row: "self"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+};
+
+const tablebook: TableBook = {
+    name: "ExpressionTest",
+    theme: "@business",
+    definitions: {
+        colors: {
+            primaryBack: "#f5f5f5",
+            primaryFore: "#333333",
+            highlightBack: "#e3f2fd",
+        },
+        formats: {
+            numeric: {
+                money: {
+                    type: "currency",
+                    integer: { fixed: 1 },
+                    decimal: { fixed: 2 },
+                    symbol: "$",
+                    position: "prefix"
+                },
+                percent: {
+                    type: "percent",
+                    integer: { fixed: 1 },
+                    decimal: { fixed: 1 }
+                }
+            }
+        },
+        themes: {
+            business: {
+                tab: "@blue",
+                header: {
+                    fore: "#ffffff",
+                    back: "@blue",
+                    bold: true,
+                    beneath: {
+                        type: "thin",
+                        color: "@blue"
+                    }
+                },
+                data: {
+                    fore: "@primaryFore",
+                    back: "@primaryBack"
+                }
+            }
+        }
+    },
+    pages: [
+        {
+            name: "BaseData",
+            rows: 12,
+            groups: [
+                {
+                    name: "Rates",
+                    columns: [
+                        {
+                            name: "BasePrice",
+                            type: {
+                                kind: "numeric",
+                                format: "@money",
+                                rule: {
+                                    type: ">",
+                                    to: 0
+                                }
+                            }
+                        },
+                        {
+                            name: "TaxRate",
+                            type: {
+                                kind: "numeric",
+                                format: "@percent",
+                                rule: {
+                                    type: "between",
+                                    low: 0,
+                                    high: 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    name: "Volume",
+                    columns: [
+                        {
+                            name: "MinQuantity",
+                            type: {
+                                kind: "numeric",
+                                rule: {
+                                    type: ">=",
+                                    to: 0
+                                }
+                            }
+                        },
+                        {
+                            name: "DiscountRate",
+                            type: {
+                                kind: "numeric",
+                                format: "@percent",
+                                rule: {
+                                    type: "between",
+                                    low: 0,
+                                    high: 1
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            name: "Transactions",
+            rows: 20,
+            groups: [
+                {
+                    name: "Orders",
+                    columns: [
+                        {
+                            name: "Quantity",
+                            type: {
+                                kind: "numeric",
+                                rule: {
+                                    type: ">=",
+                                    to: 0
+                                }
+                            }
+                        },
+                        {
+                            name: "Price",
+                            type: {
+                                kind: "numeric",
+                                format: "@money"
+                            },
+                            // References fixed row in BaseData
+                            expression: {
+                                type: "selector",
+                                from: {
+                                    column: {
+                                        page: "BaseData",
+                                        group: "Rates",
+                                        name: "BasePrice"
+                                    },
+                                    row: "$1"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    name: "Calculations",
+                    columns: [
+                        {
+                            name: "AppliedDiscount",
+                            type: {
+                                kind: "numeric",
+                                format: "@percent"
+                            },
+                            expression: {
+                                type: "function",
+                                name: "if",
+                                args: [
+                                    // Test relative backward reference within same page
+                                    {
+                                        type: "compound",
+                                        with: ">=",
+                                        items: [
+                                            {
+                                                type: "selector",
+                                                from: {
+                                                    column: {
+                                                        group: "Orders",
+                                                        name: "Quantity"
+                                                    },
+                                                    row: "self"
+                                                }
+                                            },
+                                            // Test cross-page reference with fixed position
+                                            {
+                                                type: "selector",
+                                                from: {
+                                                    column: {
+                                                        page: "BaseData",
+                                                        group: "Volume",
+                                                        name: "MinQuantity"
+                                                    },
+                                                    row: "$1"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    // If condition is true, get discount from BaseData
+                                    {
+                                        type: "selector",
+                                        from: {
+                                            column: {
+                                                page: "BaseData",
+                                                group: "Volume",
+                                                name: "DiscountRate"
+                                            },
+                                            row: "$1"
+                                        }
+                                    },
+                                    {
+                                        type: "literal",
+                                        of: 0
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            name: "Subtotal",
+                            type: {
+                                kind: "numeric",
+                                format: "@money"
+                            },
+                            expression: {
+                                type: "compound",
+                                with: "*",
+                                items: [
+                                    // Test relative backward reference
+                                    {
+                                        type: "selector",
+                                        from: {
+                                            column: {
+                                                group: "Orders",
+                                                name: "Quantity"
+                                            },
+                                            row: "self"
+                                        }
+                                    },
+                                    {
+                                        type: "selector",
+                                        from: {
+                                            column: {
+                                                group: "Orders",
+                                                name: "Price"
+                                            },
+                                            row: "self"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            name: "DiscountAmount",
+                            type: {
+                                kind: "numeric",
+                                format: "@money"
+                            },
+                            expression: {
+                                type: "compound",
+                                with: "*",
+                                items: [
+                                    {
+                                        type: "selector",
+                                        from: {
+                                            column: {
+                                                group: "Calculations",
+                                                name: "Subtotal"
+                                            },
+                                            row: "self"
+                                        }
+                                    },
+                                    {
+                                        type: "selector",
+                                        from: {
+                                            column: {
+                                                group: "Calculations",
+                                                name: "AppliedDiscount"
+                                            },
+                                            row: "self"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            name: "Tax",
+                            type: {
+                                kind: "numeric",
+                                format: "@money"
+                            },
+                            expression: {
+                                type: "compound",
+                                with: "*",
+                                items: [
+                                    {
+                                        type: "compound",
+                                        with: "-",
+                                        items: [
+                                            {
+                                                type: "selector",
+                                                from: {
+                                                    column: {
+                                                        group: "Calculations",
+                                                        name: "Subtotal"
+                                                    },
+                                                    row: "self"
+                                                }
+                                            },
+                                            {
+                                                type: "selector",
+                                                from: {
+                                                    column: {
+                                                        group: "Calculations",
+                                                        name: "DiscountAmount"
+                                                    },
+                                                    row: "self"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    // Cross-page reference to tax rate
+                                    {
+                                        type: "selector",
+                                        from: {
+                                            column: {
+                                                page: "BaseData",
+                                                group: "Rates",
+                                                name: "TaxRate"
+                                            },
+                                            row: "$1"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            name: "RunningTotal",
+                            type: {
+                                kind: "numeric",
+                                format: "@money"
+                            },
+                            expression: {
+                                type: "compound",
+                                with: "+",
+                                items: [
+                                    // Test relative backward reference for running total
+                                    {
+                                        type: "selector",
+                                        from: {
+                                            column: {
+                                                group: "Calculations",
+                                                name: "RunningTotal"
+                                            },
+                                            row: "-1"
+                                        }
+                                    },
+                                    {
+                                        type: "compound",
+                                        with: "-",
+                                        items: [
+                                            {
+                                                type: "selector",
+                                                from: {
+                                                    column: {
+                                                        group: "Calculations",
+                                                        name: "Subtotal"
+                                                    },
+                                                    row: "self"
+                                                }
+                                            },
+                                            {
+                                                type: "selector",
+                                                from: {
+                                                    column: {
+                                                        group: "Calculations",
+                                                        name: "DiscountAmount"
+                                                    },
+                                                    row: "self"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            name: "AverageOrder",
+                            type: {
+                                kind: "numeric",
+                                format: "@money"
+                            },
+                            expression: {
+                                type: "function",
+                                name: "average",
+                                args: [
+                                    // Test range selector
+                                    {
+                                        type: "selector",
+                                        from: {
+                                            column: {
+                                                group: "Calculations",
+                                                name: "Subtotal"
+                                            },
+                                            row: {
+                                                from: "$1",
+                                                to: "+0"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
                 }
             ]
         }

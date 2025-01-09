@@ -58,7 +58,8 @@ export class GoogleGenerator implements SheetGenerator {
                             })
                             .updateCells(sheetId, SheetRange.column(index, rowOffset + 1, page.rows - 1 - rowOffset), {
                                 horizontal: 'middle', vertical: 'middle',
-                                ...column.dataStyle
+                                ...column.dataStyle,
+                                value: column.formula,
                             });
 
                         if (column.titleStyle?.beneath)

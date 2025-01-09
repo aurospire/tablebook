@@ -35,7 +35,7 @@ export const SheetRange = Object.freeze({
 
 
 // No .end just means cell, No .end.col means until the end of the row, No .end.row means until the end of the column
-export type SheetSelector = { start: SheetPosition<UnitSelector>, end?: Partial<SheetPosition<UnitSelector>>; sheet?: string; };
+export type SheetSelector = { start: SheetPosition<UnitSelector>, end?: Partial<SheetPosition<UnitSelector>>; page?: string; };
 
 
 const toUnitSelector = (value: number | UnitSelector, offset: number = 0, prefix?: UnitPrefix): UnitSelector => {
@@ -88,7 +88,7 @@ const toAddress = (position?: Partial<SheetPosition<UnitSelector>>, from?: Sheet
 
 export const SheetSelector = (sheet?: string) => Object.freeze({
     cell: (col: number | UnitSelector, row: number | UnitSelector): SheetSelector => ({
-        sheet, start: SheetPosition(toUnitSelector(col), toUnitSelector(row)),
+        page: sheet, start: SheetPosition(toUnitSelector(col), toUnitSelector(row)),
     }),
 
     row: (index: number | UnitSelector, offset: number = 0, width?: number): SheetSelector => {
@@ -96,7 +96,7 @@ export const SheetSelector = (sheet?: string) => Object.freeze({
         const startCol = toUnitSelector(offset);
 
         return {
-            sheet,
+            page: sheet,
             start: SheetPosition(startCol, startRow),
             end: {
                 col: width !== undefined ? toUnitSelector(offset, width, startCol[0] as UnitPrefix) : undefined,
@@ -111,7 +111,7 @@ export const SheetSelector = (sheet?: string) => Object.freeze({
         const startRow = toUnitSelector(offset);
 
         return {
-            sheet,
+            page: sheet,
             start: SheetPosition(startCol, startRow),
             end: {
                 col: toUnitSelector(index, 1, startCol[0] as UnitPrefix),
@@ -125,7 +125,7 @@ export const SheetSelector = (sheet?: string) => Object.freeze({
         const startRow = toUnitSelector(row);
 
         return {
-            sheet,
+            page: sheet,
             start: SheetPosition(startCol, startRow),
             end: {
                 col: width !== undefined ? toUnitSelector(col, width, startCol[0] as UnitPrefix) : undefined,
@@ -137,8 +137,8 @@ export const SheetSelector = (sheet?: string) => Object.freeze({
     toAddress(selector?: SheetSelector, from?: SheetPosition): string {
         let result = '';
 
-        if (selector?.sheet)
-            result += `'${selector.sheet}'!`;
+        if (selector?.page)
+            result += `'${selector.page}'!`;
 
         result += toAddress(selector?.start, from);
 

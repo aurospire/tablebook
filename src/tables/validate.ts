@@ -65,7 +65,7 @@ const Reference: z.ZodType<Reference> = z.custom<Reference>(value => ReferenceRe
 const SelfSelector: z.ZodType<SelfSelector> = z.literal(SelfLiteral);
 
 const ColumnSelector: z.ZodType<ColumnSelector> = z.object({
-    table: z.string().optional(),
+    page: z.string().optional(),
     group: z.string().optional(),
     name: z.string()
 });
@@ -90,20 +90,14 @@ const DataSelector: z.ZodType<DataSelector> = z.union([
 /* Styling */
 const Color: z.ZodType<Color> = z.custom(value => ColorRegex.test(value as string));
 
-const TextForm: z.ZodType<TextForm> = z.union([
-    z.boolean(),
-    z.object({
-        bold: z.boolean().optional(),
-        italic: z.boolean().optional()
-    })
-]);
 
 const ColorReference = z.union([Color, Reference]);
 
 const Style: z.ZodType<Style> = z.object({
     fore: ColorReference.optional(),
     back: ColorReference.optional(),
-    form: TextForm.optional()
+    bold: z.boolean().optional(),
+    italic: z.boolean().optional()
 });
 
 const BorderType: z.ZodType<BorderType> = z.enum(BorderTypes);

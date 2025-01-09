@@ -75,7 +75,7 @@ export const ColorRegex = /^#[A-Za-z0-9]{6}$/;
 export type Color = `#${string}`;
 
 /** Text formatting options */
-export type TextForm = boolean | { bold?: boolean; italic?: boolean; };
+export type TextForm = boolean | {};
 
 /** Style definition for text and background */
 export type Style = {
@@ -83,8 +83,10 @@ export type Style = {
     fore?: Color | Reference;
     /** Background color, defaults to white */
     back?: Color | Reference;
-    /** Text formatting, defaults to false */
-    form?: TextForm;
+    /** Bolded, defaults to false */
+    bold?: boolean;
+    /** Italicized, defaults to false */
+    italic?: boolean;
 };
 
 /** Available border line styles */

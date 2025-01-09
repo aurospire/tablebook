@@ -1,3 +1,4 @@
+import { inspect } from "util";
 import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "./sheets/SheetBook";
 import { SheetSelector } from "./sheets/SheetPosition";
 import { SheetBorder, SheetStyle, SheetTitleStyle } from "./sheets/SheetStyle";
@@ -8,7 +9,7 @@ import { ColorObject, Colors } from "./util/Color";
 
 type ResolvedColumn = {
     sheet: string;
-    group: boolean;
+    grouped: boolean;
     index: number;
 };
 
@@ -29,6 +30,7 @@ const resolveColumns = (tablebook: TableBook): Map<string, ResolvedColumn> => {
         sheets.add(sheet.name);
 
         const groups = new Set<string>();
+        let index = 0;
 
         for (let g = 0; g < sheet.groups.length; g++) {
             const group = sheet.groups[g];
@@ -44,7 +46,7 @@ const resolveColumns = (tablebook: TableBook): Map<string, ResolvedColumn> => {
                 if (resolved.has(fullname))
                     throw new Error(`Duplicate column name: ${fullname}`);
 
-                resolved.set(fullname, { sheet: sheet.name, group: sheet.groups.length > 1, index: c });
+                resolved.set(fullname, { sheet: sheet.name, grouped: sheet.groups.length > 1, index: index++ });
             }
         }
     }
@@ -95,16 +97,8 @@ const resolveStyle = (style: HeaderStyle | Reference, colors: Record<string, Col
 
     const fore: ColorObject | undefined = style.fore ? resolveColor(style.fore, colors) : undefined;
     const back: ColorObject | undefined = style.back ? resolveColor(style.back, colors) : undefined;
-
-    let bold, italic;
-
-    if (typeof style.form === 'boolean') {
-        bold = italic = style.form;
-    }
-    else if (style.form !== undefined) {
-        bold = style.form.bold;
-        italic = style.form.italic;
-    }
+    const bold: boolean | undefined = style.bold;
+    const italic: boolean | undefined = style.bold;
 
     let beneath: SheetBorder | undefined;
     if (style.beneath)
@@ -211,6 +205,105 @@ const resolveTheme = (
     return result;
 };
 
+const modifyUnitSelector = (selector: UnitSelector, grouped: boolean): UnitSelector => {
+    if (selector[0] !== '$')
+        return selector;
+
+    const value = Number(selector.slice(1));
+
+    return `$${value + (grouped ? 2 : 1)}`;
+};
+
+const resolveExpression = (expression: Expression<DataSelector>, page: string, group: string, name: string, columns: Map<string, ResolvedColumn>): Expression<SheetSelector> => {
+    switch (expression.type) {
+        case "literal":
+            return expression;
+        case "function":
+            return {
+                type: "function",
+                name: expression.name,
+                args: expression.args.map(arg => resolveExpression(arg, page, group, name, columns))
+            };
+        case "compound":
+            return {
+                type: "compound",
+                with: expression.with,
+                items: expression.items.map(item => resolveExpression(item, page, group, name, columns))
+            };
+        case "negated":
+            return {
+                type: 'negated',
+                on: resolveExpression(expression.on, page, group, name, columns)
+            };
+        case "selector": {
+            console.log("\n\n*** SELECTOR ***");
+            console.log(expression.from);
+            const { column, row } = expression.from === 'self' ? { column: 'self', row: 'self' } : expression.from;
+
+            let selectedPage: string | undefined;
+            let selectedColumn: ResolvedColumn;
+
+            if (typeof column === 'string')
+                selectedColumn = columns.get(lookupName(page, group, name))!;
+            else {
+                const fullname = lookupName(
+                    column.page ?? page,
+                    column.group ?? group,
+                    column.name
+                );
+
+                if (!columns.has(fullname))
+                    throw new Error(`Invalid column: ${fullname}`);
+
+                selectedColumn = columns.get(fullname)!;
+
+                selectedPage = column.page;
+            }
+
+            console.log(selectedColumn);
+            let selectedRowStart: UnitSelector;
+            let selectedRowEnd: UnitSelector | undefined;
+
+            if (typeof row === 'string') {
+                if (row === 'self')
+                    selectedRowStart = '+0';
+                else
+                    selectedRowStart = row as UnitSelector;
+            }
+            else if (row !== undefined) {
+                if (row.from < row.to) {
+                    selectedRowStart = row.from;
+                    selectedRowEnd = row.to;
+                }
+                else {
+                    selectedRowStart = row.to;
+                    selectedRowEnd = row.from;
+                }
+            }
+            else {
+                selectedRowStart = '$0';
+            }
+
+            return {
+                type: 'selector',
+                from: exp({
+                    sheet: selectedPage,
+                    start: {
+                        col: `$${selectedColumn.index}`,
+                        row: modifyUnitSelector(selectedRowStart, selectedColumn.grouped)
+                    },
+                    end: selectedRowEnd ? {
+                        col: `$${selectedColumn.index}`,
+                        row: modifyUnitSelector(selectedRowEnd, selectedColumn.grouped)
+                    } : undefined
+                })
+            };
+        }
+    }
+};
+
+const exp = <T>(value: T): T => { console.log(inspect(value, { depth: null, colors: true })); return value; };
+
 export const processTableBook = (book: TableBook): SheetBook => {
 
     console.log(`Processing book: '${book.name}'`);
@@ -290,83 +383,4 @@ export const processTableBook = (book: TableBook): SheetBook => {
     };
 
     return resultBook;
-};
-
-const resolveExpression = (expression: Expression<DataSelector>, page: string, group: string, name: string, columns: Map<string, ResolvedColumn>): Expression<SheetSelector> => {
-    switch (expression.type) {
-        case "literal":
-            return expression;
-        case "function":
-            return {
-                type: "function",
-                name: expression.name,
-                args: expression.args.map(arg => resolveExpression(arg, page, group, name, columns))
-            };
-        case "compound":
-            return {
-                type: "compound",
-                with: expression.with,
-                items: expression.items.map(item => resolveExpression(item, page, group, name, columns))
-            };
-        case "negated":
-            return {
-                type: 'negated',
-                on: resolveExpression(expression.on, page, group, name, columns)
-            };
-        case "selector": {
-            const { column, row } = expression.from === 'self' ? { column: 'self', row: 'self' } : expression.from;
-
-            let selectedPage: string | undefined;
-            let selectedColumn: ResolvedColumn;
-
-            if (typeof column === 'string')
-                selectedColumn = columns.get(lookupName(page, group, name))!;
-            else {
-                const fullname = lookupName(
-                    column.page ?? page,
-                    column.group ?? group,
-                    column.name
-                );
-
-                if (!columns.has(fullname))
-                    throw new Error(`Invalid column: ${fullname}`);
-
-                selectedColumn = columns.get(fullname)!;
-
-                selectedPage = column.page;
-            }
-
-            let selectedRowStart: UnitSelector;
-            let selectedRowEnd: UnitSelector | undefined;
-
-            if (typeof row === 'string') {
-                if (row === 'self')
-                    selectedRowStart = '+0';
-                else
-                    selectedRowStart = row as UnitSelector;
-            }
-            else if (row !== undefined) {
-                if (row.from < row.to) {
-                    selectedRowStart = row.from;
-                    selectedRowEnd = row.to;
-                }
-                else {
-                    selectedRowStart = row.to;
-                    selectedRowEnd = row.from;
-                }
-            }
-            else {
-                selectedRowStart = '$0';
-            }
-
-            return {
-                type: 'selector',
-                from: {
-                    sheet: selectedPage,
-                    start: { col: `$${selectedColumn.index}`, row: selectedRowStart },
-                    end: selectedRowEnd ? { col: `$${selectedColumn.index}`, row: selectedRowEnd } : undefined
-                }
-            };
-        }
-    }
 };
