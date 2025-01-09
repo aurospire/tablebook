@@ -294,7 +294,6 @@ export const processTableBook = (book: TableBook): SheetBook => {
 
 const resolveExpression = (expression: Expression<DataSelector>, page: string, group: string, name: string, columns: Map<string, ResolvedColumn>): Expression<SheetSelector> => {
     switch (expression.type) {
-        case 'self':
         case "literal":
             return expression;
         case "function":
@@ -315,11 +314,7 @@ const resolveExpression = (expression: Expression<DataSelector>, page: string, g
                 on: resolveExpression(expression.on, page, group, name, columns)
             };
         case "selector": {
-            if (typeof expression.from === 'string')
-                return { type: 'self' };
-
-
-            const { column, row } = expression.from;
+            const { column, row } = expression.from === 'self' ? { column: 'self', row: 'self' } : expression.from;
 
             let selectedPage: string | undefined;
             let selectedColumn: ResolvedColumn;
@@ -348,7 +343,7 @@ const resolveExpression = (expression: Expression<DataSelector>, page: string, g
                 if (row === 'self')
                     selectedRowStart = '+0';
                 else
-                    selectedRowStart = row;
+                    selectedRowStart = row as UnitSelector;
             }
             else if (row !== undefined) {
                 if (row.from < row.to) {

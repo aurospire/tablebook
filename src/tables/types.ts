@@ -174,9 +174,6 @@ export type SelectorExpression<Selector> = {
     from: Selector;
 };
 
-/** Expression referencing the current element's value */
-export type SelfExpression = { type: typeof SelfLiteral; };
-
 /** Type identifier for literal expressions */
 export const LiteralExpressionType = 'literal';
 /** Direct value expression */
@@ -189,7 +186,6 @@ export type Expression<Selector> =
     | FunctionExpression<Selector>
     | SelectorExpression<Selector>
     | LiteralExpression
-    | SelfExpression;
 
 
 
