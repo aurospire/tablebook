@@ -148,7 +148,6 @@ export const SheetSelector = (page?: string) => Object.freeze({
         if (end)
             result += `:${end}`;
 
-        console.log('ADDRESS:', inspect({ selector, from, result }, { depth: null, colors: true }));
         return result;
     }
 });

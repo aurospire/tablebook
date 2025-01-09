@@ -236,8 +236,6 @@ const resolveExpression = (expression: Expression<DataSelector>, page: string, g
                 on: resolveExpression(expression.on, page, group, name, columns)
             };
         case "selector": {
-            console.log("\n\n*** SELECTOR ***");
-            console.log(expression.from);
             const { column, row } = expression.from === 'self' ? { column: 'self', row: 'self' } : expression.from;
 
             let selectedPage: string | undefined;
@@ -286,7 +284,7 @@ const resolveExpression = (expression: Expression<DataSelector>, page: string, g
 
             return {
                 type: 'selector',
-                from: exp({
+                from: {
                     page: selectedPage,
                     start: {
                         col: `$${selectedColumn.index}`,
@@ -296,16 +294,14 @@ const resolveExpression = (expression: Expression<DataSelector>, page: string, g
                         col: `$${selectedColumn.index}`,
                         row: modifyUnitSelector(selectedRowEnd, selectedColumn.grouped)
                     } : undefined
-                })
+                }
             };
         }
     }
 };
 
-const exp = <T>(value: T): T => { console.log(inspect(value, { depth: null, colors: true })); return value; };
 
 export const processTableBook = (book: TableBook): SheetBook => {
-
     console.log(`Processing book: '${book.name}'`);
 
     const resultBook: SheetBook = {

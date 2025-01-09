@@ -33,7 +33,6 @@ const processBaseNumber = (format: BaseNumberFormat<string>) => {
     if (format.decimal)
         result += '.' + processDigitPlaceholder(format.decimal, true);
 
-    console.log(result);
     return result;
 };
 
