@@ -8,7 +8,7 @@ import { ColorObject, Colors } from "./util/Color";
 
 
 type ResolvedColumn = {
-    sheet: string;
+    page: string;
     grouped: boolean;
     index: number;
 };
@@ -18,22 +18,22 @@ const lookupName = (page: string, group: string, name: string) => `${page}.${gro
 const resolveColumns = (tablebook: TableBook): Map<string, ResolvedColumn> => {
     const resolved: Map<string, ResolvedColumn> = new Map();
 
-    const sheets = new Set<string>();
+    const pages = new Set<string>();
 
     for (let s = 0; s < tablebook.pages.length; s++) {
 
-        const sheet = tablebook.pages[s];
+        const page = tablebook.pages[s];
 
-        if (sheets.has(sheet.name))
-            throw new Error(`Duplicate sheet name: ${sheet.name}`);
+        if (pages.has(page.name))
+            throw new Error(`Duplicate page name: ${page.name}`);
 
-        sheets.add(sheet.name);
+        pages.add(page.name);
 
         const groups = new Set<string>();
         let index = 0;
 
-        for (let g = 0; g < sheet.groups.length; g++) {
-            const group = sheet.groups[g];
+        for (let g = 0; g < page.groups.length; g++) {
+            const group = page.groups[g];
 
             if (groups.has(group.name))
                 throw new Error(`Duplicate group name: ${group.name}`);
@@ -41,12 +41,12 @@ const resolveColumns = (tablebook: TableBook): Map<string, ResolvedColumn> => {
             for (let c = 0; c < group.columns.length; c++) {
                 const column = group.columns[c];
 
-                const fullname = lookupName(sheet.name, group.name, column.name);
+                const fullname = lookupName(page.name, group.name, column.name);
 
                 if (resolved.has(fullname))
                     throw new Error(`Duplicate column name: ${fullname}`);
 
-                resolved.set(fullname, { sheet: sheet.name, grouped: sheet.groups.length > 1, index: index++ });
+                resolved.set(fullname, { page: page.name, grouped: page.groups.length > 1, index: index++ });
             }
         }
     }
@@ -287,7 +287,7 @@ const resolveExpression = (expression: Expression<DataSelector>, page: string, g
             return {
                 type: 'selector',
                 from: exp({
-                    sheet: selectedPage,
+                    page: selectedPage,
                     start: {
                         col: `$${selectedColumn.index}`,
                         row: modifyUnitSelector(selectedRowStart, selectedColumn.grouped)

@@ -41,7 +41,7 @@ export type SheetEnumRule = {
 
 export type SheetLookupRule = {
     type: 'lookup';
-    sheet: string;
+    page: string;
     range: SheetSelector;
 };
 

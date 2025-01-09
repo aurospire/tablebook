@@ -85,7 +85,7 @@ export const toGoogleCondition = (rule: SheetRule, postion: SheetPosition): Goog
             return makeGoogleCondition(GoogleOneOfListConditionType, rule.values);
 
         case "lookup":
-            return makeGoogleCondition(GoogleOneOfRangeConditionType, [SheetSelector(rule.sheet).toAddress(rule.range, postion)]);
+            return makeGoogleCondition(GoogleOneOfRangeConditionType, [SheetSelector(rule.page).toAddress(rule.range, postion)]);
 
         case "formula":
             return makeGoogleCondition(GoogleFormulaConditionType, [toFormula(rule.from, postion)]);

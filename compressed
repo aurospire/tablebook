@@ -5,7 +5,7 @@
  * Key Concepts:
  * - Implements a table paradigm that is a strict subset of spreadsheets with only vertical relationships
  * - Data relationships and computations are column-based - no cell addresses or horizontal references
- * - Each sheet has one table with at least one column group
+ * - Each page has one table with at least one column group
  * - Group headers are hidden in output if there's only one in a table
  * 
  * Design Principles:

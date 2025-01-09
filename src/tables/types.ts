@@ -1,6 +1,6 @@
 /* Overview */
 // Types for TableBook - a declarative schema (like DDL for databases) for one-time spreadsheet generation.
-// Each sheet has one table with at least one column group.
+// Each "sheet" has one table with at least one column group.
 // TableBook implements a powerful table paradigm - a strict subset of spreadsheets with only vertical relationships.
 // Data relationships and computations are column-based - no cell addresses or horizontal references.
 // Standard components when they exist (ie: palettes) should be preferred over definitions, and definitions over inline.
@@ -412,7 +412,7 @@ export type ColumnType = TextType | NumericType | TemporalType | EnumType | Look
 export const TableUnitNameRegex = /^[A-Z][A-Za-z0-9]+$/;
 
 /** 
-* Base type for all table structural elements (column, group, sheet)
+* Base type for all table structural elements (column, group, page)
 * Provides common properties for naming, theming and description
 */
 export type TableUnit = {
@@ -439,7 +439,7 @@ export type TableColumn = TableUnit & {
 
 /** 
 * Groups related columns together
-* Groups are hidden in the output if there's only one in a sheet, so the name doesn't matter (can be '')
+* Groups are hidden in the output if there's only one on a page, so the name doesn't matter (can be '')
 */
 export type TableGroup = TableUnit & {
     /** Array of columns belonging to this group */
@@ -451,7 +451,7 @@ export type TableGroup = TableUnit & {
 * Contains one table with one or more column groups
 */
 export type TablePage = TableUnit & {
-    /** Array of column groups in this sheet's table */
+    /** Array of column groups */
     groups: TableGroup[];
     /** Number of data rows in the table */
     rows: number;

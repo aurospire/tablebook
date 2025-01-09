@@ -1,3 +1,4 @@
+import { inspect } from "util";
 import { UnitPrefix, UnitSelector, UnitSelectorRegex } from "../tables/types";
 
 
@@ -86,9 +87,9 @@ const toAddress = (position?: Partial<SheetPosition<UnitSelector>>, from?: Sheet
     return col + row;
 };
 
-export const SheetSelector = (sheet?: string) => Object.freeze({
+export const SheetSelector = (page?: string) => Object.freeze({
     cell: (col: number | UnitSelector, row: number | UnitSelector): SheetSelector => ({
-        page: sheet, start: SheetPosition(toUnitSelector(col), toUnitSelector(row)),
+        page, start: SheetPosition(toUnitSelector(col), toUnitSelector(row)),
     }),
 
     row: (index: number | UnitSelector, offset: number = 0, width?: number): SheetSelector => {
@@ -96,7 +97,7 @@ export const SheetSelector = (sheet?: string) => Object.freeze({
         const startCol = toUnitSelector(offset);
 
         return {
-            page: sheet,
+            page,
             start: SheetPosition(startCol, startRow),
             end: {
                 col: width !== undefined ? toUnitSelector(offset, width, startCol[0] as UnitPrefix) : undefined,
@@ -111,7 +112,7 @@ export const SheetSelector = (sheet?: string) => Object.freeze({
         const startRow = toUnitSelector(offset);
 
         return {
-            page: sheet,
+            page,
             start: SheetPosition(startCol, startRow),
             end: {
                 col: toUnitSelector(index, 1, startCol[0] as UnitPrefix),
@@ -125,7 +126,7 @@ export const SheetSelector = (sheet?: string) => Object.freeze({
         const startRow = toUnitSelector(row);
 
         return {
-            page: sheet,
+            page: page,
             start: SheetPosition(startCol, startRow),
             end: {
                 col: width !== undefined ? toUnitSelector(col, width, startCol[0] as UnitPrefix) : undefined,
@@ -147,7 +148,7 @@ export const SheetSelector = (sheet?: string) => Object.freeze({
         if (end)
             result += `:${end}`;
 
-
+        console.log('ADDRESS:', inspect({ selector, from, result }, { depth: null, colors: true }));
         return result;
     }
 });
