@@ -143,7 +143,7 @@ const NegatedExpression: z.ZodType<NegatedExpression<DataSelector>> = z.object({
 
 const FunctionExpression: z.ZodType<FunctionExpression<DataSelector>> = z.object({
     type: z.literal(FunctionExpressionType),
-    name: z.string(),
+    name: z.string().transform(value => value.toUpperCase()),
     args: z.array(z.lazy(() => Expression))
 });
 
