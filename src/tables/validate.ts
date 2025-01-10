@@ -14,13 +14,13 @@ import {
     DataSelector,
     Definitions,
     DigitPlaceholder,
-    EnumItem, EnumType, EnumTypeName,
+    EnumItem, EnumType, EnumTypeKind,
     Expression,
     FunctionExpression, FunctionExpressionType,
     HeaderStyle,
     LiteralExpression,
     LiteralExpressionType,
-    LookupType, LookupTypeType,
+    LookupType, LookupTypeKind,
     MatchOperators,
     MatchRule,
     MergeOperator, MergeOperators,
@@ -280,12 +280,12 @@ const EnumItem: z.ZodType<EnumItem> = z.union([
 ]);
 
 const EnumType: z.ZodType<EnumType> = z.object({
-    name: z.literal(EnumTypeName),
+    kind: z.literal(EnumTypeKind),
     values: z.array(EnumItem)
 });
 
 const LookupType: z.ZodType<LookupType> = z.object({
-    name: z.literal(LookupTypeType),
+    kind: z.literal(LookupTypeKind),
     values: ColumnSelector
 });
 

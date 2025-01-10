@@ -373,26 +373,26 @@ export type TemporalType = {
 export type EnumItem = string | { value: string; style?: Style | Reference; };
 
 /** Identifies an enum type in the type system */
-export const EnumTypeName = 'enum';
+export const EnumTypeKind = 'enum';
 /** 
  * Enumerated data type with a fixed set of possible values
  * Each value can have its own style
  */
 export type EnumType = {
-    name: typeof EnumTypeName;
+    kind: typeof EnumTypeKind;
     /** Array of valid values for this enum */
     values: EnumItem[];
 };
 
 
 /** Identifies a lookup type in the type system */
-export const LookupTypeType = 'lookup';
+export const LookupTypeKind = 'lookup';
 /** 
  * Lookup data type that references valid values from another column
  * Useful for maintaining consistency and relationships between columns
  */
 export type LookupType = {
-    name: typeof LookupTypeType;
+    kind: typeof LookupTypeKind;
     /** Column containing the valid values for this lookup */
     values: ColumnSelector;
 };
