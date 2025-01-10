@@ -220,7 +220,7 @@ export type TemporalRule = ComparisonRule<TemporalString> | RangeRule<TemporalSt
 
 export type TextRule = MatchRule | CustomRule;
 
-export type ConditionalStyle<T> = { on: T; style: Style | Reference; };
+export type ConditionalStyle<T> = { on: T; apply: Style | Reference; };
 
 /* Format Types */
 export type DigitPlaceholder = { fixed?: number; flex?: number; align?: number; };

@@ -73,8 +73,8 @@ export class GoogleGenerator implements SheetGenerator {
                         if (column.behavior?.validation)
                             r = r.setDataValidation(sheetId, columnRange, column.behavior.validation, true);
 
-                        if (column.behavior?.conditionalFormats)
-                            for (const format of column.behavior.conditionalFormats)
+                        if (column.behavior?.styles)
+                            for (const format of column.behavior.styles)
                                 r = r.setConditionalFormat(sheetId, columnRange, format);
 
                         if (column.titleStyle?.beneath)

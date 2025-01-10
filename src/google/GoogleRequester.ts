@@ -1,7 +1,7 @@
 import { inspect } from "util";
 import { SheetData } from "../sheets/SheetData";
 import { SheetRange } from "../sheets/SheetPosition";
-import { SheetConditionalFormat, SheetRule } from "../sheets/SheetRule";
+import { SheetConditionalStyle, SheetRule } from "../sheets/SheetRule";
 import { SheetBorderSet } from "../sheets/SheetStyle";
 import { getFields, toCellFormat, toCellValue } from "./GoogleCellData";
 import { toGoogleCondition } from "./GoogleCondition";
@@ -111,14 +111,14 @@ export class GoogleRequester {
         });
     }
 
-    setConditionalFormat(sheetId: number, range: SheetRange, format: SheetConditionalFormat): GoogleRequester {
+    setConditionalFormat(sheetId: number, range: SheetRange, format: SheetConditionalStyle): GoogleRequester {
         return this.do({
             addConditionalFormatRule: {
                 rule: {
                     ranges: [toGridRange(sheetId, range)],
                     booleanRule: {
-                        condition: toGoogleCondition(format.rule, range.start),
-                        format: toCellFormat(format.style)
+                        condition: toGoogleCondition(format.on, range.start),
+                        format: toCellFormat(format.apply)
                     }
                 }
             }

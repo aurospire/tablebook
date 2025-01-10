@@ -61,7 +61,7 @@ export type SheetRule =
     | SheetLookupRule
     | SheetFormulaRule;
 
-export type SheetConditionalFormat = {
-    rule: SheetRule;
-    style: SheetStyle;
+export type SheetConditionalStyle = {
+    on: SheetRule;
+    apply: SheetStyle;
 };

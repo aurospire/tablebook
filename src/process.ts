@@ -322,15 +322,15 @@ const resolveBehavior = (
                     type: type.rule.type,
                     value: type.rule.value
                 } : undefined,
-                conditionalFormats: type.styles ? type.styles.map((style) => ({
-                    rule: style.on.type === 'custom' ? {
+                styles: type.styles ? type.styles.map((style) => ({
+                    on: style.on.type === 'custom' ? {
                         type: 'formula',
                         from: resolveExpression(style.on.expression, page, group, name, columns)
                     } : {
                         type: style.on.type,
                         value: style.on.value
                     },
-                    style: resolveStyle(style.apply, colors, styles)
+                    apply: resolveStyle(style.apply, colors, styles)
                 })) : undefined
             };
         case "enum":
