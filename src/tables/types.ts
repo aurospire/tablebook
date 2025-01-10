@@ -241,7 +241,7 @@ export type TextRule = MatchRule | CustomRule;
 /** Defines a style to apply when a rule condition is met */
 export type ConditionalStyle<Rule> = {
     on: Rule;
-    style: Style | Reference;
+    apply: Style | Reference;
 };
 
 /* Numeric Formats */
@@ -402,7 +402,7 @@ export type LookupType = {
  * Union of all possible data types in the system
  * Can be a concrete type definition or a reference to a predefined type
  */
-export type ColumnType = TextType | NumericType | TemporalType | EnumType | LookupType | Reference;
+export type ColumnType = TextType | NumericType | TemporalType | EnumType | LookupType;
 
 
 
@@ -430,7 +430,7 @@ export type TableUnit = {
 */
 export type TableColumn = TableUnit & {
     /** Data type defining the content and behavior of this column */
-    type: ColumnType;
+    type: ColumnType | Reference;
     /** Optional metadata describing where the column's data comes from */
     source?: string;
     /** Optional expression to compute the value */

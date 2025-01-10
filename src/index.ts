@@ -195,11 +195,11 @@ const tablebook0: TableBook = {
                 styles: [
                     {
                         on: { type: "<", to: 0 },
-                        style: "@warning"
+                        apply: "@warning"
                     },
                     {
                         on: { type: ">", to: 1000000 },
-                        style: "@success"
+                        apply: "@success"
                     }
                 ]
             }
@@ -412,7 +412,7 @@ const tablebook0: TableBook = {
                                 styles: [
                                     {
                                         on: { type: ">", to: 5 },
-                                        style: "@warning"
+                                        apply: "@warning"
                                     }
                                 ]
                             }

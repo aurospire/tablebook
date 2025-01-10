@@ -200,7 +200,7 @@ const TextRule: z.ZodType<TextRule> = z.union([MatchRule, CustomRule]);
 const makeConditionalStyle = <Rule extends z.ZodType<any>>(rule: Rule) => {
     return z.object({
         on: rule,
-        style: StyleReference
+        apply: StyleReference
     });
 };
 
@@ -294,8 +294,7 @@ const ColumnType: z.ZodType<ColumnType> = z.union([
     NumericType,
     TemporalType,
     EnumType,
-    LookupType,
-    Reference
+    LookupType
 ]);
 
 /* Table Structures */
@@ -306,7 +305,7 @@ const TableUnit: z.ZodType<TableUnit> = z.object({
 });
 
 const TableColumn: z.ZodType<TableColumn> = TableUnit.and(z.object({
-    type: ColumnType,
+    type: z.union([ColumnType, Reference]),
     source: z.string().optional(),
     expression: Expression.optional(),
 }));

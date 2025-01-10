@@ -3,7 +3,7 @@ import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "./sheets/SheetBoo
 import { SheetSelector } from "./sheets/SheetPosition";
 import { SheetBorder, SheetStyle, SheetTitleStyle } from "./sheets/SheetStyle";
 import { standardColors, standardThemes } from "./tables/palettes";
-import { Color, ColumnType, DataSelector, Expression, HeaderStyle, NumericFormat, NumericType, Reference, Style, TableBook, TemporalFormat, TemporalType, TextType, Theme, UnitSelector } from "./tables/types";
+import { Color, ColumnType, ConditionalStyle, DataSelector, Expression, HeaderStyle, NumericFormat, NumericType, Reference, Style, TableBook, TemporalFormat, TemporalType, TextType, Theme, UnitSelector } from "./tables/types";
 import { ColorObject, Colors } from "./util/Color";
 import { SheetBehavior } from "./sheets/SheetBehavior";
 
@@ -300,24 +300,43 @@ const resolveExpression = (expression: Expression<DataSelector>, page: string, g
     }
 };
 
+
 const resolveBehavior = (
-    type: Reference | ColumnType,
-    types: Record<string, Reference | ColumnType>,
+    type: ColumnType,
+    page: string, group: string, name: string,
+    columns: Map<string, ResolvedColumn>,
+    colors: Record<string, Color | Reference>,
+    styles: Record<string, Style | Reference>,
     numeric: Record<string, Reference | NumericFormat>,
-    temporal: Record<string, Reference | TemporalFormat>
+    temporal: Record<string, Reference | TemporalFormat>,
 ): SheetBehavior => {
-    if (isReference(type))
-        return resolveBehavior(type, types, numeric, temporal);
 
     switch (type.kind) {
         case "text":
             return {
-                kind: 'text',                
+                kind: 'text',
+                validation: type.rule ? type.rule.type === 'custom' ? {
+                    type: 'formula',
+                    from: resolveExpression(type.rule.expression, page, group, name, columns)
+                } : {
+                    type: type.rule.type,
+                    value: type.rule.value
+                } : undefined,
+                conditionalFormats: type.styles ? type.styles.map((style) => ({
+                    rule: style.on.type === 'custom' ? {
+                        type: 'formula',
+                        from: resolveExpression(style.on.expression, page, group, name, columns)
+                    } : {
+                        type: style.on.type,
+                        value: style.on.value
+                    },
+                    style: resolveStyle(style.apply, colors, styles)
+                })) : undefined
             };
-        case "numeric":
-        case "temporal":
         case "enum":
         case "lookup":
+        case "numeric":
+        case "temporal":
     }
 
     throw new Error();
@@ -380,13 +399,11 @@ export const processTableBook = (book: TableBook): SheetBook => {
 
                 const columnTheme = resolveTheme(`${page.name}.${group.name}.${column.name}`, column.theme ?? {}, colors, styles, themes, columnParents);
 
-                const type = isReference(column.type) ? resolveReference(column.type, types, v => typeof v === 'string') : column.type;
-
-
-
                 const formula = column.expression ? resolveExpression(column.expression, page.name, group.name, column.name, resolved) : undefined;
 
-                const behavior = resolveBehavior(column.type, types, numeric, temporal);
+                const type = isReference(column.type) ? resolveReference(column.type, types, v => typeof v === 'string') : column.type;
+
+                const behavior = resolveBehavior(type, page.name, group.name, column.name, resolved, colors, styles, numeric, temporal);
 
                 const resultColumn: SheetColumn = {
                     title: column.name,
