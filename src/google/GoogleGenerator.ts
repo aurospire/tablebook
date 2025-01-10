@@ -50,17 +50,32 @@ export class GoogleGenerator implements SheetGenerator {
 
                         const column = group.columns[c];
 
-                        r = r
-                            .updateCells(sheetId, SheetRange.cell(index, rowOffset), {
-                                value: column.title,
-                                horizontal: 'middle', vertical: 'middle',
-                                ...column.titleStyle
-                            })
-                            .updateCells(sheetId, SheetRange.column(index, rowOffset + 1, page.rows - 1 - rowOffset), {
-                                horizontal: 'middle', vertical: 'middle',
-                                ...column.dataStyle,
-                                value: column.formula,
-                            });
+
+                        // header
+                        r = r.updateCells(sheetId, SheetRange.cell(index, rowOffset), {
+                            value: column.title,
+                            horizontal: 'middle', vertical: 'middle',
+                            ...column.titleStyle
+                        });
+
+
+                        // data
+                        const columnRange = SheetRange.column(index, rowOffset + 1, page.rows - 1 - rowOffset);
+
+                        r = r.updateCells(sheetId, columnRange, {
+                            horizontal: 'middle', vertical: 'middle',
+                            ...column.dataStyle,
+                            value: column.formula,
+                            kind: column.behavior?.kind,
+                            format: column.behavior?.format
+                        });
+
+                        if (column.behavior?.validation)
+                            r = r.setDataValidation(sheetId, columnRange, column.behavior.validation, true);
+
+                        if (column.behavior?.conditionalFormats)
+                            for (const format of column.behavior.conditionalFormats)
+                                r = r.setConditionalFormat(sheetId, columnRange, format);
 
                         if (column.titleStyle?.beneath)
                             r = r.setBorder(sheetId, SheetRange.cell(index, rowOffset), { bottom: column.titleStyle.beneath });
@@ -76,6 +91,7 @@ export class GoogleGenerator implements SheetGenerator {
                                     right: showRight ? column.titleStyle.between : undefined
                                 });
                         }
+
                         index++;
                     }
                 }
