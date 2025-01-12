@@ -1241,7 +1241,7 @@ const tablebook3: TableBook = {
     ]
 };
 
-const tablebook: TableBook = {
+const tablebook4: TableBook = {
     name: "SampleCompanyData",
     theme: "@business",
     definitions: {
@@ -1408,5 +1408,43 @@ const tablebook: TableBook = {
     }]
 };
 
+const tablebook: TableBook = {
+    name: "SimpleSheet",
+    pages: [{
+        name: "MainPage",
+        rows: 10,
+        groups: [{
+            name: "MainGroup",
+            columns: [
+                {
+                    name: "UserID",
+                    type: {
+                        kind: "text"
+                    }
+                },
+                {
+                    name: "Status",
+                    type: {
+                        kind: "enum",
+                        values: [
+                            "Active",
+                            "Pending",
+                            "Closed"
+                        ]
+                    }
+                },
+                {
+                    name: "AssignedTo",
+                    type: {
+                        kind: "lookup",
+                        values: {
+                            name: "UserID"
+                        }
+                    }
+                }
+            ]
+        }]
+    }]
+};
 
 testTablebook(tablebook);

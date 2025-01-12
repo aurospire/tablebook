@@ -240,12 +240,11 @@ const resolveSelector = (selector: DataSelector, columns: Map<string, ResolvedCo
     }
 
     let selectedRowStart: UnitSelector;
-    let selectedRowEnd: UnitSelector | undefined;
+    let selectedRowEnd: UnitSelector | true | undefined;
 
     if (typeof row === 'string') {
         if (row === 'self')
             selectedRowStart = '+0';
-
         else
             selectedRowStart = row as UnitSelector;
     }
@@ -261,6 +260,7 @@ const resolveSelector = (selector: DataSelector, columns: Map<string, ResolvedCo
     }
     else {
         selectedRowStart = '$0';
+        selectedRowEnd = true;
     }
 
     return {
@@ -271,12 +271,11 @@ const resolveSelector = (selector: DataSelector, columns: Map<string, ResolvedCo
         },
         end: selectedRowEnd ? {
             col: `$${selectedColumn.index}`,
-            row: modifyUnitSelector(selectedRowEnd, selectedColumn.grouped)
+            row: selectedRowEnd === true ? undefined : modifyUnitSelector(selectedRowEnd, selectedColumn.grouped)
         } : undefined
     };
 
 };
-
 
 const resolveExpression = (expression: Expression<DataSelector>, page: string, group: string, name: string, columns: Map<string, ResolvedColumn>): Expression<SheetSelector> => {
     switch (expression.type) {

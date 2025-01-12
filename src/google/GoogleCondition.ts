@@ -91,7 +91,8 @@ export const toGoogleCondition = (rule: SheetRule, postion: SheetPosition, valid
             return makeGoogleCondition(GoogleOneOfListConditionType, rule.values);
 
         case "lookup":
-            return makeGoogleCondition(GoogleOneOfRangeConditionType, [SheetSelector(rule.values.page).toAddress(rule.values, postion)]);
+            // REQUIRES '=' so its not interpreted as string but rather formula (thanks gemini!)
+            return makeGoogleCondition(GoogleOneOfRangeConditionType, ['=' + SheetSelector(rule.values.page).toAddress(rule.values, postion)]);
 
         case "formula":
             return makeGoogleCondition(GoogleFormulaConditionType, [toFormula(rule.expression, postion)]);
