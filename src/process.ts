@@ -265,11 +265,11 @@ const resolveSelector = (selector: DataSelector, columns: Map<string, ResolvedCo
 
     return {
         page: selectedPage,
-        start: {
+        from: {
             col: `$${selectedColumn.index}`,
             row: modifyUnitSelector(selectedRowStart, selectedColumn.grouped)
         },
-        end: selectedRowEnd ? {
+        to: selectedRowEnd ? {
             col: `$${selectedColumn.index}`,
             row: selectedRowEnd === true ? undefined : modifyUnitSelector(selectedRowEnd, selectedColumn.grouped)
         } : undefined

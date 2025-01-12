@@ -16,26 +16,26 @@ export const SheetRange = Object.freeze({
 
     row: (index: number, offset: number = 0, width?: number): SheetRange => ({
         from: { col: offset, row: index },
-        to: { col: width !== undefined ? offset + width : undefined, row: index + 1 }
+        to: { col: width !== undefined ? offset + width : undefined, row: index }
     }),
 
     column: (index: number, offset: number = 0, height?: number): SheetRange => ({
         from: { col: index, row: offset },
-        to: { col: index + 1, row: height !== undefined ? offset + height : undefined }
+        to: { col: index, row: height !== undefined ? offset + height : undefined }
     }),
 
     region: (col: number, row: number, width?: number, height?: number): SheetRange => ({
         from: { col, row },
         to: {
-            col: width !== undefined ? col + width : undefined,
-            row: height !== undefined ? row + height : undefined
+            col: width !== undefined ? col + width - 1 : undefined,
+            row: height !== undefined ? row + height - 1 : undefined
         }
     })
 });
 
 
-// No .end just means cell, No .end.col means until the end of the row, No .end.row means until the end of the column
-export type SheetSelector = { start: SheetPosition<UnitSelector>, end?: Partial<SheetPosition<UnitSelector>>; page?: string; };
+// No .to just means cell, No .to.col means until the end of the row, No .to.row means until the end of the column
+export type SheetSelector = { from: SheetPosition<UnitSelector>, to?: Partial<SheetPosition<UnitSelector>>; page?: string; };
 
 
 const toUnitSelector = (value: number | UnitSelector, offset: number = 0, prefix?: UnitPrefix): UnitSelector => {
@@ -88,7 +88,7 @@ const toAddress = (position?: Partial<SheetPosition<UnitSelector>>, from?: Sheet
 
 export const SheetSelector = (page?: string) => Object.freeze({
     cell: (col: number | UnitSelector, row: number | UnitSelector): SheetSelector => ({
-        page, start: SheetPosition(toUnitSelector(col), toUnitSelector(row)),
+        page, from: SheetPosition(toUnitSelector(col), toUnitSelector(row)),
     }),
 
     row: (index: number | UnitSelector, offset: number = 0, width?: number): SheetSelector => {
@@ -97,8 +97,8 @@ export const SheetSelector = (page?: string) => Object.freeze({
 
         return {
             page,
-            start: SheetPosition(startCol, startRow),
-            end: {
+            from: SheetPosition(startCol, startRow),
+            to: {
                 col: width !== undefined ? toUnitSelector(offset, width - 1, startCol[0] as UnitPrefix) : undefined,
                 row: toUnitSelector(index, 0, startRow[0] as UnitPrefix),
             },
@@ -112,8 +112,8 @@ export const SheetSelector = (page?: string) => Object.freeze({
 
         return {
             page,
-            start: SheetPosition(startCol, startRow),
-            end: {
+            from: SheetPosition(startCol, startRow),
+            to: {
                 col: toUnitSelector(index, 0, startCol[0] as UnitPrefix),
                 row: height !== undefined ? toUnitSelector(offset, height - 1, startRow[0] as UnitPrefix) : undefined,
             },
@@ -126,8 +126,8 @@ export const SheetSelector = (page?: string) => Object.freeze({
 
         return {
             page: page,
-            start: SheetPosition(startCol, startRow),
-            end: {
+            from: SheetPosition(startCol, startRow),
+            to: {
                 col: width !== undefined ? toUnitSelector(col, width - 1, startCol[0] as UnitPrefix) : undefined,
                 row: height !== undefined ? toUnitSelector(row, height - 1, startRow[0] as UnitPrefix) : undefined,
             },
@@ -140,9 +140,9 @@ export const SheetSelector = (page?: string) => Object.freeze({
         if (selector?.page)
             result += `'${selector.page}'!`;
 
-        result += toAddress(selector?.start, from);
+        result += toAddress(selector?.from, from);
 
-        const to = toAddress(selector?.end, from);
+        const to = toAddress(selector?.to, from);
 
         if (to)
             result += `:${to}`;
