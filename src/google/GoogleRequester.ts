@@ -81,7 +81,7 @@ export class GoogleRequester {
     updateCells(sheetId: number, range: SheetRange, data: SheetData, process?: GoogleReplyProcessor): GoogleRequester {
         const fields: string[] = getFields(data);
         const format = toCellFormat(data);
-        const value = toCellValue(data, range.start);
+        const value = toCellValue(data, range.from);
 
         if (fields.length)
             return this.do({
@@ -103,7 +103,7 @@ export class GoogleRequester {
             setDataValidation: {
                 range: toGridRange(sheetId, range),
                 rule: {
-                    condition: toGoogleCondition(rule, range.start, true),
+                    condition: toGoogleCondition(rule, range.from, true),
                     strict,
                     showCustomUi: rule.type === 'enum' || rule.type === 'lookup',
                 }
@@ -117,7 +117,7 @@ export class GoogleRequester {
                 rule: {
                     ranges: [toGridRange(sheetId, range)],
                     booleanRule: {
-                        condition: toGoogleCondition(format.rule, range.start, false),
+                        condition: toGoogleCondition(format.rule, range.from, false),
                         format: toCellFormat(format.apply)
                     }
                 }

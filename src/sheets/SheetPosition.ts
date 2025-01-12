@@ -8,26 +8,26 @@ export const SheetPosition = <T>(col: T, row: T): SheetPosition<T> => ({ col, ro
 
 
 
-export type SheetRange = { start: SheetPosition<number>, end?: Partial<SheetPosition<number>>; };
+export type SheetRange = { from: SheetPosition<number>, to?: Partial<SheetPosition<number>>; };
 
 export const SheetRange = Object.freeze({
     cell: (col: number, row: number): SheetRange => ({
-        start: { col, row }
+        from: { col, row }
     }),
 
     row: (index: number, offset: number = 0, width?: number): SheetRange => ({
-        start: { col: offset, row: index },
-        end: { col: width !== undefined ? offset + width : undefined, row: index + 1 }
+        from: { col: offset, row: index },
+        to: { col: width !== undefined ? offset + width : undefined, row: index + 1 }
     }),
 
     column: (index: number, offset: number = 0, height?: number): SheetRange => ({
-        start: { col: index, row: offset },
-        end: { col: index + 1, row: height !== undefined ? offset + height : undefined }
+        from: { col: index, row: offset },
+        to: { col: index + 1, row: height !== undefined ? offset + height : undefined }
     }),
 
     region: (col: number, row: number, width?: number, height?: number): SheetRange => ({
-        start: { col, row },
-        end: {
+        from: { col, row },
+        to: {
             col: width !== undefined ? col + width : undefined,
             row: height !== undefined ? row + height : undefined
         }
@@ -100,8 +100,8 @@ export const SheetSelector = (page?: string) => Object.freeze({
             page,
             start: SheetPosition(startCol, startRow),
             end: {
-                col: width !== undefined ? toUnitSelector(offset, width, startCol[0] as UnitPrefix) : undefined,
-                row: toUnitSelector(index, 1, startRow[0] as UnitPrefix),
+                col: width !== undefined ? toUnitSelector(offset, width - 1, startCol[0] as UnitPrefix) : undefined,
+                row: toUnitSelector(index, 0, startRow[0] as UnitPrefix),
             },
         };
     },
@@ -115,8 +115,8 @@ export const SheetSelector = (page?: string) => Object.freeze({
             page,
             start: SheetPosition(startCol, startRow),
             end: {
-                col: toUnitSelector(index, 1, startCol[0] as UnitPrefix),
-                row: height !== undefined ? toUnitSelector(offset, height, startRow[0] as UnitPrefix) : undefined,
+                col: toUnitSelector(index, 0, startCol[0] as UnitPrefix),
+                row: height !== undefined ? toUnitSelector(offset, height - 1, startRow[0] as UnitPrefix) : undefined,
             },
         };
     },
@@ -129,8 +129,8 @@ export const SheetSelector = (page?: string) => Object.freeze({
             page: page,
             start: SheetPosition(startCol, startRow),
             end: {
-                col: width !== undefined ? toUnitSelector(col, width, startCol[0] as UnitPrefix) : undefined,
-                row: height !== undefined ? toUnitSelector(row, height, startRow[0] as UnitPrefix) : undefined,
+                col: width !== undefined ? toUnitSelector(col, width - 1, startCol[0] as UnitPrefix) : undefined,
+                row: height !== undefined ? toUnitSelector(row, height - 1, startRow[0] as UnitPrefix) : undefined,
             },
         };
     },
@@ -143,10 +143,10 @@ export const SheetSelector = (page?: string) => Object.freeze({
 
         result += toAddress(selector?.start, from);
 
-        const end = toAddress(selector?.end, from);
+        const to = toAddress(selector?.end, from);
 
-        if (end)
-            result += `:${end}`;
+        if (to)
+            result += `:${to}`;
 
         return result;
     }

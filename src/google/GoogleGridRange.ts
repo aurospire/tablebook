@@ -3,8 +3,8 @@ import { GoogleGridRange } from "./GoogleTypes";
 
 export const toGridRange = (sheetId: number, range: SheetRange): GoogleGridRange => ({
     sheetId,
-    startColumnIndex: range.start.col,
-    endColumnIndex: range.end ? range.end.col : range.start.col + 1,
-    startRowIndex: range.start.row,
-    endRowIndex: range.end ? range.end.row : range.start.row + 1,
+    startColumnIndex: range.from.col,
+    endColumnIndex: range.to ? range.to.col === undefined ? undefined : range.to.col + 1 : range.from.col + 1,
+    startRowIndex: range.from.row,
+    endRowIndex: range.to ? range.to.row === undefined ? undefined : range.to.row + 1 : range.from.row + 1,
 });

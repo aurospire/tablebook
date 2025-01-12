@@ -83,7 +83,8 @@ export const toGoogleCondition = (rule: SheetRule, postion: SheetPosition, valid
         case "begins":
         case "ends":
             if (validation)
-                throw new Error("Not implemented yet"); // LEFT(POS, LEN(VALUE))=VALUE or RIGHT(POS, LEN(VALUE))=VALUE
+                return makeGoogleCondition(GoogleFormulaConditionType, [
+                    `=${rule.type === "begins" ? "LEFT" : "RIGHT"}(${SheetSelector().toAddress(SheetSelector().cell('+0', '+0'), postion)}, ${rule.value.length})="${rule.value}"`]);
             else
                 return makeGoogleCondition(GoogleTextConditionTypeMap[rule.type], [rule.value]);
 
