@@ -1441,7 +1441,67 @@ const tablebook: TableBook = {
                             name: "UserID"
                         }
                     }
+                },
+                {
+                    name: "Description",
+                    type: {
+                        kind: "text",
+                        rule: {
+                            type: "contains",
+                            value: "urgent"
+                        },
+                        styles: [{
+                            rule: {
+                                type: "contains",
+                                value: "urgent"
+                            },
+                            apply: {
+                                fore: "#FF0000",
+                                bold: true
+                            }
+                        }]
+                    }
+                },
+                {
+                    name: "Email",
+                    type: {
+                        kind: "text",
+                        rule: {
+                            type: "ends",
+                            value: "@company.com"
+                        },
+                        styles: [{
+                            rule: {
+                                type: "ends",
+                                value: "@company.com"
+                            },
+                            apply: {
+                                fore: "#0000FF"
+                            }
+                        }]
+                    }
+                },
+                {
+                    name: "ProjectCode",
+                    type: {
+                        kind: "text",
+                        rule: {
+                            type: "begins",
+                            value: "PRJ-"
+                        },
+                        styles: [{
+                            rule: {
+                                type: "begins",
+                                value: "PRJ-"
+                            },
+                            apply: {
+                                fore: "#008000",
+                                bold: true
+                            }
+                        }]
+                    }
                 }
+
             ]
         }]
     }]

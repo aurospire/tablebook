@@ -1,4 +1,3 @@
-import { inspect } from "util";
 import { UnitPrefix, UnitSelector, UnitSelectorRegex } from "../tables/types";
 
 
