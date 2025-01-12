@@ -86,7 +86,7 @@ const testGoogleSheet = async () => {
             })
             .setDataValidation(id, SheetRange.column(1, 3, 2), { type: 'enum', values: ['Hello', 'Goodbye'] }, true)
             .setDataValidation(id, SheetRange.column(2, 3, 2), { type: '>', target: 'number', value: 5 }, false)
-            .setConditionalFormat(id, SheetRange.column(2, 3, 2), { on: { type: '=', target: 'number', value: 6 }, apply: { fore: Colors.toObject('#FF0000'), bold: true } })
+            .setConditionalFormat(id, SheetRange.column(2, 3, 2), { rule: { type: '=', target: 'number', value: 6 }, apply: { fore: Colors.toObject('#FF0000'), bold: true } })
         );
 
         await sheet.modify(r => r.updateCells(id, SheetRange.region(1, 1, 2, 2), { back: Colors.toObject('#333333') }));
@@ -194,11 +194,11 @@ const tablebook0: TableBook = {
                 format: "@currency",
                 styles: [
                     {
-                        on: { type: "<", to: 0 },
+                        rule: { type: "<", to: 0 },
                         apply: "@warning"
                     },
                     {
-                        on: { type: ">", to: 1000000 },
+                        rule: { type: ">", to: 1000000 },
                         apply: "@success"
                     }
                 ]
@@ -411,7 +411,7 @@ const tablebook0: TableBook = {
                                 },
                                 styles: [
                                     {
-                                        on: { type: ">", to: 5 },
+                                        rule: { type: ">", to: 5 },
                                         apply: "@warning"
                                     }
                                 ]
@@ -831,7 +831,7 @@ const tablebook2: TableBook = {
     ]
 };
 
-const tablebook: TableBook = {
+const tablebook3: TableBook = {
     name: "ExpressionTest",
     theme: "@business",
     definitions: {
@@ -856,18 +856,21 @@ const tablebook: TableBook = {
                 }
             }
         },
+        styles: {
+            business: {
+                fore: "#ffffff",
+                bold: true,
+                beneath: {
+                    type: "thin",
+                    color: "#000000"
+                }
+            }
+        },
         themes: {
             business: {
-                tab: "@blue",
-                header: {
-                    fore: "#ffffff",
-                    back: "@blue",
-                    bold: true,
-                    beneath: {
-                        type: "thin",
-                        color: "@blue"
-                    }
-                },
+                inherits: ['@blue'],
+                group: '@business',
+                header: '@business',
                 data: {
                     fore: "@primaryFore",
                     back: "@primaryBack"
@@ -1237,5 +1240,173 @@ const tablebook: TableBook = {
         }
     ]
 };
+
+const tablebook: TableBook = {
+    name: "SampleCompanyData",
+    theme: "@business",
+    definitions: {
+        colors: {
+            headerBack: "#2C3E50",
+            headerText: "#FFFFFF",
+            groupBack: "#ECF0F1",
+            primaryBack: "#f5f5f5",
+            primaryFore: "#333333",
+            highlightBack: "#e3f2fd",
+        },
+        styles: {
+            header: {
+                fore: "@headerText",
+                back: "@headerBack",
+                bold: true
+            },
+            group: {
+                back: "@groupBack",
+                bold: true
+            },
+            warning: {
+                fore: "@red",
+                bold: true
+            },
+            business: {
+                fore: "#ffffff",
+                bold: true,
+                beneath: {
+                    type: "thin",
+                    color: "#000000"
+                }
+            }
+        },
+        themes: {
+            business: {
+                inherits: ['@blue'],
+                group: '@business',
+                header: '@business',
+                data: {
+                    fore: "@primaryFore",
+                    back: "@primaryBack"
+                }
+            }
+        },
+        formats: {
+            numeric: {
+                money: {
+                    type: "currency",
+                    integer: { fixed: 1 },
+                    decimal: { fixed: 2 },
+                    commas: true,
+                    symbol: "$",
+                    position: "prefix"
+                },
+                percent: {
+                    type: "percent",
+                    integer: { fixed: 1 },
+                    decimal: { fixed: 1 },
+                    commas: false
+                }
+            },
+            temporal: {
+                fullDate: [
+                    { type: "monthname", length: "short" },
+                    " ",
+                    { type: "day", length: "short" },
+                    ", ",
+                    { type: "year", length: "long" }
+                ]
+            }
+        },
+        types: {
+            status: {
+                kind: "enum",
+                values: [
+                    { value: "Active", style: { fore: "@green" } },
+                    { value: "Pending", style: { fore: "@orange" } },
+                    { value: "Inactive", style: { fore: "@red" } }
+                ]
+            }
+        }
+    },
+    pages: [{
+        name: "EmployeeData",
+        rows: 10,
+        groups: [
+            {
+                name: "Personal",
+                columns: [
+                    {
+                        name: "ID",
+                        type: {
+                            kind: "text",
+                        }
+                    }, {
+                        name: "Name",
+                        type: {
+                            kind: "text",
+                        }
+                    }, {
+                        name: "Status",
+                        type: "@status"
+                    }, {
+                        name: "Department",
+                        type: {
+                            kind: "enum",
+                            values: ["Sales", "Engineering", "Marketing", "HR", "Finance"]
+                        }
+                    }]
+            },
+            {
+                name: "Employment",
+                columns: [{
+                    name: "StartDate",
+                    type: {
+                        kind: "temporal",
+                        format: "@fullDate",
+                        rule: {
+                            type: ">",
+                            to: "2020-01-01"
+                        }
+                    }
+                }, {
+                    name: "Salary",
+                    type: {
+                        kind: "numeric",
+                        format: "@money",
+                        rule: {
+                            type: "between",
+                            low: 30000,
+                            high: 150000
+                        },
+                        styles: [{
+                            rule: {
+                                type: ">",
+                                to: 100000
+                            },
+                            apply: "@warning"
+                        }]
+                    }
+                }, {
+                    name: "Bonus",
+                    type: {
+                        kind: "numeric",
+                        format: "@percent",
+                        rule: {
+                            type: "between",
+                            low: 0,
+                            high: 0.30
+                        }
+                    }
+                }, {
+                    name: "Manager",
+                    type: {
+                        kind: "lookup",
+                        values: {
+                            group: "Personal",
+                            name: "Name"  // References the Name column
+                        }
+                    }
+                }]
+            }]
+    }]
+};
+
 
 testTablebook(tablebook);

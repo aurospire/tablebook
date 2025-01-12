@@ -70,8 +70,8 @@ export class GoogleGenerator implements SheetGenerator {
                             format: column.behavior?.format
                         });
 
-                        if (column.behavior?.validation)
-                            r = r.setDataValidation(sheetId, columnRange, column.behavior.validation, true);
+                        if (column.behavior?.rule)
+                            r = r.setDataValidation(sheetId, columnRange, column.behavior.rule, true);
 
                         if (column.behavior?.styles)
                             for (const format of column.behavior.styles)

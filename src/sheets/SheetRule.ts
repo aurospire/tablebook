@@ -41,13 +41,12 @@ export type SheetEnumRule = {
 
 export type SheetLookupRule = {
     type: 'lookup';
-    page: string;
-    range: SheetSelector;
+    values: SheetSelector;
 };
 
 export type SheetFormulaRule = {
     type: 'formula';
-    from: Expression<SheetSelector>;
+    expression: Expression<SheetSelector>;
 };
 
 // Consolidated SheetRule Type
@@ -62,6 +61,6 @@ export type SheetRule =
     | SheetFormulaRule;
 
 export type SheetConditionalStyle = {
-    on: SheetRule;
+    rule: SheetRule;
     apply: SheetStyle;
 };

@@ -199,7 +199,7 @@ const TextRule: z.ZodType<TextRule> = z.union([MatchRule, CustomRule]);
 
 const makeConditionalStyle = <Rule extends z.ZodType<any>>(rule: Rule) => {
     return z.object({
-        on: rule,
+        rule: rule,
         apply: StyleReference
     });
 };
@@ -257,20 +257,6 @@ const TextType: z.ZodType<TextType> = z.object({
     styles: z.array(TextConditionalStyle).optional()
 });
 
-const NumericType: z.ZodType<NumericType> = z.object({
-    kind: z.literal(NumericTypeKind),
-    rule: NumericRule.optional(),
-    styles: z.array(NumericConditionalStyle).optional(),
-    format: z.union([NumericFormat, Reference]).optional()
-});
-
-const TemporalType: z.ZodType<TemporalType> = z.object({
-    kind: z.literal(TemporalTypeKind),
-    rule: TemporalRule.optional(),
-    styles: z.array(TemporalConditionalStyle).optional(),
-    format: z.union([TemporalFormat, Reference]).optional()
-});
-
 const EnumItem: z.ZodType<EnumItem> = z.union([
     z.string(),
     z.object({
@@ -289,12 +275,28 @@ const LookupType: z.ZodType<LookupType> = z.object({
     values: ColumnSelector
 });
 
+const NumericType: z.ZodType<NumericType> = z.object({
+    kind: z.literal(NumericTypeKind),
+    rule: NumericRule.optional(),
+    styles: z.array(NumericConditionalStyle).optional(),
+    format: z.union([NumericFormat, Reference]).optional()
+});
+
+const TemporalType: z.ZodType<TemporalType> = z.object({
+    kind: z.literal(TemporalTypeKind),
+    rule: TemporalRule.optional(),
+    styles: z.array(TemporalConditionalStyle).optional(),
+    format: z.union([TemporalFormat, Reference]).optional()
+});
+
+
+
 const ColumnType: z.ZodType<ColumnType> = z.union([
     TextType,
+    EnumType,
+    LookupType,
     NumericType,
     TemporalType,
-    EnumType,
-    LookupType
 ]);
 
 /* Table Structures */

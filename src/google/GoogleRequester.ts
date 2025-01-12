@@ -103,7 +103,7 @@ export class GoogleRequester {
             setDataValidation: {
                 range: toGridRange(sheetId, range),
                 rule: {
-                    condition: toGoogleCondition(rule, range.start),
+                    condition: toGoogleCondition(rule, range.start, true),
                     strict,
                     showCustomUi: rule.type === 'enum' || rule.type === 'lookup',
                 }
@@ -117,7 +117,7 @@ export class GoogleRequester {
                 rule: {
                     ranges: [toGridRange(sheetId, range)],
                     booleanRule: {
-                        condition: toGoogleCondition(format.on, range.start),
+                        condition: toGoogleCondition(format.rule, range.start, false),
                         format: toCellFormat(format.apply)
                     }
                 }

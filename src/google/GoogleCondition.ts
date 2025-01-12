@@ -28,6 +28,7 @@ export const GoogleDateConditionTypeMap: Record<string, string> = {
 } satisfies Record<ComparisonOperator | RangeOperator, string>;
 
 export const GoogleTextConditionTypeMap: Record<string, string> = {
+    'is': 'TEXT_EQ',
     'contains': 'TEXT_CONTAINS',
     'begins': 'TEXT_STARTS_WITH',
     'ends': 'TEXT_ENDS_WITH',
@@ -49,7 +50,7 @@ const toISODate = (date: DateTime): string => date.toISODate()!;
 
 const toISODateTime = (date: DateTime): string => date.toString();
 
-export const toGoogleCondition = (rule: SheetRule, postion: SheetPosition): GoogleCondition => {
+export const toGoogleCondition = (rule: SheetRule, postion: SheetPosition, validation: boolean): GoogleCondition => {
     switch (rule.type) {
         case "=":
         case ">":
@@ -76,18 +77,23 @@ export const toGoogleCondition = (rule: SheetRule, postion: SheetPosition): Goog
                     return makeGoogleCondition(GoogleDateConditionTypeMap[rule.type], [toISODateTime(rule.low), toISODateTime(rule.high)]);
             }
 
+        case "is":
         case "contains":
+            return makeGoogleCondition(GoogleTextConditionTypeMap[rule.type], [rule.value]);
         case "begins":
         case "ends":
-            return makeGoogleCondition(GoogleTextConditionTypeMap[rule.type], [rule.value]);
+            if (validation)
+                throw new Error("Not implemented yet"); // LEFT(POS, LEN(VALUE))=VALUE or RIGHT(POS, LEN(VALUE))=VALUE
+            else
+                return makeGoogleCondition(GoogleTextConditionTypeMap[rule.type], [rule.value]);
 
         case "enum":
             return makeGoogleCondition(GoogleOneOfListConditionType, rule.values);
 
         case "lookup":
-            return makeGoogleCondition(GoogleOneOfRangeConditionType, [SheetSelector(rule.page).toAddress(rule.range, postion)]);
+            return makeGoogleCondition(GoogleOneOfRangeConditionType, [SheetSelector(rule.values.page).toAddress(rule.values, postion)]);
 
         case "formula":
-            return makeGoogleCondition(GoogleFormulaConditionType, [toFormula(rule.from, postion)]);
+            return makeGoogleCondition(GoogleFormulaConditionType, [toFormula(rule.expression, postion)]);
     }
 };

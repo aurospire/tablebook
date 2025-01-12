@@ -6,6 +6,6 @@ import { SheetConditionalStyle, SheetRule } from "./SheetRule";
 export type SheetBehavior = {
     kind?: SheetKind;
     format?: NumericFormat | TemporalFormat;    
-    validation?: SheetRule;
+    rule?: SheetRule;
     styles?: SheetConditionalStyle[];
 };

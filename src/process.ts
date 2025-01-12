@@ -3,9 +3,10 @@ import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "./sheets/SheetBoo
 import { SheetSelector } from "./sheets/SheetPosition";
 import { SheetBorder, SheetStyle, SheetTitleStyle } from "./sheets/SheetStyle";
 import { standardColors, standardThemes } from "./tables/palettes";
-import { Color, ColumnType, ConditionalStyle, DataSelector, Expression, HeaderStyle, NumericFormat, NumericType, Reference, Style, TableBook, TemporalFormat, TemporalType, TextType, Theme, UnitSelector } from "./tables/types";
+import { Color, ColumnType, ConditionalStyle, DataSelector, Expression, HeaderStyle, NumericFormat, NumericType, Reference, SelectorExpression, Style, TableBook, TemporalFormat, TemporalType, TextType, Theme, UnitSelector } from "./tables/types";
 import { ColorObject, Colors } from "./util/Color";
 import { SheetBehavior } from "./sheets/SheetBehavior";
+import { SheetConditionalStyle } from "./sheets/SheetRule";
 
 
 type ResolvedColumn = {
@@ -99,7 +100,7 @@ const resolveStyle = (style: HeaderStyle | Reference, colors: Record<string, Col
     const fore: ColorObject | undefined = style.fore ? resolveColor(style.fore, colors) : undefined;
     const back: ColorObject | undefined = style.back ? resolveColor(style.back, colors) : undefined;
     const bold: boolean | undefined = style.bold;
-    const italic: boolean | undefined = style.bold;
+    const italic: boolean | undefined = style.italic;
 
     let beneath: SheetBorder | undefined;
     if (style.beneath)
@@ -215,6 +216,68 @@ const modifyUnitSelector = (selector: UnitSelector, grouped: boolean): UnitSelec
     return `$${value + (grouped ? 2 : 1)}`;
 };
 
+const resolveSelector = (selector: DataSelector, columns: Map<string, ResolvedColumn>, page: string, group: string, name: string): SheetSelector => {
+    const { column, row } = selector === 'self' ? { column: 'self', row: 'self' } : selector;
+
+    let selectedPage: string | undefined;
+    let selectedColumn: ResolvedColumn;
+
+    if (typeof column === 'string')
+        selectedColumn = columns.get(lookupName(page, group, name))!;
+    else {
+        const fullname = lookupName(
+            column.page ?? page,
+            column.group ?? group,
+            column.name
+        );
+
+        if (!columns.has(fullname))
+            throw new Error(`Invalid column: ${fullname}`);
+
+        selectedColumn = columns.get(fullname)!;
+
+        selectedPage = column.page;
+    }
+
+    let selectedRowStart: UnitSelector;
+    let selectedRowEnd: UnitSelector | undefined;
+
+    if (typeof row === 'string') {
+        if (row === 'self')
+            selectedRowStart = '+0';
+
+        else
+            selectedRowStart = row as UnitSelector;
+    }
+    else if (row !== undefined) {
+        if (row.from < row.to) {
+            selectedRowStart = row.from;
+            selectedRowEnd = row.to;
+        }
+        else {
+            selectedRowStart = row.to;
+            selectedRowEnd = row.from;
+        }
+    }
+    else {
+        selectedRowStart = '$0';
+    }
+
+    return {
+        page: selectedPage,
+        start: {
+            col: `$${selectedColumn.index}`,
+            row: modifyUnitSelector(selectedRowStart, selectedColumn.grouped)
+        },
+        end: selectedRowEnd ? {
+            col: `$${selectedColumn.index}`,
+            row: modifyUnitSelector(selectedRowEnd, selectedColumn.grouped)
+        } : undefined
+    };
+
+};
+
+
 const resolveExpression = (expression: Expression<DataSelector>, page: string, group: string, name: string, columns: Map<string, ResolvedColumn>): Expression<SheetSelector> => {
     switch (expression.type) {
         case "literal":
@@ -237,64 +300,9 @@ const resolveExpression = (expression: Expression<DataSelector>, page: string, g
                 on: resolveExpression(expression.on, page, group, name, columns)
             };
         case "selector": {
-            const { column, row } = expression.from === 'self' ? { column: 'self', row: 'self' } : expression.from;
-
-            let selectedPage: string | undefined;
-            let selectedColumn: ResolvedColumn;
-
-            if (typeof column === 'string')
-                selectedColumn = columns.get(lookupName(page, group, name))!;
-            else {
-                const fullname = lookupName(
-                    column.page ?? page,
-                    column.group ?? group,
-                    column.name
-                );
-
-                if (!columns.has(fullname))
-                    throw new Error(`Invalid column: ${fullname}`);
-
-                selectedColumn = columns.get(fullname)!;
-
-                selectedPage = column.page;
-            }
-
-            let selectedRowStart: UnitSelector;
-            let selectedRowEnd: UnitSelector | undefined;
-
-            if (typeof row === 'string') {
-                if (row === 'self')
-                    selectedRowStart = '+0';
-                else
-                    selectedRowStart = row as UnitSelector;
-            }
-            else if (row !== undefined) {
-                if (row.from < row.to) {
-                    selectedRowStart = row.from;
-                    selectedRowEnd = row.to;
-                }
-                else {
-                    selectedRowStart = row.to;
-                    selectedRowEnd = row.from;
-                }
-            }
-            else {
-                selectedRowStart = '$0';
-            }
-
             return {
                 type: 'selector',
-                from: {
-                    page: selectedPage,
-                    start: {
-                        col: `$${selectedColumn.index}`,
-                        row: modifyUnitSelector(selectedRowStart, selectedColumn.grouped)
-                    },
-                    end: selectedRowEnd ? {
-                        col: `$${selectedColumn.index}`,
-                        row: modifyUnitSelector(selectedRowEnd, selectedColumn.grouped)
-                    } : undefined
-                }
+                from: resolveSelector(expression.from, columns, page, group, name)
             };
         }
     }
@@ -315,28 +323,59 @@ const resolveBehavior = (
         case "text":
             return {
                 kind: 'text',
-                validation: type.rule ? type.rule.type === 'custom' ? {
+                rule: type.rule ? type.rule.type === 'custom' ? {
                     type: 'formula',
-                    from: resolveExpression(type.rule.expression, page, group, name, columns)
+                    expression: resolveExpression(type.rule.expression, page, group, name, columns)
                 } : {
                     type: type.rule.type,
                     value: type.rule.value
                 } : undefined,
-                styles: type.styles ? type.styles.map((style) => ({
-                    on: style.on.type === 'custom' ? {
+                styles: type.styles ? type.styles.map((style): SheetConditionalStyle => ({
+                    rule: style.rule.type === 'custom' ? {
                         type: 'formula',
-                        from: resolveExpression(style.on.expression, page, group, name, columns)
+                        expression: resolveExpression(style.rule.expression, page, group, name, columns)
                     } : {
-                        type: style.on.type,
-                        value: style.on.value
+                        type: style.rule.type,
+                        value: style.rule.value
                     },
                     apply: resolveStyle(style.apply, colors, styles)
                 })) : undefined
             };
         case "enum":
+            return {
+                kind: 'text',
+                rule: {
+                    type: 'enum',
+                    values: type.values.map(value => typeof value === 'string' ? value : value.value)
+                },
+                styles: type.values.map((value): SheetConditionalStyle | undefined => {
+                    return typeof value === 'string' || value.style === undefined ? undefined :
+                        {
+                            rule: {
+                                type: 'is',
+                                value: value.value
+                            },
+                            apply: resolveStyle(value.style, colors, styles)
+                        };
+                }).filter((value): value is SheetConditionalStyle => value !== undefined)
+            };
         case "lookup":
+            return {
+                kind: 'text',
+                rule: {
+                    type: 'lookup',
+                    values: resolveSelector({ column: type.values }, columns, page, group, name)
+                }
+            };
+
         case "numeric":
+            return {
+                kind: 'number'
+            };
         case "temporal":
+            return {
+                kind: 'datetime'
+            };
     }
 
     throw new Error();
@@ -401,7 +440,7 @@ export const processTableBook = (book: TableBook): SheetBook => {
 
                 const formula = column.expression ? resolveExpression(column.expression, page.name, group.name, column.name, resolved) : undefined;
 
-                const type = isReference(column.type) ? resolveReference(column.type, types, v => typeof v === 'string') : column.type;
+                const type = isReference(column.type) ? resolveReference(column.type, types, v => !isReference(v)) : column.type;
 
                 const behavior = resolveBehavior(type, page.name, group.name, column.name, resolved, colors, styles, numeric, temporal);
 

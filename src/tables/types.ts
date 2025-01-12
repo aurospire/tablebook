@@ -228,7 +228,7 @@ export type TemporalRule = ComparisonRule<TemporalString> | RangeRule<TemporalSt
 
 
 /** Available text matching operators */
-export const MatchOperators = ['contains', 'begins', 'ends'] as const;
+export const MatchOperators = ['is', 'contains', 'begins', 'ends'] as const;
 /** Text matching operator type */
 export type MatchOperator = typeof MatchOperators[number];
 /** Rule for string pattern matching */
@@ -240,7 +240,7 @@ export type TextRule = MatchRule | CustomRule;
 
 /** Defines a style to apply when a rule condition is met */
 export type ConditionalStyle<Rule> = {
-    on: Rule;
+    rule: Rule;
     apply: Style | Reference;
 };
 
@@ -333,6 +333,38 @@ export type TextType = {
     styles?: ConditionalStyle<TextRule>[];
 };
 
+/** 
+ * Represents a single value in an enum type
+ * Can be either a simple string or an object with an associated style
+ */
+export type EnumItem = string | { value: string; style?: Style | Reference; };
+
+/** Identifies an enum type in the type system */
+export const EnumTypeKind = 'enum';
+/** 
+ * Enumerated data type with a fixed set of possible values
+ * Each value can have its own style
+ */
+export type EnumType = {
+    kind: typeof EnumTypeKind;
+    /** Array of valid values for this enum */
+    values: EnumItem[];
+};
+
+
+/** Identifies a lookup type in the type system */
+export const LookupTypeKind = 'lookup';
+/** 
+ * Lookup data type that references valid values from another column
+ * Useful for maintaining consistency and relationships between columns
+ */
+export type LookupType = {
+    kind: typeof LookupTypeKind;
+    /** Column containing the valid values for this lookup */
+    values: ColumnSelector;
+};
+
+
 /** Identifies a numeric type in the type system */
 export const NumericTypeKind = 'numeric';
 /** 
@@ -367,42 +399,10 @@ export type TemporalType = {
 
 
 /** 
- * Represents a single value in an enum type
- * Can be either a simple string or an object with an associated style
- */
-export type EnumItem = string | { value: string; style?: Style | Reference; };
-
-/** Identifies an enum type in the type system */
-export const EnumTypeKind = 'enum';
-/** 
- * Enumerated data type with a fixed set of possible values
- * Each value can have its own style
- */
-export type EnumType = {
-    kind: typeof EnumTypeKind;
-    /** Array of valid values for this enum */
-    values: EnumItem[];
-};
-
-
-/** Identifies a lookup type in the type system */
-export const LookupTypeKind = 'lookup';
-/** 
- * Lookup data type that references valid values from another column
- * Useful for maintaining consistency and relationships between columns
- */
-export type LookupType = {
-    kind: typeof LookupTypeKind;
-    /** Column containing the valid values for this lookup */
-    values: ColumnSelector;
-};
-
-
-/** 
  * Union of all possible data types in the system
  * Can be a concrete type definition or a reference to a predefined type
  */
-export type ColumnType = TextType | NumericType | TemporalType | EnumType | LookupType;
+export type ColumnType = TextType | EnumType | LookupType | NumericType | TemporalType;
 
 
 
