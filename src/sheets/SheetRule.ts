@@ -5,7 +5,7 @@ import { SheetSelector } from "./SheetPosition";
 
 // Common Targets
 export type NumberTarget = 'number';
-export type DateTarget = 'date' | 'datetime';
+export type DateTarget = 'temporal';
 
 // Generic Rule for Comparison
 export type SheetComparisonRule<TTarget, TValue> = {

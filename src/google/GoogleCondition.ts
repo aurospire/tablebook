@@ -19,10 +19,10 @@ export const GoogleNumberConditionTypeMap: Record<string, string> = {
 export const GoogleDateConditionTypeMap: Record<string, string> = {
     '=': 'DATE_EQ',
     '<>': 'DATE_NOT_EQ',
-    '>': 'DATE_GREATER',
-    '>=': 'DATE_GREATER_THAN_EQ',
-    '<': 'DATE_LESS',
-    '<=': 'DATE_LESS_THAN_EQ',
+    '>': 'DATE_AFTER',
+    '>=': 'DATE_ON_OR_AFTER',
+    '<': 'DATE_BEFORE',
+    '<=': 'DATE_ON_OR_BEFORE',
     'between': 'DATE_BETWEEN',
     'outside': 'DATE_NOT_BETWEEN',
 } satisfies Record<ComparisonOperator | RangeOperator, string>;
@@ -45,10 +45,9 @@ const makeGoogleCondition = (type: string, values: string[]): GoogleCondition =>
     return { type, values: values.map(value => ({ userEnteredValue: value })) };
 };
 
-const toISODate = (date: DateTime): string => date.toISODate()!;
-// YYYY-MM-DDTHH:MM:SS (NO TIMEZONE)
+const toIsoDate = (date: DateTime): string => date.toISODate()!;
 
-const toISODateTime = (date: DateTime): string => date.toString();
+
 
 export const toGoogleCondition = (rule: SheetRule, postion: SheetPosition, validation: boolean): GoogleCondition => {
     switch (rule.type) {
@@ -61,20 +60,16 @@ export const toGoogleCondition = (rule: SheetRule, postion: SheetPosition, valid
             switch (rule.target) {
                 case "number":
                     return makeGoogleCondition(GoogleNumberConditionTypeMap[rule.type], [rule.value.toString()]);
-                case "date":
-                    return makeGoogleCondition(GoogleDateConditionTypeMap[rule.type], [toISODate(rule.value)]);
-                case "datetime":
-                    return makeGoogleCondition(GoogleDateConditionTypeMap[rule.type], [toISODateTime(rule.value)]);
+                case "temporal":
+                    return makeGoogleCondition(GoogleDateConditionTypeMap[rule.type], [toIsoDate(rule.value)]);
             }
         case "between":
         case "outside":
             switch (rule.target) {
                 case "number":
                     return makeGoogleCondition(GoogleNumberConditionTypeMap[rule.type], [rule.low.toString(), rule.high.toString()]);
-                case "date":
-                    return makeGoogleCondition(GoogleDateConditionTypeMap[rule.type], [toISODate(rule.low), toISODate(rule.high)]);
-                case "datetime":
-                    return makeGoogleCondition(GoogleDateConditionTypeMap[rule.type], [toISODateTime(rule.low), toISODateTime(rule.high)]);
+                case "temporal":
+                    return makeGoogleCondition(GoogleDateConditionTypeMap[rule.type], [toIsoDate(rule.low), toIsoDate(rule.high)]);
             }
 
         case "is":

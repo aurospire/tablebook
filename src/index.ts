@@ -79,7 +79,7 @@ const testGoogleSheet = async () => {
                 }
             })
             .updateCells(id, SheetRange.cell(0, 6), {
-                value: serialNumber('2024-01-02'), kind: 'time', format: [
+                value: serialNumber('2024-01-02'), kind: 'temporal', format: [
                     { type: 'year', length: 'long' }, '-', { type: 'month', length: 'short' }, '-', { type: 'day', length: 'short' },
                     { type: 'weekday', length: 'long' }, ' | ', { type: 'hour', length: 'long' }, ':', { type: 'minute', length: 'long' }, { type: 'meridiem', length: 'long' }
                 ]
@@ -1416,164 +1416,215 @@ const tablebook: TableBook = {
         groups: [{
             name: "MainGroup",
             columns: [
+                // {
+                //     name: "UserID",
+                //     type: {
+                //         kind: "text"
+                //     }
+                // },
+                // {
+                //     name: "Status",
+                //     type: {
+                //         kind: "enum",
+                //         values: [
+                //             "Active",
+                //             "Pending",
+                //             "Closed"
+                //         ]
+                //     }
+                // },
+                // {
+                //     name: "AssignedTo",
+                //     type: {
+                //         kind: "lookup",
+                //         values: {
+                //             name: "UserID"
+                //         }
+                //     }
+                // },
+                // {
+                //     name: "Description",
+                //     type: {
+                //         kind: "text",
+                //         rule: {
+                //             type: "contains",
+                //             value: "urgent"
+                //         },
+                //         styles: [{
+                //             rule: {
+                //                 type: "contains",
+                //                 value: "urgent"
+                //             },
+                //             apply: {
+                //                 fore: "#FF0000",
+                //                 bold: true
+                //             }
+                //         }]
+                //     }
+                // },
+                // {
+                //     name: "Email",
+                //     type: {
+                //         kind: "text",
+                //         rule: {
+                //             type: "ends",
+                //             value: "@company.com"
+                //         },
+                //         styles: [{
+                //             rule: {
+                //                 type: "ends",
+                //                 value: "@company.com"
+                //             },
+                //             apply: {
+                //                 fore: "#0000FF"
+                //             }
+                //         }]
+                //     }
+                // },
+                // {
+                //     name: "ProjectCode",
+                //     type: {
+                //         kind: "text",
+                //         rule: {
+                //             type: "begins",
+                //             value: "PRJ-"
+                //         },
+                //         styles: [{
+                //             rule: {
+                //                 type: "begins",
+                //                 value: "PRJ-"
+                //             },
+                //             apply: {
+                //                 fore: "#008000",
+                //                 bold: true
+                //             }
+                //         }]
+                //     }
+                // },
+                // {
+                //     name: "Score",
+                //     type: {
+                //         kind: "numeric",
+                //         format: {
+                //             type: "number",
+                //             integer: { fixed: 2 },
+                //             decimal: { fixed: 1 },
+                //             commas: true
+                //         },
+                //         rule: { type: "between", low: 0, high: 100 },
+                //         styles: [{
+                //             rule: { type: ">", value: 90 },
+                //             apply: { fore: "#008000", bold: true }
+                //         }]
+                //     }
+                // },
+                // {
+                //     name: "Cost",
+                //     type: {
+                //         kind: "numeric",
+                //         format: {
+                //             type: "currency",
+                //             integer: { flex: 1 },
+                //             decimal: { fixed: 2 },
+                //             commas: true,
+                //             symbol: "$",
+                //             position: "prefix"
+                //         },
+                //         rule: { type: ">=", value: 0 },
+                //         styles: [{
+                //             rule: { type: ">", value: 1000 },
+                //             apply: { fore: "#FF0000" }
+                //         }]
+                //     }
+                // },
+                // {
+                //     name: "Progress",
+                //     type: {
+                //         kind: "numeric",
+                //         format: {
+                //             type: "percent",
+                //             integer: { fixed: 3 },
+                //             decimal: { fixed: 1 }
+                //         },
+                //         rule: { type: "between", low: 0, high: 1 },
+                //         styles: [
+                //             {
+                //                 rule: { type: "<", value: 0.5 },
+                //                 apply: { fore: "#FF0000" }
+                //             },
+                //             {
+                //                 rule: { type: ">=", value: 0.9 },
+                //                 apply: { fore: "#008000", bold: true }
+                //             }
+                //         ]
+                //     }
+                // },
+                // {
+                //     name: "Quantity",
+                //     type: {
+                //         kind: "numeric",
+                //         format: {
+                //             type: "number",
+                //             integer: { align: 4 },
+                //             decimal: { fixed: 0 },
+                //             commas: true
+                //         },
+                //         rule: { type: ">=", value: 0 }
+                //     }
+                // },
                 {
-                    name: "UserID",
+                    name: "DueDate",
                     type: {
-                        kind: "text"
+                        kind: "temporal",
+                        format: [
+                            { type: "weekday", length: "short" },
+                            ", ",
+                            { type: "monthname", length: "short" },
+                            " ",
+                            { type: "day", length: "short" },
+                            ", ",
+                            { type: "year", length: "long" }
+                        ],
+                        rule: { type: ">", value: "2024-01-01" },
+                        // styles: [{
+                        //     rule: { type: "<", value: "2024-03-01" },
+                        //     apply: { fore: "#FF0000", bold: true }
+                        // }]
                     }
                 },
-                {
-                    name: "Status",
-                    type: {
-                        kind: "enum",
-                        values: [
-                            "Active",
-                            "Pending",
-                            "Closed"
-                        ]
-                    }
-                },
-                {
-                    name: "AssignedTo",
-                    type: {
-                        kind: "lookup",
-                        values: {
-                            name: "UserID"
-                        }
-                    }
-                },
-                {
-                    name: "Description",
-                    type: {
-                        kind: "text",
-                        rule: {
-                            type: "contains",
-                            value: "urgent"
-                        },
-                        styles: [{
-                            rule: {
-                                type: "contains",
-                                value: "urgent"
-                            },
-                            apply: {
-                                fore: "#FF0000",
-                                bold: true
-                            }
-                        }]
-                    }
-                },
-                {
-                    name: "Email",
-                    type: {
-                        kind: "text",
-                        rule: {
-                            type: "ends",
-                            value: "@company.com"
-                        },
-                        styles: [{
-                            rule: {
-                                type: "ends",
-                                value: "@company.com"
-                            },
-                            apply: {
-                                fore: "#0000FF"
-                            }
-                        }]
-                    }
-                },
-                {
-                    name: "ProjectCode",
-                    type: {
-                        kind: "text",
-                        rule: {
-                            type: "begins",
-                            value: "PRJ-"
-                        },
-                        styles: [{
-                            rule: {
-                                type: "begins",
-                                value: "PRJ-"
-                            },
-                            apply: {
-                                fore: "#008000",
-                                bold: true
-                            }
-                        }]
-                    }
-                },
-                {
-                    name: "Score",
-                    type: {
-                        kind: "numeric",
-                        format: {
-                            type: "number",
-                            integer: { fixed: 2 },
-                            decimal: { fixed: 1 },
-                            commas: true
-                        },
-                        rule: { type: "between", low: 0, high: 100 },
-                        styles: [{
-                            rule: { type: ">", value: 90 },
-                            apply: { fore: "#008000", bold: true }
-                        }]
-                    }
-                },
-                {
-                    name: "Cost",
-                    type: {
-                        kind: "numeric",
-                        format: {
-                            type: "currency",
-                            integer: { flex: 1 },
-                            decimal: { fixed: 2 },
-                            commas: true,
-                            symbol: "$",
-                            position: "prefix"
-                        },
-                        rule: { type: ">=", value: 0 },
-                        styles: [{
-                            rule: { type: ">", value: 1000 },
-                            apply: { fore: "#FF0000" }
-                        }]
-                    }
-                },
-                {
-                    name: "Progress",
-                    type: {
-                        kind: "numeric",
-                        format: {
-                            type: "percent",
-                            integer: { fixed: 3 },
-                            decimal: { fixed: 1 }
-                        },
-                        rule: { type: "between", low: 0, high: 1 },
-                        styles: [
-                            {
-                                rule: { type: "<", value: 0.5 },
-                                apply: { fore: "#FF0000" }
-                            },
-                            {
-                                rule: { type: ">=", value: 0.9 },
-                                apply: { fore: "#008000", bold: true }
-                            }
-                        ]
-                    }
-                },
-                {
-                    name: "Quantity",
-                    type: {
-                        kind: "numeric",
-                        format: {
-                            type: "number",
-                            integer: { align: 4 },
-                            decimal: { fixed: 0 },
-                            commas: true
-                        },
-                        rule: { type: ">=", value: 0 }
-                    }
-                }
-
-            ]
+                // {
+                //     name: "LastUpdated",
+                //     type: {
+                //         kind: "temporal",
+                //         format: [
+                //             { type: "monthname", length: "short" },
+                //             " ",
+                //             { type: "day", length: "short" },
+                //             " ",
+                //             { type: "hour", length: "short" },
+                //             ":",
+                //             { type: "minute", length: "short" },
+                //             " ",
+                //             { type: "meridiem", length: "short" }
+                //         ],
+                //         rule: { type: "between", low: "2024-01-01T00:00:00", high: "2024-12-31T23:59:59" }
+                //     }
+                // },
+                // {
+                //     name: "TimeSpent",
+                //     type: {
+                //         kind: "temporal",
+                //         format: [
+                //             { type: "hour", length: "short" },
+                //             ":",
+                //             { type: "minute", length: "short" },
+                //             ":",
+                //             { type: "second", length: "short" }
+                //         ],
+                //         rule: { type: ">=", value: "2024-01-01T00:00:00" }
+                //     }
+                // }
+            ],
         }]
     }]
 };

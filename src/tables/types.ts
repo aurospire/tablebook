@@ -192,14 +192,21 @@ export type Expression<Selector> =
 
 /* Data Rules */
 
+// /** Regex pattern for validating temporal strings in ISO format */
+// // export const TemporalStringRegex = /^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}:\d{2})?$/;
+// /** Date string in YYYY-MM-DD format */
+// export type DateString = `${number}-${number}-${number}`;
+// /** DateTime string in YYYY-MM-DD HH:mm:ss format, allowing T or space separator */
+// export type DateTimeString = `${DateString}${'T' | ' '}${number}:${number}:${number}`;
+// /** String representing either a date or datetime */
+// export type TemporalString = DateString | DateTimeString;
+
 /** Regex pattern for validating temporal strings in ISO format */
-export const TemporalStringRegex = /^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}:\d{2})?$/;
+export const TemporalStringRegex = /^\d{4}-\d{2}-\d{2}$/;
 /** Date string in YYYY-MM-DD format */
 export type DateString = `${number}-${number}-${number}`;
-/** DateTime string in YYYY-MM-DD HH:mm:ss format, allowing T or space separator */
-export type DateTimeString = `${DateString}${'T' | ' '}${number}:${number}:${number}`;
 /** String representing either a date or datetime */
-export type TemporalString = DateString | DateTimeString;
+export type TemporalString = DateString ;
 
 
 /** Rule comparing a value to a fixed target using a comparison operator */

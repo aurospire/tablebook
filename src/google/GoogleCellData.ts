@@ -43,9 +43,7 @@ export const GoogleCellTypeMap = {
     number: 'NUMBER',
     percent: 'PERCENT',
     currency: 'CURRENCY',
-    date: 'DATE',
-    time: 'TIME',
-    datetime: 'DATE_TIME',
+    temporal: 'DATE_TIME',
 } satisfies Record<SheetKind, string>;
 
 

@@ -1,10 +1,11 @@
+import { DateTime } from "luxon";
 import { SheetBehavior } from "./sheets/SheetBehavior";
 import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "./sheets/SheetBook";
 import { SheetSelector } from "./sheets/SheetPosition";
 import { SheetConditionalStyle, SheetRule } from "./sheets/SheetRule";
 import { SheetBorder, SheetStyle, SheetTitleStyle } from "./sheets/SheetStyle";
 import { standardColors, standardThemes } from "./tables/palettes";
-import { Color, ColumnType, ComparisonRule, DataSelector, Expression, HeaderStyle, NumericFormat, NumericType, Reference, Style, TableBook, TemporalFormat, Theme, UnitSelector } from "./tables/types";
+import { Color, ColumnType, ComparisonRule, DataSelector, Expression, HeaderStyle, NumericFormat, NumericType, Reference, Style, TableBook, TemporalFormat, TemporalString, TemporalType, Theme, UnitSelector } from "./tables/types";
 import { ColorObject, Colors } from "./util/Color";
 
 
@@ -332,6 +333,35 @@ const resolveNumericRule = (rule: NumericType['rule'] & {}, page: string, group:
     }
 };
 
+const resolveTemporalString = (value: TemporalString): DateTime => {
+    return DateTime.fromISO(value);
+};
+
+const resolveTemporalRule = (rule: TemporalType['rule'] & {}, page: string, group: string, name: string, columns: Map<string, ResolvedColumn>): SheetRule => {
+    if (rule.type === 'custom') {
+        return {
+            type: 'formula',
+            expression: resolveExpression(rule.expression, page, group, name, columns)
+        };
+    }
+    else if (rule.type === 'between' || rule.type === 'outside') {
+        return {
+            type: rule.type,
+            target: 'temporal',
+            low: resolveTemporalString(rule.low),
+            high: resolveTemporalString(rule.high)
+        };
+    }
+    // WHY ISNT THIS RESOLVING AS A COMPARISON RULE
+    else {
+        return {
+            type: rule.type,
+            target: 'temporal',
+            value: resolveTemporalString((rule as ComparisonRule<TemporalString>).value)
+        };
+    }
+};
+
 
 const resolveBehavior = (
     type: ColumnType,
@@ -404,7 +434,13 @@ const resolveBehavior = (
             };
         case "temporal":
             return {
-                kind: 'datetime'
+                kind: 'temporal',
+                format: type.format ? isReference(type.format) ? resolveReference(type.format, numeric, v => typeof v === 'object') : type.format : undefined,
+                rule: type.rule ? resolveTemporalRule(type.rule, page, group, name, columns) : undefined,
+                styles: type.styles ? type.styles.map((style): SheetConditionalStyle => ({
+                    rule: resolveTemporalRule(style.rule, page, group, name, columns),
+                    apply: resolveStyle(style.apply, colors, styles)
+                })) : undefined
             };
     };
 
