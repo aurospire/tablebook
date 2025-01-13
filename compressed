@@ -200,11 +200,8 @@ export type LiteralExpression = { type: 'literal', of: string | number | boolean
 export type Expression<T> = CompoundExpression<T> | NegatedExpression<T> | FunctionExpression<T> | SelectorExpression<T> | LiteralExpression;
 
 /* Data Rule Types */
-export type DateString = `${number}-${number}-${number}`;
-
-export type DateTimeString = `${DateString}${'T' | ' '}${number}:${number}:${number}`;
-
-export type TemporalString = DateString | DateTimeString;
+// YYYY-MM-DD
+export type TemporalString = `${number}-${number}-${number}`;
 
 export type ComparisonRule<T> = { type: CompareOp; value: T; };
 
