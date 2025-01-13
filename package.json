@@ -1,6 +1,6 @@
 {
     "name": "tablebook",
-    "description": "A library for creating structured, table-based workbooks with support for named columns, groups, styles, and formulas using declarative JSON.",
+    "description": "A library for creating structured, table-based workbooks with support for named columns, groups, styles, and formulas using declarative JSON/YAML.",
     "author": "aurospire",
     "version": "0.0.0",
     "repository": {

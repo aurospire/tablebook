@@ -1,17 +1,24 @@
 import { Color, Theme } from "./types";
 
-/** Creates a four-shade color palette
- * When used as theme: darkest->header.back, dark->group.back, main->tab, lightest->data.back
- * When used as color reference: uses main shade */
-
+/**
+ * Creates a four-shade color palette.
+ * @param darkest - The darkest shade, used for `group.back`.
+ * @param dark - A dark shade, used for `header.back`.
+ * @param main - The main shade, used for `tab` and `color`.
+ * @param lightest - The lightest shade, used for `data.back`.
+ * @returns A palette object containing the four shades.
+ */
 export const palette = (
     darkest: Color,
     dark: Color,
     main: Color,
     lightest: Color
 ) => ({ darkest, dark, main, lightest });
-/** Predefined color palettes */
 
+/**
+ * Predefined color palettes for use in themes and references.
+ * Includes shades of reds, oranges, yellows, greens, blues, purples, and neutrals.
+ */
 export const StandardPalettes = {
     // Reds
     pink: palette('#741F3F', '#C0315A', '#E84E76', '#FFD6E0'), // True rose pink
@@ -58,11 +65,18 @@ export const StandardPalettes = {
     charcoal: palette('#2A2A2A', '#4D4D4D', '#676767', '#E2E2E2'), // Deep gray tones
 };
 
-
+/**
+ * Main color reference for each palette.
+ * Maps palette names to their `main` color.
+ */
 export const standardColors: Record<string, Color> = Object.fromEntries(
     Object.entries(StandardPalettes).map(([key, palette]) => [key, palette.main])
 );
 
+/**
+ * Standard themes derived from predefined palettes.
+ * Maps palette colors to `tab`, `group`, `header`, and `data` styling.
+ */
 export const standardThemes: Record<string, Theme> = Object.fromEntries(
     Object.entries(StandardPalettes).map(([key, palette]) => [key, {
         tab: palette.main,
