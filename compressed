@@ -206,7 +206,7 @@ export type DateTimeString = `${DateString}${'T' | ' '}${number}:${number}:${num
 
 export type TemporalString = DateString | DateTimeString;
 
-export type ComparisonRule<T> = { type: CompareOp; to: T; };
+export type ComparisonRule<T> = { type: CompareOp; value: T; };
 
 export type CustomRule = { type: 'custom'; expression: Expression<DataSelector>; };
 

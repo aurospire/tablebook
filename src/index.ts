@@ -194,11 +194,11 @@ const tablebook0: TableBook = {
                 format: "@currency",
                 styles: [
                     {
-                        rule: { type: "<", to: 0 },
+                        rule: { type: "<", value: 0 },
                         apply: "@warning"
                     },
                     {
-                        rule: { type: ">", to: 1000000 },
+                        rule: { type: ">", value: 1000000 },
                         apply: "@success"
                     }
                 ]
@@ -411,7 +411,7 @@ const tablebook0: TableBook = {
                                 },
                                 styles: [
                                     {
-                                        rule: { type: ">", to: 5 },
+                                        rule: { type: ">", value: 5 },
                                         apply: "@warning"
                                     }
                                 ]
@@ -687,7 +687,7 @@ const tablebook2: TableBook = {
                                 kind: "numeric",
                                 rule: {
                                     type: ">=",
-                                    to: 0
+                                    value: 0
                                 }
                             }
                         },
@@ -698,7 +698,7 @@ const tablebook2: TableBook = {
                                 format: "@money",
                                 rule: {
                                     type: ">",
-                                    to: 0
+                                    value: 0
                                 }
                             }
                         }
@@ -893,7 +893,7 @@ const tablebook3: TableBook = {
                                 format: "@money",
                                 rule: {
                                     type: ">",
-                                    to: 0
+                                    value: 0
                                 }
                             }
                         },
@@ -920,7 +920,7 @@ const tablebook3: TableBook = {
                                 kind: "numeric",
                                 rule: {
                                     type: ">=",
-                                    to: 0
+                                    value: 0
                                 }
                             }
                         },
@@ -953,7 +953,7 @@ const tablebook3: TableBook = {
                                 kind: "numeric",
                                 rule: {
                                     type: ">=",
-                                    to: 0
+                                    value: 0
                                 }
                             }
                         },
@@ -1362,7 +1362,7 @@ const tablebook4: TableBook = {
                         format: "@fullDate",
                         rule: {
                             type: ">",
-                            to: "2020-01-01"
+                            value: "2020-01-01"
                         }
                     }
                 }, {
@@ -1378,7 +1378,7 @@ const tablebook4: TableBook = {
                         styles: [{
                             rule: {
                                 type: ">",
-                                to: 100000
+                                value: 100000
                             },
                             apply: "@warning"
                         }]
@@ -1499,6 +1499,77 @@ const tablebook: TableBook = {
                                 bold: true
                             }
                         }]
+                    }
+                },
+                {
+                    name: "Score",
+                    type: {
+                        kind: "numeric",
+                        format: {
+                            type: "number",
+                            integer: { fixed: 2 },
+                            decimal: { fixed: 1 },
+                            commas: true
+                        },
+                        rule: { type: "between", low: 0, high: 100 },
+                        styles: [{
+                            rule: { type: ">", value: 90 },
+                            apply: { fore: "#008000", bold: true }
+                        }]
+                    }
+                },
+                {
+                    name: "Cost",
+                    type: {
+                        kind: "numeric",
+                        format: {
+                            type: "currency",
+                            integer: { flex: 1 },
+                            decimal: { fixed: 2 },
+                            commas: true,
+                            symbol: "$",
+                            position: "prefix"
+                        },
+                        rule: { type: ">=", value: 0 },
+                        styles: [{
+                            rule: { type: ">", value: 1000 },
+                            apply: { fore: "#FF0000" }
+                        }]
+                    }
+                },
+                {
+                    name: "Progress",
+                    type: {
+                        kind: "numeric",
+                        format: {
+                            type: "percent",
+                            integer: { fixed: 3 },
+                            decimal: { fixed: 1 }
+                        },
+                        rule: { type: "between", low: 0, high: 1 },
+                        styles: [
+                            {
+                                rule: { type: "<", value: 0.5 },
+                                apply: { fore: "#FF0000" }
+                            },
+                            {
+                                rule: { type: ">=", value: 0.9 },
+                                apply: { fore: "#008000", bold: true }
+                            }
+                        ]
+                    }
+                },
+                {
+                    name: "Quantity",
+                    type: {
+                        kind: "numeric",
+                        format: {
+                            type: "number",
+                            integer: { align: 4 },
+                            decimal: { fixed: 0 },
+                            commas: true
+                        },
+                        rule: { type: ">=", value: 0 }
                     }
                 }
 

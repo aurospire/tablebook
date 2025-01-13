@@ -203,7 +203,7 @@ export type TemporalString = DateString | DateTimeString;
 
 
 /** Rule comparing a value to a fixed target using a comparison operator */
-export type ComparisonRule<T> = { type: ComparisonOperator; to: T; };
+export type ComparisonRule<T> = { type: ComparisonOperator; value: T; };
 
 
 /** Type for custom rules using DataSelector expressions */

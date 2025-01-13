@@ -171,8 +171,8 @@ const TemporalString: z.ZodType<TemporalString> = z.custom(value => TemporalStri
 const makeValueRules = <T>(type: z.ZodType<T>) => {
     const comparison = z.object({
         type: ComparisonOperator,
-        to: type
-    }) as z.ZodType<ComparisonRule<T>>;
+        value: type
+    });
 
     const between = z.object({
         type: z.enum(RangeOperators),

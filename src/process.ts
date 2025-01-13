@@ -1,12 +1,11 @@
-import { inspect } from "util";
+import { SheetBehavior } from "./sheets/SheetBehavior";
 import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "./sheets/SheetBook";
 import { SheetSelector } from "./sheets/SheetPosition";
+import { SheetConditionalStyle, SheetRule } from "./sheets/SheetRule";
 import { SheetBorder, SheetStyle, SheetTitleStyle } from "./sheets/SheetStyle";
 import { standardColors, standardThemes } from "./tables/palettes";
-import { Color, ColumnType, ConditionalStyle, DataSelector, Expression, HeaderStyle, NumericFormat, NumericType, Reference, SelectorExpression, Style, TableBook, TemporalFormat, TemporalType, TextType, Theme, UnitSelector } from "./tables/types";
+import { Color, ColumnType, ComparisonRule, DataSelector, Expression, HeaderStyle, NumericFormat, NumericType, Reference, Style, TableBook, TemporalFormat, Theme, UnitSelector } from "./tables/types";
 import { ColorObject, Colors } from "./util/Color";
-import { SheetBehavior } from "./sheets/SheetBehavior";
-import { SheetConditionalStyle } from "./sheets/SheetRule";
 
 
 type ResolvedColumn = {
@@ -308,6 +307,32 @@ const resolveExpression = (expression: Expression<DataSelector>, page: string, g
 };
 
 
+const resolveNumericRule = (rule: NumericType['rule'] & {}, page: string, group: string, name: string, columns: Map<string, ResolvedColumn>): SheetRule => {
+    if (rule.type === 'custom') {
+        return {
+            type: 'formula',
+            expression: resolveExpression(rule.expression, page, group, name, columns)
+        };
+    }
+    else if (rule.type === 'between' || rule.type === 'outside') {
+        return {
+            type: rule.type,
+            target: 'number',
+            low: rule.low,
+            high: rule.high
+        };
+    }
+    // WHY ISNT THIS RESOLVING AS A COMPARISON RULE
+    else {
+        return {
+            type: rule.type,
+            target: 'number',
+            value: (rule as ComparisonRule<number>).value
+        };
+    }
+};
+
+
 const resolveBehavior = (
     type: ColumnType,
     page: string, group: string, name: string,
@@ -369,15 +394,20 @@ const resolveBehavior = (
 
         case "numeric":
             return {
-                kind: 'number'
+                kind: 'number',
+                format: type.format ? isReference(type.format) ? resolveReference(type.format, numeric, v => typeof v === 'object') : type.format : undefined,
+                rule: type.rule ? resolveNumericRule(type.rule, page, group, name, columns) : undefined,
+                styles: type.styles ? type.styles.map((style): SheetConditionalStyle => ({
+                    rule: resolveNumericRule(style.rule, page, group, name, columns),
+                    apply: resolveStyle(style.apply, colors, styles)
+                })) : undefined
             };
         case "temporal":
             return {
                 kind: 'datetime'
             };
-    }
+    };
 
-    throw new Error();
 };
 
 export const processTableBook = (book: TableBook): SheetBook => {
