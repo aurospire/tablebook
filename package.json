@@ -40,6 +40,7 @@
         "@types/luxon": "^3.4.2",
         "@types/node": "^22.10.1",
         "jest": "^29.7.0",
+        "jestype": "^1.0.0",
         "nodemon": "^3.1.7",
         "ts-jest": "^29.2.5",
         "ts-node": "^10.9.2",
