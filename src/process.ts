@@ -435,7 +435,7 @@ const resolveBehavior = (
         case "temporal":
             return {
                 kind: 'temporal',
-                format: type.format ? isReference(type.format) ? resolveReference(type.format, numeric, v => typeof v === 'object') : type.format : undefined,
+                format: type.format ? isReference(type.format) ? resolveReference(type.format, temporal, v => typeof v === 'object') : type.format : undefined,
                 rule: type.rule ? resolveTemporalRule(type.rule, page, group, name, columns) : undefined,
                 styles: type.styles ? type.styles.map((style): SheetConditionalStyle => ({
                     rule: resolveTemporalRule(style.rule, page, group, name, columns),
