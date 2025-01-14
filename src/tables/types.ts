@@ -44,16 +44,17 @@ export type UnitPrefix = '$' | '+' | '-';
 export type UnitSelector = `${UnitPrefix}${number}`;
 
 
-/** Targets a range of rows within a column between two endpoints */
-export type RangeRowSelector = {
+/** Targets a range of rows within a column between two inclusive endpoints */
+export type RangeSelector = {
     /** One boundary of the range (compiler determines order) */
     from: UnitSelector;
+
     /** The other boundary of the range (compiler determines order) */
     to: UnitSelector;
 };
 
 /** Targets rows in a column using a single position or a range */
-export type RowSelector = UnitSelector | RangeRowSelector;
+export type RowSelector = UnitSelector | RangeSelector;
 
 /** 
  * Combines column and row selection to target data within a table

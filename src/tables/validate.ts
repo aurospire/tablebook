@@ -31,7 +31,7 @@ import {
     Partition,
     PercentFormat, PercentFormatType,
     RangeOperators,
-    RangeRowSelector,
+    RangeSelector,
     RangeRule,
     Reference, ReferenceRegex,
     RowSelector,
@@ -70,12 +70,12 @@ const ColumnSelector: z.ZodType<ColumnSelector> = z.object({
 
 const UnitSelector: z.ZodType<UnitSelector> = z.custom<UnitSelector>(value => UnitSelectorRegex.test(value as string));
 
-const RangeRowSelector: z.ZodType<RangeRowSelector> = z.object({
+const RangeSelector: z.ZodType<RangeSelector> = z.object({
     from: UnitSelector,
     to: UnitSelector
 });
 
-const RowSelector: z.ZodType<RowSelector> = z.union([UnitSelector, RangeRowSelector]);
+const RowSelector: z.ZodType<RowSelector> = z.union([UnitSelector, RangeSelector]);
 
 const DataSelector: z.ZodType<DataSelector> = z.union([
     SelfSelector,
