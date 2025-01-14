@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { SheetBehavior } from "./sheets/SheetBehavior";
 import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "./sheets/SheetBook";
-import { SheetSelector } from "./sheets/SheetPosition";
+import { SheetSelector } from "./sheets/SheetSelector";
 import { SheetConditionalStyle, SheetRule } from "./sheets/SheetRule";
 import { SheetBorder, SheetStyle, SheetTitleStyle } from "./sheets/SheetStyle";
 import { standardColors, standardThemes } from "./tables/palettes";
@@ -213,7 +213,7 @@ const modifyUnitSelector = (selector: UnitSelector, grouped: boolean): UnitSelec
 
     const value = Number(selector.slice(1));
 
-    return `$${value + (grouped ? 2 : 1)}`;
+    return `${selector[0]}${value + (grouped ? 2 : 1)}`;
 };
 
 const resolveSelector = (selector: DataSelector, columns: Map<string, ResolvedColumn>, page: string, group: string, name: string): SheetSelector => {

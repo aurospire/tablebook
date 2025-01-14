@@ -1,6 +1,6 @@
 import { SheetBook } from "../sheets/SheetBook";
 import { SheetGenerator } from "../sheets/SheetGenerator";
-import { SheetRange } from "../sheets/SheetPosition";
+import { SheetRange } from "../sheets/SheetRange";
 import { GoogleSheet } from "./GoogleSheet";
 
 export class GoogleGenerator implements SheetGenerator {

@@ -1,7 +1,7 @@
 import { Expression } from "../tables/types";
 import { ColorObject } from "../util/Color";
 import { SheetBehavior } from "./SheetBehavior";
-import { SheetSelector } from "./SheetPosition";
+import { SheetSelector } from "./SheetSelector";
 import { SheetTitleStyle, SheetStyle } from "./SheetStyle";
 
 export type SheetBook = {

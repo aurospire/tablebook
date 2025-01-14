@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
 import { toFormula } from "../sheets/SheetExpression";
-import { SheetPosition, SheetSelector } from "../sheets/SheetPosition";
+import { SheetPosition } from "../sheets/SheetPosition";
+import { SheetSelector } from "../sheets/SheetSelector";
 import { SheetRule } from "../sheets/SheetRule";
 import { ComparisonOperator, MatchOperator, RangeOperator } from "../tables/types";
 import { GoogleCondition } from "./GoogleTypes";

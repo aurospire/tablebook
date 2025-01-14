@@ -1,4 +1,4 @@
-import { SheetRange } from "../sheets/SheetPosition";
+import { SheetRange } from "../sheets/SheetRange";
 import { GoogleGridRange } from "./GoogleTypes";
 
 export const toGridRange = (sheetId: number, range: SheetRange): GoogleGridRange => ({

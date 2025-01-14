@@ -3,7 +3,7 @@ import { v } from 'varcor';
 import { GoogleGenerator } from './google/GoogleGenerator';
 import { GoogleSheet } from './google/GoogleSheet';
 import { processTableBook } from './process';
-import { SheetRange } from './sheets/SheetPosition';
+import { SheetRange } from "./sheets/SheetRange";
 import { TableBook } from './tables/types';
 import { TableBookValidator } from './tables/validate';
 import { Colors } from './util/Color';

@@ -1,5 +1,6 @@
 import { Expression } from "../tables/types";
-import { SheetPosition, SheetSelector } from "./SheetPosition";
+import { SheetPosition } from "./SheetPosition";
+import { SheetSelector } from "./SheetSelector";
 
 export type SheetExpression = Expression<SheetSelector>;
 

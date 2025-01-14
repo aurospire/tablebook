@@ -43,6 +43,7 @@ export type UnitPrefix = '$' | '+' | '-';
 /** Targets a single row in a column using absolute ($) or relative (+/-) indexing */
 export type UnitSelector = `${UnitPrefix}${number}`;
 
+
 /** Targets a range of rows within a column between two endpoints */
 export type RangeRowSelector = {
     /** One boundary of the range (compiler determines order) */
@@ -196,7 +197,7 @@ export const TemporalStringRegex = /^\d{4}-\d{2}-\d{2}$/;
 /** Date string in YYYY-MM-DD format */
 export type DateString = `${number}-${number}-${number}`;
 /** String representing either a date or datetime */
-export type TemporalString = DateString ;
+export type TemporalString = DateString;
 
 
 /** Rule comparing a value to a fixed target using a comparison operator */

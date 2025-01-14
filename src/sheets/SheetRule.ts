@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { ComparisonOperator, Expression, MatchOperator, RangeOperator } from "../tables/types";
 import { SheetStyle } from "./SheetStyle";
-import { SheetSelector } from "./SheetPosition";
+import { SheetSelector } from "./SheetSelector";
 
 // Common Targets
 export type NumberTarget = 'number';
