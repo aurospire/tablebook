@@ -1,6 +1,8 @@
 import { TableBookIssue, TableBookParseIssue, TableBookResult, TableBookValidateIssue } from './issues';
+import { processTableBook } from './process';
 import { SheetGenerator } from './sheets';
 import { TableBook } from './tables/types';
+import { TableBookValidator } from './tables/validate';
 
 export type TableBookSource =
     | { type: 'ts'; data: TableBook; }
@@ -19,7 +21,12 @@ export const parseYaml = (data: string): TableBookResult<any, TableBookParseIssu
 };
 
 export const validateData = (data: any): TableBookResult<TableBook, TableBookValidateIssue> => {
-    throw new Error();
+    const result = TableBookValidator.safeParse(data);
+
+    if (result.success)
+        return { success: true, data: result.data };
+    else
+        return { success: false, issues: result.error.issues.map(issue => ({ type: 'validating', message: issue.message, path: issue.path })) };
 };
 
 export const generate = async (source: TableBookSource, generator: SheetGenerator): Promise<TableBookResult<undefined, TableBookIssue>> => {
@@ -51,5 +58,14 @@ export const generate = async (source: TableBookSource, generator: SheetGenerato
     if (!validateResult.success)
         return validateResult;
 
-    return { success: true, data: undefined };
+    // Process
+    const processResult = processTableBook(validateResult.data);
+
+    if (!processResult.success)
+        return processResult;
+
+    // Generate
+    const generateResult = await generator.generate(processResult.data);
+
+    return generateResult
 };

@@ -1,4 +1,3 @@
-
 // const vars = v.values({
 //     email: v.string().email(),
 //     key: v.string(),
@@ -33,4 +32,4 @@ export * from './tables/types';
 export * from './sheets';
 export * from './google';
 export * from './util';
-
+export * from './generate';

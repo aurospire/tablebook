@@ -15,7 +15,7 @@ export type TableBookValidateIssue = {
 export type TableBookProcessIssue = {
     type: 'processing';
     message: string;
-    path: string;
+    path: (string | number)[];
     data: any;
 };
 
