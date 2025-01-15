@@ -1,9 +1,10 @@
+export type TextLocation = { index: number, line: number, column: number; };
+
 export type TableBookParseIssue = {
     type: 'parsing';
     message: string;
-    position: number;
-    line: number;
-    column: number;
+    location: TextLocation;
+    length: number;
 };
 
 export type TableBookValidateIssue = {

@@ -1,8 +1,9 @@
-import { TableBookIssue, TableBookParseIssue, TableBookResult, TableBookValidateIssue } from './issues';
+import { TableBookIssue, TableBookParseIssue, TableBookResult, TableBookValidateIssue, TextLocation } from './issues';
 import { processTableBook } from './process';
 import { SheetGenerator } from './sheets';
 import { TableBook } from './tables/types';
 import { TableBookValidator } from './tables/validate';
+import { parse, ParseError, printParseErrorCode, getLocation } from 'jsonc-parser';
 
 export type TableBookSource =
     | { type: 'ts'; data: TableBook; }
@@ -12,8 +13,33 @@ export type TableBookSource =
     | { type: 'fn'; data: () => TableBookResult<any, TableBookParseIssue>; }
     ;
 
+const bruteForceLocation = (data: string, index: number): TextLocation => {
+    const lines = data.slice(0, index).split('\n');
+
+    return { index, line: lines.length, column: lines[lines.length - 1].length };
+};
+
 export const parseJson = (data: string): TableBookResult<any, TableBookParseIssue> => {
-    throw new Error();
+    const errors: ParseError[] = [];
+
+    const result = parse(data, errors, { allowEmptyContent: false, allowTrailingComma: true, disallowComments: false });
+
+    if (errors.length)
+        return {
+            success: false,
+            issues: errors.map(error => {
+                const location = getLocation(data, error.offset);
+
+                return {
+                    type: 'parsing',
+                    message: printParseErrorCode(error.error),
+                    location: bruteForceLocation(data, error.offset),
+                    length: error.length
+                };
+            })
+        };
+    else
+        return { success: true, data: result };
 };
 
 export const parseYaml = (data: string): TableBookResult<any, TableBookParseIssue> => {
@@ -67,5 +93,5 @@ export const generate = async (source: TableBookSource, generator: SheetGenerato
     // Generate
     const generateResult = await generator.generate(processResult.data);
 
-    return generateResult
+    return generateResult;
 };
