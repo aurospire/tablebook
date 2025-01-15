@@ -480,7 +480,6 @@ export const processTableBook = (book: TableBook): SheetBook => {
 
         resultBook.pages.push(resultPage);
 
-
         for (const group of page.groups) {
             console.log(`Processing group: '${group.name}'`);
 

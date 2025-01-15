@@ -22,7 +22,7 @@ export class GoogleGenerator implements SheetGenerator {
         for (const page of book.pages) {
             const columnCount = page.groups.reduce((acc, group) => acc + group.columns.length, 0);
 
-            const sheetId = await sheet.addSheet({ title: page.title, columns: columnCount, rows: page.rows });
+            const sheetId = await sheet.addSheet({ title: page.title, columns: columnCount, rows: page.rows, color: page.tabColor });
 
             if (sheetId == undefined)
                 throw new Error("Failed to add sheet");
