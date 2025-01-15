@@ -4,6 +4,7 @@ import { SheetGenerator } from './sheets';
 import { TableBook } from './tables/types';
 import { TableBookValidator } from './tables/validate';
 import { parse, ParseError, printParseErrorCode, getLocation } from 'jsonc-parser';
+import yaml, { LineCounter, parseDocument, YAMLParseError } from 'yaml';
 
 export type TableBookSource =
     | { type: 'ts'; data: TableBook; }
@@ -43,7 +44,30 @@ export const parseJson = (data: string): TableBookResult<any, TableBookParseIssu
 };
 
 export const parseYaml = (data: string): TableBookResult<any, TableBookParseIssue> => {
-    throw new Error();
+    const result = parseDocument(data, { lineCounter: new LineCounter(), prettyErrors: true, logLevel: 'silent' });
+
+    if (result.errors.length)
+        return {
+            success: false,
+            issues: result.errors.map(error => {
+                const start = error.pos[0];
+                const end = error.pos[1];
+                const length = end - start;
+
+                return {
+                    type: 'parsing',
+                    message: error.message,
+                    location: {
+                        index: start,
+                        line: error.linePos?.[0].line ?? -1,
+                        column: error.linePos?.[0].col ?? -1,
+                    },
+                    length
+                };
+            })
+        };
+    else
+        return { success: true, data: result.toJS() };
 };
 
 export const validateData = (data: any): TableBookResult<TableBook, TableBookValidateIssue> => {
