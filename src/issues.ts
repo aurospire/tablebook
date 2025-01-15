@@ -1,5 +1,7 @@
 export type TextLocation = { index: number, line: number, column: number; };
 
+export type TableBookPath = (string | number)[];
+
 export type TableBookParseIssue = {
     type: 'parsing';
     message: string;
@@ -10,13 +12,13 @@ export type TableBookParseIssue = {
 export type TableBookValidateIssue = {
     type: 'validating';
     message: string;
-    path: (string | number)[];
+    path: TableBookPath;
 };
 
 export type TableBookProcessIssue = {
     type: 'processing';
     message: string;
-    path: (string | number)[];
+    path: TableBookPath;
     data: any;
 };
 
@@ -30,4 +32,4 @@ export type TableBookIssue = TableBookParseIssue | TableBookValidateIssue | Tabl
 
 export type TableBookResult<Data, Issue extends TableBookIssue> =
     | { success: true; data: Data; }
-    | { success: false; issues: Issue[]; };
+    | { success: false; issues: Issue[]; data?: Data; };

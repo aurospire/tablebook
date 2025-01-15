@@ -106,13 +106,13 @@ export const generate = async (source: TableBookSource, generator: SheetGenerato
     const validateResult = validateData(parseResult.data);
 
     if (!validateResult.success)
-        return validateResult;
+        return { success: false, issues: validateResult.issues };
 
     // Process
     const processResult = processTableBook(validateResult.data);
 
     if (!processResult.success)
-        return processResult;
+        return { success: false, issues: processResult.issues };
 
     // Generate
     const generateResult = await generator.generate(processResult.data);
