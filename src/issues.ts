@@ -1,10 +1,32 @@
-export type IssueType = 'parsing' | 'validating' | 'processing' | 'generating';
-
-export interface Issue {
-    type: IssueType;
+export type TableBookParseIssue = {
+    type: 'parsing';
     message: string;
-    path?: string;
-    data?: string;
-}
+    position: number;
+    line: number;
+    column: number;
+};
 
-export const Issue = (type: IssueType, message: string, path?: string, data?: string): Issue => ({ type, message, path, data });
+export type TableBookValidateIssue = {
+    type: 'validating';
+    message: string;
+    path: (string | number)[];
+};
+
+export type TableBookProcessIssue = {
+    type: 'processing';
+    message: string;
+    path: string;
+    data: any;
+};
+
+export type TableBookGenerateIssue = {
+    type: 'generating';
+    message: string;
+    data: any;
+};
+
+export type TableBookIssue = TableBookParseIssue | TableBookValidateIssue | TableBookProcessIssue | TableBookGenerateIssue;
+
+export type TableBookResult<Data, Issue extends TableBookIssue> =
+    | { success: true; data: Data; }
+    | { success: false; issues: Issue[]; };

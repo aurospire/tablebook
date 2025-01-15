@@ -1,12 +1,13 @@
 import { DateTime } from "luxon";
-import { SheetBehavior } from "./sheets/SheetBehavior";
-import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "./sheets/SheetBook";
-import { SheetSelector } from "./sheets/SheetSelector";
-import { SheetConditionalStyle, SheetRule } from "./sheets/SheetRule";
-import { SheetBorder, SheetStyle, SheetTitleStyle } from "./sheets/SheetStyle";
-import { standardColors, standardThemes } from "./tables/palettes";
-import { Color, ColumnType, ComparisonRule, DataSelector, Expression, HeaderStyle, NumericFormat, NumericType, Reference, Style, TableBook, TemporalFormat, TemporalString, TemporalType, Theme, UnitSelector } from "./tables/types";
-import { ColorObject, Colors } from "./util/Color";
+import { SheetBehavior } from "../sheets/SheetBehavior";
+import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "../sheets/SheetBook";
+import { SheetSelector } from "../sheets/SheetSelector";
+import { SheetConditionalStyle, SheetRule } from "../sheets/SheetRule";
+import { SheetBorder, SheetStyle, SheetTitleStyle } from "../sheets/SheetStyle";
+import { standardColors, standardThemes } from "../tables/palettes";
+import { Color, ColumnType, ComparisonRule, DataSelector, Expression, HeaderStyle, NumericFormat, NumericType, Reference, Style, TableBook, TemporalFormat, TemporalString, TemporalType, Theme, UnitSelector } from "../tables/types";
+import { ColorObject, Colors } from "../util/Color";
+import { TableBookProcessIssue, TableBookResult } from "../issues";
 
 
 type ResolvedColumn = {
@@ -446,7 +447,7 @@ const resolveBehavior = (
 
 };
 
-export const processTableBook = (book: TableBook): SheetBook => {
+export const processTableBook = (book: TableBook): TableBookResult<SheetBook, TableBookProcessIssue> => {
     console.log(`Processing book: '${book.name}'`);
 
     const resultBook: SheetBook = {
@@ -521,5 +522,5 @@ export const processTableBook = (book: TableBook): SheetBook => {
         }
     };
 
-    return resultBook;
+    return { success: true, data: resultBook };
 };
