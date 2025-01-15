@@ -400,14 +400,14 @@ const resolveBehavior = (
                 kind: 'text',
                 rule: {
                     type: 'enum',
-                    values: type.values.map(value => typeof value === 'string' ? value : value.value)
+                    values: type.items.map(value => typeof value === 'string' ? value : value.name)
                 },
-                styles: type.values.map((value): SheetConditionalStyle | undefined => {
+                styles: type.items.map((value): SheetConditionalStyle | undefined => {
                     return typeof value === 'string' || value.style === undefined ? undefined :
                         {
                             rule: {
                                 type: 'is',
-                                value: value.value
+                                value: value.name
                             },
                             apply: resolveStyle(value.style, colors, styles)
                         };

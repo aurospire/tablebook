@@ -94,8 +94,8 @@
  *     "description": "References start with @ followed by allowed characters"
  *   },
  *   "TableUnitName": {
- *     "pattern": "^[A-Z][A-Za-z0-9]*$", 
- *     "description": "Must start with uppercase, followed by alphanumeric"
+ *     "pattern": "^[A-Z][A-Za-z0-9_]*$", 
+ *     "description": "Must start with uppercase, followed by alphanumeric or underscore"
  *   },
  *   "TemporalString": {
  *     "pattern": "^\\d{4}-\\d{2}-\\d{2}(?:[T ]\\d{2}:\\d{2}:\\d{2})?$",
@@ -242,9 +242,9 @@ export type TemporalFormat = TemporalItem[];
 /* Data Types */
 export type TextType = { kind: 'text'; rule?: TextRule; styles?: ConditionalStyle<TextRule>[]; };
 
-export type EnumItem = string | { value: string; style?: Style | Reference; };
+export type EnumItem = { name: string; description?: string; style?: Style | Reference; };
 
-export type EnumType = { kind: 'enum'; values: EnumItem[]; };
+export type EnumType = { kind: 'enum'; items: EnumItem[]; };
 
 export type LookupType = { kind: 'lookup'; values: ColumnSelector; };
 

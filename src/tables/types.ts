@@ -292,7 +292,6 @@ export type NumericFormat =
     ;
 
 
-
 /* Temporal Formats */
 
 /** Available lengths for temporal unit display */
@@ -336,7 +335,7 @@ export type TextType = {
  * Represents a single value in an enum type
  * Can be either a simple string or an object with an associated style
  */
-export type EnumItem = string | { value: string; style?: Style | Reference; };
+export type EnumItem = { name: string; description?: string; style?: Style | Reference; };
 
 /** Identifies an enum type in the type system */
 export const EnumTypeKind = 'enum';
@@ -347,7 +346,7 @@ export const EnumTypeKind = 'enum';
 export type EnumType = {
     kind: typeof EnumTypeKind;
     /** Array of valid values for this enum */
-    values: EnumItem[];
+    items: EnumItem[];
 };
 
 
@@ -408,7 +407,7 @@ export type ColumnType = TextType | EnumType | LookupType | NumericType | Tempor
 /* Table Structures */
 
 /** Regex pattern validating table unit names: must start with uppercase, followed by alphanumeric */
-export const TableUnitNameRegex = /^[A-Z][A-Za-z0-9]+$/;
+export const TableUnitNameRegex = /^[A-Z][A-Za-z0-9_]+$/;
 
 /** 
 * Base type for all table structural elements (column, group, page)

@@ -255,17 +255,15 @@ const TextType: z.ZodType<TextType> = z.object({
     styles: z.array(TextConditionalStyle).optional()
 });
 
-const EnumItem: z.ZodType<EnumItem> = z.union([
-    z.string(),
-    z.object({
-        value: z.string(),
-        style: StyleReference.optional()
-    })
-]);
+const EnumItem: z.ZodType<EnumItem> = z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    style: StyleReference.optional()
+});
 
 const EnumType: z.ZodType<EnumType> = z.object({
     kind: z.literal(EnumTypeKind),
-    values: z.array(EnumItem)
+    items: z.array(EnumItem)
 });
 
 const LookupType: z.ZodType<LookupType> = z.object({

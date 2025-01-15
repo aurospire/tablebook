@@ -30,7 +30,7 @@ export const SheetRange = Object.freeze({
      */
     row: (index: number, offset: number = 0, width?: number): SheetRange => ({
         from: { col: offset, row: index },
-        to: { col: width !== undefined ? offset + width : undefined, row: index }
+        to: { col: width !== undefined ? offset + width - 1 : undefined, row: index }
     }),
 
     /**
