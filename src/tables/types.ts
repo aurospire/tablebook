@@ -183,6 +183,11 @@ export const LiteralExpressionType = 'literal';
 /** Direct value expression */
 export type LiteralExpression = { type: typeof LiteralExpressionType, of: string | number | boolean; };
 
+/** Type identifier for flat expressions */
+export const FlatExpressionType = 'flat';
+/* Flattened Expression, refs are replaced in the expression text*/
+export type FlatExpression = { type: typeof FlatExpressionType, expression: string, ref: Record<string, ColumnSelector>; };
+
 /** All possible expression types for data computation and validation */
 export type Expression<Selector> =
     | CompoundExpression<Selector>
@@ -190,6 +195,7 @@ export type Expression<Selector> =
     | FunctionExpression<Selector>
     | SelectorExpression<Selector>
     | LiteralExpression
+    | FlatExpression
     ;
 
 /* Data Rules */

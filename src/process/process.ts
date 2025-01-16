@@ -1,12 +1,33 @@
 import { TableBookProcessIssue } from "../issues";
+import { StandardPalettes } from "../palettes";
 import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "../sheets/SheetBook";
-import { standardColors, standardThemes } from "../tables/palettes";
 import { Reference, TableBook, TableColumn, TableGroup, TablePage, Theme } from "../tables/types";
-import { ObjectPath, Result } from "../util";
+import { ColorHex, ObjectPath, Result } from "../util";
 import { resolveBehavior } from "./resolveBehavior";
 import { resolveColumns } from "./resolveColumns";
 import { resolveExpression } from "./resolveExpression";
 import { resolveTheme } from "./resolveTheme";
+
+/**
+ * Main color reference for each palette.
+ * Maps palette names to their `main` color.
+ */
+export const standardColors: Record<string, ColorHex> = Object.fromEntries(
+    Object.entries(StandardPalettes).map(([key, palette]) => [key, palette.main])
+);
+
+/**
+ * Standard themes derived from predefined palettes.
+ * Maps palette colors to `tab`, `group`, `header`, and `data` styling.
+ */
+export const standardThemes: Record<string, Theme> = Object.fromEntries(
+    Object.entries(StandardPalettes).map(([key, palette]) => [key, {
+        tab: palette.main,
+        group: { back: palette.darkest },
+        header: { back: palette.dark },
+        data: { back: palette.lightest },
+    }])
+);
 
 export type ProcessLog = {
     book?: (book: TableBook) => void;

@@ -1,4 +1,5 @@
-import { Color, Theme } from "./types";
+import { FlatPalette } from "./flat/types";
+import { ColorHex } from "./util";
 
 /**
  * Creates a four-shade color palette.
@@ -9,10 +10,10 @@ import { Color, Theme } from "./types";
  * @returns A palette object containing the four shades.
  */
 export const palette = (
-    darkest: Color,
-    dark: Color,
-    main: Color,
-    lightest: Color
+    darkest: ColorHex,
+    dark: ColorHex,
+    main: ColorHex,
+    lightest: ColorHex
 ) => ({ darkest, dark, main, lightest });
 
 /**
@@ -63,25 +64,4 @@ export const StandardPalettes = {
     taupe: palette('#483C32', '#6B5D4F', '#857667', '#E5DBD1'), // Neutral brown-gray
     gray: palette('#3B3B3B', '#656565', '#7E7E7E', '#E8E8E8'), // Neutral gray shades
     charcoal: palette('#2A2A2A', '#4D4D4D', '#676767', '#E2E2E2'), // Deep gray tones
-};
-
-/**
- * Main color reference for each palette.
- * Maps palette names to their `main` color.
- */
-export const standardColors: Record<string, Color> = Object.fromEntries(
-    Object.entries(StandardPalettes).map(([key, palette]) => [key, palette.main])
-);
-
-/**
- * Standard themes derived from predefined palettes.
- * Maps palette colors to `tab`, `group`, `header`, and `data` styling.
- */
-export const standardThemes: Record<string, Theme> = Object.fromEntries(
-    Object.entries(StandardPalettes).map(([key, palette]) => [key, {
-        tab: palette.main,
-        group: { back: palette.darkest },
-        header: { back: palette.dark },
-        data: { back: palette.lightest },
-    }])
-);
+} satisfies Record<FlatPalette, ReturnType<typeof palette>>;
