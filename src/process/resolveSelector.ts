@@ -1,5 +1,7 @@
+import { TableBookProcessIssue } from "../issues";
 import { SheetSelector } from "../sheets";
 import { DataSelector, UnitSelector } from "../tables/types";
+import { ObjectPath, Result } from "../util";
 import { ResolvedColumn, toLookupName } from "./resolveColumns";
 
 const modifyUnitSelector = (selector: UnitSelector, grouped: boolean): UnitSelector => {
@@ -11,7 +13,13 @@ const modifyUnitSelector = (selector: UnitSelector, grouped: boolean): UnitSelec
     return `${selector[0]}${value + (grouped ? 2 : 1)}`;
 };
 
-export const resolveSelector = (selector: DataSelector, columns: Map<string, ResolvedColumn>, page: string, group: string, name: string): SheetSelector => {
+export const resolveSelector = (
+    selector: DataSelector,
+    columns: Map<string, ResolvedColumn>,
+    page: string, group: string, name: string,
+    path: ObjectPath
+): Result<SheetSelector, TableBookProcessIssue[]> => {
+
     const { column, row } = selector === 'self' ? { column: 'self', row: 'self' } : selector;
 
     let selectedPage: string | undefined;
@@ -27,7 +35,7 @@ export const resolveSelector = (selector: DataSelector, columns: Map<string, Res
         );
 
         if (!columns.has(fullname))
-            throw new Error(`Invalid column: ${fullname}`);
+            return Result.failure([{ type: 'processing', message: `Invalid column`, path, data: fullname }]);
 
         selectedColumn = columns.get(fullname)!;
 
@@ -59,7 +67,7 @@ export const resolveSelector = (selector: DataSelector, columns: Map<string, Res
         selectedRowEnd = true;
     }
 
-    return {
+    return Result.success({
         page: selectedPage,
         from: {
             col: `$${selectedColumn.index}`,
@@ -69,6 +77,5 @@ export const resolveSelector = (selector: DataSelector, columns: Map<string, Res
             col: `$${selectedColumn.index}`,
             row: selectedRowEnd === true ? undefined : modifyUnitSelector(selectedRowEnd, selectedColumn.grouped)
         } : undefined
-    };
-
+    });
 };
