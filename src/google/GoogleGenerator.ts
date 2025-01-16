@@ -1,7 +1,8 @@
-import { TableBookGenerateIssue, TableBookResult } from "../issues";
+import { TableBookGenerateIssue } from "../issues";
 import { SheetBook } from "../sheets/SheetBook";
 import { SheetGenerator } from "../sheets/SheetGenerator";
 import { SheetRange } from "../sheets/SheetRange";
+import { Result } from "../util";
 import { GoogleSheet } from "./GoogleSheet";
 
 export class GoogleGenerator implements SheetGenerator {
@@ -11,7 +12,7 @@ export class GoogleGenerator implements SheetGenerator {
         this.#sheet = sheet;
     }
 
-    async generate(book: SheetBook): Promise<TableBookResult<undefined, TableBookGenerateIssue>> {
+    async generate(book: SheetBook): Promise<Result<undefined, TableBookGenerateIssue[]>> {
         const sheet = this.#sheet;
 
         // clear the sheet
@@ -104,6 +105,6 @@ export class GoogleGenerator implements SheetGenerator {
         // remove the reset sheet
         await sheet.modify(r => r.dropSheets(resetSheetId));
 
-        return { success: true, data: undefined };
+        return Result.success(undefined);
     }
 }

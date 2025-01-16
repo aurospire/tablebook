@@ -95,20 +95,20 @@ export const generate = async (source: TableBookSource, generator: SheetGenerato
     }
 
     if (!parseResult.success)
-        return parseResult;
+        return Result.failure(parseResult.info);
 
     // Validate
     const validateResult = validateData(parseResult.value);
 
     if (!validateResult.success)
-        return validateResult;
+        return Result.failure(validateResult.info);
 
     // Process
     const processResult = processTableBook(validateResult.value);
 
     if (!processResult.success)
-        return processResult;
+        return Result.failure(processResult.info);
 
     // Generate
-    return await generator.generate(processResult.data);
+    return await generator.generate(processResult.value);
 };

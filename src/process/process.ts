@@ -95,7 +95,7 @@ export const processTableBook = (book: TableBook, logger?: ProcessLog): Result<S
 
                 let formula;
                 if (column.expression) {
-                    const result = resolveExpression(column.expression, page.name, group.name, column.name, columns);
+                    const result = resolveExpression(column.expression, page.name, group.name, column.name, columns, columnPath);
 
                     if (!result.success)
                         issues.push(...result.info);
