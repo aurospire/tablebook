@@ -1,6 +1,6 @@
-export type TextLocation = { index: number, line: number, column: number; };
+import { ObjectPath, TextLocation } from "./util";
 
-export type TableBookPath = (string | number)[];
+
 
 export type TableBookParseIssue = {
     type: 'parsing';
@@ -12,13 +12,13 @@ export type TableBookParseIssue = {
 export type TableBookValidateIssue = {
     type: 'validating';
     message: string;
-    path: TableBookPath;
+    path: ObjectPath;
 };
 
 export type TableBookProcessIssue = {
     type: 'processing';
     message: string;
-    path: TableBookPath;
+    path: ObjectPath;
     data: any;
 };
 
@@ -29,7 +29,3 @@ export type TableBookGenerateIssue = {
 };
 
 export type TableBookIssue = TableBookParseIssue | TableBookValidateIssue | TableBookProcessIssue | TableBookGenerateIssue;
-
-export type TableBookResult<Data, Issue extends TableBookIssue> =
-    | { success: true; data: Data; }
-    | { success: false; issues: Issue[]; data?: Data; };

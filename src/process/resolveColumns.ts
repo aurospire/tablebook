@@ -1,5 +1,6 @@
-import { TableBookResult, TableBookProcessIssue } from "../issues";
+import { TableBookProcessIssue } from "../issues";
 import { TableBook } from "../tables/types";
+import { Result } from "../util";
 
 export type ResolvedColumn = {
     page: string;
@@ -9,7 +10,7 @@ export type ResolvedColumn = {
 
 export const toLookupName = (page: string, group: string, name: string) => `${page}.${group}.${name}`;
 
-export const resolveColumns = (tablebook: TableBook): TableBookResult<Map<string, ResolvedColumn>, TableBookProcessIssue> => {
+export const resolveColumns = (tablebook: TableBook): Result<Map<string, ResolvedColumn>, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
 
     const resolved: Map<string, ResolvedColumn> = new Map();
@@ -47,5 +48,5 @@ export const resolveColumns = (tablebook: TableBook): TableBookResult<Map<string
         }
     }
 
-    return issues.length ? { success: false, issues, data: resolved } : { success: true, data: resolved };
+    return issues.length === 0 ? Result.success(resolved) : Result.failure(issues, resolved);
 };

@@ -1,11 +1,12 @@
-import { TableBookPath, TableBookProcessIssue, TableBookResult } from "../issues";
+import { TableBookProcessIssue } from "../issues";
 import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "../sheets/SheetBook";
 import { standardColors, standardThemes } from "../tables/palettes";
 import { Reference, TableBook, TableColumn, TableGroup, TablePage, Theme } from "../tables/types";
-import { resolveColumns } from "./resolveColumns";
-import { resolveTheme } from "./resolveTheme";
-import { resolveExpression } from "./resolveExpression";
+import { ObjectPath, Result } from "../util";
 import { resolveBehavior } from "./resolveBehavior";
+import { resolveColumns } from "./resolveColumns";
+import { resolveExpression } from "./resolveExpression";
+import { resolveTheme } from "./resolveTheme";
 
 export type ProcessLog = {
     book?: (book: TableBook) => void;
@@ -14,7 +15,7 @@ export type ProcessLog = {
     column?: (column: TableColumn) => void;
 };
 
-export const processTableBook = (book: TableBook, logger?: ProcessLog): TableBookResult<SheetBook, TableBookProcessIssue> => {
+export const processTableBook = (book: TableBook, logger?: ProcessLog): Result<SheetBook, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
 
     logger?.book?.(book);
@@ -27,9 +28,9 @@ export const processTableBook = (book: TableBook, logger?: ProcessLog): TableBoo
     const columnsResult = resolveColumns(book);
 
     if (columnsResult.success === false)
-        issues.push(...columnsResult.issues);
+        issues.push(...columnsResult.info);
 
-    const columns = columnsResult.data!;
+    const columns = columnsResult.value!;
 
     // Reify definitions
     const colors = { ...(book.definitions?.colors ?? {}), ...standardColors };
@@ -41,17 +42,20 @@ export const processTableBook = (book: TableBook, logger?: ProcessLog): TableBoo
 
 
     for (let p = 0; p < book.pages.length; p++) {
-        const pagePath: TableBookPath = ['pages', p];
+        const pagePath: ObjectPath = ['pages', p];
 
         const page = book.pages[p]; logger?.page?.(page);
 
         const pageParents: (Theme | Reference)[] = book.theme ? [book.theme] : [];
 
-        const pageTheme = resolveTheme(page.name, page.theme ?? {}, colors, styles, themes, pageParents);
+        const pageTheme = resolveTheme(page.theme ?? {}, colors, styles, themes, pageParents, [], pagePath);
+
+        if (!pageTheme.success)
+            issues.push(...pageTheme.info);
 
         const resultPage: SheetPage = {
             title: page.name,
-            tabColor: pageTheme.tab ?? undefined,
+            tabColor: pageTheme.value!.tab ?? undefined,
             rows: page.rows,
             groups: []
         };
@@ -59,39 +63,60 @@ export const processTableBook = (book: TableBook, logger?: ProcessLog): TableBoo
         resultBook.pages.push(resultPage);
 
         for (let g = 0; g < page.groups.length; g++) {
-            const groupPath: TableBookPath = [...pagePath, 'groups', g];
+            const groupPath: ObjectPath = [...pagePath, 'groups', g];
 
             const group = page.groups[g]; logger?.group?.(group);
 
             const groupParents = [...pageParents, ...(page.theme ? [page.theme] : [])];
 
-            const groupTheme = resolveTheme(`${page.name}.${group.name}`, group.theme ?? {}, colors, styles, themes, groupParents);
+            const groupTheme = resolveTheme(group.theme ?? {}, colors, styles, themes, groupParents, [], groupPath);
+
+            if (!groupTheme.success)
+                issues.push(...groupTheme.info);
 
             const resultGroup: SheetGroup = {
                 title: group.name,
-                titleStyle: groupTheme.group,
+                titleStyle: groupTheme.value!.group,
                 columns: []
             };
 
             resultPage.groups.push(resultGroup);
 
             for (let c = 0; c < group.columns.length; c++) {
-                const columnPath: TableBookPath = [...groupPath, 'columns', c];
+                const columnPath: ObjectPath = [...groupPath, 'columns', c];
 
                 const column = group.columns[c]; logger?.column?.(column);
 
                 const columnParents = [...groupParents, ...(group.theme ? [group.theme] : [])];
 
-                const columnTheme = resolveTheme(`${page.name}.${group.name}.${column.name}`, column.theme ?? {}, colors, styles, themes, columnParents);
+                const columnTheme = resolveTheme(column.theme ?? {}, colors, styles, themes, columnParents, [], columnPath);
+                if (!columnTheme.success)
+                    issues.push(...columnTheme.info);
 
-                const formula = column.expression ? resolveExpression(column.expression, page.name, group.name, column.name, columns) : undefined;
+                let formula;
+                if (column.expression) {
+                    const result = resolveExpression(column.expression, page.name, group.name, column.name, columns);
 
-                const behavior = resolveBehavior(column.type, page.name, group.name, column.name, columns, colors, styles, numeric, temporal);
+                    if (!result.success)
+                        issues.push(...result.info);
+                    else
+                        formula = result.value;
+                }
+
+                let behavior;
+                if (column.type !== undefined) {
+                    const result = resolveBehavior(column.type, page.name, group.name, column.name, columns, types, colors, styles, numeric, temporal, columnPath);
+
+                    if (!result.success)
+                        issues.push(...result.info);
+                    else
+                        behavior = result.value;
+                }
 
                 const resultColumn: SheetColumn = {
                     title: column.name,
-                    titleStyle: columnTheme.header,
-                    dataStyle: columnTheme.data,
+                    titleStyle: columnTheme.value!.header,
+                    dataStyle: columnTheme.value!.data,
                     formula,
                     behavior
                 };
@@ -101,5 +126,7 @@ export const processTableBook = (book: TableBook, logger?: ProcessLog): TableBoo
         }
     };
 
-    return { success: true, data: resultBook };
+    return issues.length === 0
+        ? Result.success(resultBook)
+        : Result.failure(issues, resultBook);
 };

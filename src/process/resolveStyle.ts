@@ -1,7 +1,7 @@
-import { TableBookPath, TableBookProcessIssue, TableBookResult } from "../issues";
-import { SheetTitleStyle, SheetBorder } from "../sheets";
-import { HeaderStyle, Reference, Color, Style } from "../tables/types";
-import { ColorObject } from "../util";
+import { TableBookProcessIssue } from "../issues";
+import { SheetBorder, SheetTitleStyle } from "../sheets";
+import { Color, HeaderStyle, Reference, Style } from "../tables/types";
+import { ColorObject, ObjectPath, Result } from "../util";
 import { resolveColor } from "./resolveColor";
 import { isReference, resolveReference } from "./resolveReference";
 
@@ -9,8 +9,8 @@ export const resolveStyle = (
     style: HeaderStyle | Reference,
     colors: Record<string, Color | Reference>,
     styles: Record<string, Style | Reference>,
-    path: TableBookPath
-): TableBookResult<SheetTitleStyle, TableBookProcessIssue> => {
+    path: ObjectPath
+): Result<SheetTitleStyle, TableBookProcessIssue[]> => {
     let resolved: HeaderStyle;
 
     const issues: TableBookProcessIssue[] = [];
@@ -19,9 +19,9 @@ export const resolveStyle = (
         const result = resolveReference(style, styles, v => typeof v === 'object', path);
 
         if (!result.success)
-            return { success: false, issues: result.issues };
+            return Result.failure(result.info);
 
-        resolved = result.data;
+        resolved = result.value;
     }
     else {
         resolved = style;
@@ -32,9 +32,9 @@ export const resolveStyle = (
         const result = resolveColor(resolved.fore, colors, path);
 
         if (result.success)
-            fore = result.data;
+            fore = result.value;
         else
-            issues.push(...result.issues);
+            issues.push(...result.info);
     }
 
     let back: ColorObject | undefined;
@@ -42,9 +42,9 @@ export const resolveStyle = (
         const result = resolveColor(resolved.back, colors, path);
 
         if (result.success)
-            back = result.data;
+            back = result.value;
         else
-            issues.push(...result.issues);
+            issues.push(...result.info);
     }
 
 
@@ -59,10 +59,10 @@ export const resolveStyle = (
         if (result.success)
             beneath = {
                 type: resolved.beneath.type,
-                color: result.data
+                color: result.value
             };
         else
-            issues.push(...result.issues);
+            issues.push(...result.info);
     }
 
     let between: SheetBorder | undefined;
@@ -72,13 +72,13 @@ export const resolveStyle = (
         if (result.success)
             between = {
                 type: resolved.between.type,
-                color: result.data
+                color: result.value
             };
         else
-            issues.push(...result.issues);
+            issues.push(...result.info);
     }
 
     const result = { fore, back, bold, italic, beneath, between };
 
-    return issues.length ? { success: true, data: result } : { success: false, issues };
+    return issues.length === 0 ? Result.success(result) : Result.failure(issues, result);
 };

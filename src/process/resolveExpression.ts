@@ -1,12 +1,18 @@
+import { TableBookProcessIssue } from "../issues";
 import { SheetSelector } from "../sheets";
 import { Expression, DataSelector } from "../tables/types";
+import { Result } from "../util";
 import { ResolvedColumn } from "./resolveColumns";
 import { resolveSelector } from "./resolveSelector";
 
-export const resolveExpression = (expression: Expression<DataSelector>, page: string, group: string, name: string, columns: Map<string, ResolvedColumn>): Expression<SheetSelector> => {
+export const resolveExpression = (
+    expression: Expression<DataSelector>,
+    page: string, group: string, name: string,
+    columns: Map<string, ResolvedColumn>
+): Result<Expression<SheetSelector>, TableBookProcessIssue[]> => {
     switch (expression.type) {
         case "literal":
-            return expression;
+            return Result.success(expression);
         case "function":
             return {
                 type: "function",

@@ -1,17 +1,19 @@
+import { TableBookProcessIssue } from "../issues";
 import { SheetTitleStyle, SheetStyle } from "../sheets";
 import { Theme, Reference, Color, Style } from "../tables/types";
-import { ColorObject } from "../util";
+import { ColorObject, ObjectPath, Result } from "../util";
 import { resolveColor } from "./resolveColor";
 import { isReference, resolveReference } from "./resolveReference";
 import { resolveStyle } from "./resolveStyle";
 
-type SheetTheme = {
+export type SheetTheme = {
     tab?: ColorObject | null;
     group: SheetTitleStyle;
     header: SheetTitleStyle;
     data: SheetStyle;
 };
-const mergeThemes = (base: SheetTheme, override: SheetTheme): SheetTheme => {
+
+export const mergeThemes = (base: SheetTheme, override: SheetTheme): SheetTheme => {
     return {
         tab: override.tab ?? base.tab,
         header: {
@@ -38,19 +40,32 @@ const mergeThemes = (base: SheetTheme, override: SheetTheme): SheetTheme => {
         }
     };
 };
+
 export const resolveTheme = (
-    name: string,
     theme: Theme | Reference,
     colors: Record<string, Color | Reference>,
     styles: Record<string, Style | Reference>,
     themes: Record<string, Theme | Reference>,
     parents: (Theme | Reference)[],
-    chain: Theme[] = []
-): SheetTheme => {
-    if (isReference(theme))
-        return resolveTheme(name, resolveReference(theme, themes, v => typeof v === 'object'), colors, styles, themes, parents, chain);
+    chain: Theme[],
+    path: ObjectPath
+): Result<SheetTheme, TableBookProcessIssue[]> => {
+    let resolved: Theme = {};
+    const issues: TableBookProcessIssue[] = [];
 
-    if (chain.includes(theme))
+    if (isReference(theme)) {
+        const result = resolveReference(theme, themes, v => typeof v === 'object', path);
+
+        if (result.success)
+            resolved = result.value;
+        else
+            issues.push(...result.info);
+    }
+    else {
+        resolved = theme;
+    }
+
+    if (chain.includes(resolved))
         throw new Error('Circular theme reference for ' + name + JSON.stringify({ chain, theme }, null, 2));
 
     let result: SheetTheme = {
@@ -62,30 +77,73 @@ export const resolveTheme = (
 
     for (let i = 0; i < parents.length; i++) {
         const parent = parents[i];
-        const subname = `${name}:parent[${i}]`;
-        const resolved = resolveTheme(subname, parent, colors, styles, themes, [], []);
 
-        result = mergeThemes(result, resolved);
+        const resolvedParent = resolveTheme(parent, colors, styles, themes, [], [], path);
+
+        if (resolvedParent.success)
+            result = mergeThemes(result, resolvedParent.value);
+        else
+            issues.push(...resolvedParent.info);
     }
 
-    if (theme.inherits) {
-        const branchChain = [...chain, theme];
+    if (resolved.inherits) {
+        const branchChain = [...chain, resolved];
 
-        for (let i = 0; i < theme.inherits.length; i++) {
-            const inherit = theme.inherits[i];
-            const subname = `${name}:inherits[${i}]`;
-            const resolved = resolveTheme(subname, inherit, colors, styles, themes, [], branchChain);
+        for (let i = 0; i < resolved.inherits.length; i++) {
+            const inherit = resolved.inherits[i];
 
-            result = mergeThemes(result, resolved);
+            const resolvedInherit = resolveTheme(inherit, colors, styles, themes, [], branchChain, path);
+
+            if (resolvedInherit.success)
+                result = mergeThemes(result, resolvedInherit.value);
+            else
+                issues.push(...resolvedInherit.info);
         }
     }
 
-    result = mergeThemes(result, {
-        tab: theme.tab ? resolveColor(theme.tab, colors) : undefined,
-        header: theme.header ? resolveStyle(theme.header, colors, styles) : {},
-        group: theme.group ? resolveStyle(theme.group, colors, styles) : {},
-        data: theme.data ? resolveStyle(theme.data, colors, styles) : {},
-    });
 
-    return result;
+    let tab: ColorObject | undefined;
+    if (resolved.tab) {
+        const result = resolveColor(resolved.tab, colors, path);
+
+        if (result.success)
+            tab = result.value;
+        else
+            issues.push(...result.info);
+    }
+
+    let header: SheetTitleStyle | undefined;
+    if (resolved.header) {
+        const result = resolveStyle(resolved.header, colors, styles, path);
+
+        if (result.success)
+            header = result.value;
+        else
+            issues.push(...result.info);
+    }
+
+
+    let group: SheetTitleStyle | undefined;
+    if (resolved.group) {
+        const result = resolveStyle(resolved.group, colors, styles, path);
+
+        if (result.success)
+            group = result.value;
+        else
+            issues.push(...result.info);
+    }
+
+    let data: SheetStyle | undefined;
+    if (resolved.data) {
+        const result = resolveStyle(resolved.data, colors, styles, path);
+
+        if (result.success)
+            data = result.value;
+        else
+            issues.push(...result.info);
+    }
+
+    result = mergeThemes(result, { tab, header: header ?? {}, group: group ?? {}, data: data ?? {} });
+
+    return issues.length === 0 ? Result.success(result) : Result.failure(issues, result);
 };

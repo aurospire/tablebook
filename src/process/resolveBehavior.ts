@@ -1,7 +1,8 @@
 import { DateTime } from "luxon";
-import { TableBookPath, TableBookResult, TableBookProcessIssue } from "../issues";
-import { SheetRule, SheetBehavior, SheetConditionalStyle } from "../sheets";
-import { NumericType, ComparisonRule, TemporalString, TemporalType, ColumnType, Reference, Color, Style, NumericFormat, TemporalFormat } from "../tables/types";
+import { TableBookProcessIssue } from "../issues";
+import { SheetBehavior, SheetConditionalStyle, SheetRule } from "../sheets";
+import { Color, ColumnType, ComparisonRule, NumericFormat, NumericType, Reference, Style, TemporalFormat, TemporalString, TemporalType } from "../tables/types";
+import { ObjectPath, Result } from "../util";
 import { ResolvedColumn } from "./resolveColumns";
 import { resolveExpression } from "./resolveExpression";
 import { isReference, resolveReference } from "./resolveReference";
@@ -64,14 +65,14 @@ const resolveTemporalRule = (rule: TemporalType['rule'] & {}, page: string, grou
 export const resolveBehavior = (
     type: ColumnType | Reference,
     page: string, group: string, name: string,
-    types: Record<string, ColumnType>,
     columns: Map<string, ResolvedColumn>,
+    types: Record<string, ColumnType | Reference>,
     colors: Record<string, Color | Reference>,
     styles: Record<string, Style | Reference>,
     numeric: Record<string, Reference | NumericFormat>,
     temporal: Record<string, Reference | TemporalFormat>,
-    path: TableBookPath
-): TableBookResult<SheetBehavior, TableBookProcessIssue> => {
+    path: ObjectPath
+): Result<SheetBehavior, TableBookProcessIssue[]> => {
 
     let resolved: ColumnType;
 
@@ -79,10 +80,10 @@ export const resolveBehavior = (
         const result = resolveReference(type, types, v => !isReference(v), path);
 
         if (result.success)
-            resolved = result.data;
+            resolved = result.value;
 
         else
-            return { success: false, issues: result.issues };
+            return Result.failure(result.info);
     }
 
     else
