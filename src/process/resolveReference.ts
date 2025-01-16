@@ -17,7 +17,7 @@ export const resolveReference = <T>(
         const result = map[ref.substring(1)];
 
         if (result === undefined)
-            return { success: false, issues: [{ type: 'processing', message: `Missing reference: ${ref}`, path, data: ref }] };
+            return { success: false, issues: [{ type: 'processing', message: 'Missing reference', path, data: ref }] };
         else if (checker(result))
             return { success: true, data: result as T };
         else if (isReference(result)) {
@@ -29,6 +29,6 @@ export const resolveReference = <T>(
             ref = result;
         }
         else
-            return { success: false, issues: [{ type: 'processing', message: `Invalid reference: ${ref}`, path, data: ref }] };
+            return { success: false, issues: [{ type: 'processing', message: 'Invalid reference', path, data: ref }] };
     }
 };

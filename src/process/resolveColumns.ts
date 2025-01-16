@@ -21,7 +21,7 @@ export const resolveColumns = (tablebook: TableBook): TableBookResult<Map<string
         const page = tablebook.pages[s];
 
         if (pages.has(page.name))
-            issues.push({ type: 'processing', message: `Duplicate page name: ${page.name}`, path: ['pages', s], data: page });
+            issues.push({ type: 'processing', message: `Duplicate page name`, path: ['pages', s], data: page });
 
         pages.add(page.name);
 
@@ -32,7 +32,7 @@ export const resolveColumns = (tablebook: TableBook): TableBookResult<Map<string
             const group = page.groups[g];
 
             if (groups.has(group.name))
-                issues.push({ type: 'processing', message: `Duplicate group name: ${group.name}`, path: ['pages', s, 'groups', g], data: group });
+                issues.push({ type: 'processing', message: `Duplicate group name`, path: ['pages', s, 'groups', g], data: group });
 
             for (let c = 0; c < group.columns.length; c++) {
                 const column = group.columns[c];
@@ -40,7 +40,7 @@ export const resolveColumns = (tablebook: TableBook): TableBookResult<Map<string
                 const fullname = toLookupName(page.name, group.name, column.name);
 
                 if (resolved.has(fullname))
-                    issues.push({ type: 'processing', message: `Duplicate column name: ${group.name}`, path: ['pages', s, 'groups', g, 'columns', c], data: column });
+                    issues.push({ type: 'processing', message: `Duplicate column name`, path: ['pages', s, 'groups', g, 'columns', c], data: column });
 
                 resolved.set(fullname, { page: page.name, grouped: page.groups.length > 1, index: index++ });
             }
