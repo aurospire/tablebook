@@ -10,9 +10,8 @@ import { Result, TextLocation } from './util';
 export type TableBookSource =
     | { type: 'ts'; data: TableBook; }
     | { type: 'raw'; data: any; }
-    | { type: 'json'; data: string; }
-    | { type: 'yaml'; data: string; }
-    | { type: 'fn'; data: () => Result<any, TableBookParseIssue[]>; }
+    | { type: 'json'; data: string; of: 'flat' | 'table'; }
+    | { type: 'yaml'; data: string; of: 'flat' | 'table'; }    
     ;
 
 export type TableBookParseResult = Result<any, TableBookParseIssue[]>;
@@ -88,9 +87,6 @@ export const generate = async (source: TableBookSource, generator: SheetGenerato
             break;
         case 'yaml':
             parseResult = parseYaml(source.data);
-            break;
-        case 'fn':
-            parseResult = source.data();
             break;
     }
 

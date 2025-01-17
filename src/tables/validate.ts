@@ -11,7 +11,7 @@ import {
     CurrencyFormat, CurrencyFormatType, CurrencySymbolPositions,
     CustomRule, CustomRuleType,
     DataSelector,
-    Definitions,
+    TableDefinitions,
     DigitPlaceholder,
     EnumItem, EnumType, EnumTypeKind,
     Expression,
@@ -317,7 +317,7 @@ const TablePage: z.ZodType<TablePage> = TableUnit.and(z.object({
     rows: z.number().int().positive()
 }));
 
-const Definitions: z.ZodType<Definitions> = z.object({
+const TableDefinitions: z.ZodType<TableDefinitions> = z.object({
     colors: z.record(z.string(), z.union([Color, Reference])).optional(),
     styles: z.record(z.string(), z.union([HeaderStyle, Reference])).optional(),
     themes: z.record(z.string(), z.union([Theme, Reference])).optional(),
@@ -328,7 +328,7 @@ const Definitions: z.ZodType<Definitions> = z.object({
 
 const TableBook: z.ZodType<TableBook> = TableUnit.and(z.object({
     pages: z.array(TablePage),
-    definitions: Definitions.optional()
+    definitions: TableDefinitions.optional()
 }));
 
 export { TableBook as TableBookValidator };

@@ -186,7 +186,7 @@ export type LiteralExpression = { type: typeof LiteralExpressionType, of: string
 /** Type identifier for flat expressions */
 export const FlatExpressionType = 'flat';
 /* Flattened Expression, refs are replaced in the expression text*/
-export type FlatExpression = { type: typeof FlatExpressionType, expression: string, ref: Record<string, ColumnSelector>; };
+export type FlatExpression = { type: typeof FlatExpressionType, expression: string, refs?: Record<string, ColumnSelector>; };
 
 /** All possible expression types for data computation and validation */
 export type Expression<Selector> =
@@ -465,7 +465,7 @@ export type TablePage = TableUnit & {
 * Container for reusable definitions
 * Enables referencing common elements across the TableBook
 */
-export type Definitions = {
+export type TableDefinitions = {
     /** Custom color definitions. Includes prebuilt colors from StandardPalettes->main */
     colors?: Record<string, Color | Reference>;
     /** Reusable style definitions */
@@ -491,5 +491,5 @@ export type TableBook = TableUnit & {
     /** Array of pages in this workbook */
     pages: TablePage[];
     /** Optional container for reusable definitions */
-    definitions?: Definitions;
+    definitions?: TableDefinitions;
 };

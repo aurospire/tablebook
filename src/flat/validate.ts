@@ -29,7 +29,7 @@ import {
 const FlatColumnReferencesSchema: z.ZodType<FlatColumnReferences> = z.object({
     page: z.string(),
     group: z.string(),
-    name: z.string()
+    column: z.string()
 });
 
 const FlatFormulaSchema: z.ZodType<FlatFormula> = z.object({
@@ -74,6 +74,7 @@ const FlatColumnSourceSchema: z.ZodType<FlatColumnSource> = z.union([
 ]);
 
 const FlatColumnSchema: z.ZodType<FlatColumn> = z.object({
+    page: FlatNameSchema,
     group: FlatNameSchema,
     name: FlatNameSchema,
     description: z.string(),
@@ -92,6 +93,7 @@ const FlatPaletteSchema: z.ZodType<typeof FlatPalettes[number]> = z.enum(FlatPal
 const FlatPageSchema: z.ZodType<FlatPage> = z.object({
     name: FlatNameSchema,
     description: z.string(),
+    rows: z.number(),
     palette: FlatPaletteSchema
 });
 

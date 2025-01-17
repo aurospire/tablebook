@@ -1,8 +1,8 @@
 /** Represents a reference to a column in a specific page and group. */
-export type FlatColumnReferences = { 
+export type FlatColumnReferences = {
     page: string; // Name of the page containing the referenced column
     group: string; // Name of the group containing the referenced column
-    name: string; // Name of the referenced column
+    column: string; // Name of the referenced column
 };
 
 /** Defines a formula in the table, with optional references to columns used in the formula. */
@@ -70,7 +70,8 @@ export type FlatColumnSource = typeof FlatManualSource | FlatFormulaSource | Fla
 
 /** Defines a column in the table, including its source (manual, formula, or external) and type. */
 export type FlatColumn = {
-    group: FlatName; // Group to which the column belongs
+    page: FlatName; // Name of the page the group belongs to
+    group: FlatName; // Name of the group the column belongs to
     name: FlatName; // Column name (must match FlatName pattern)
     description: string; // Brief description of the column
     source: FlatColumnSource; // Source type of the column
@@ -95,6 +96,7 @@ export type FlatPalette = typeof FlatPalettes[number]; // Represents a valid pal
 export type FlatPage = {
     name: FlatName; // Page name
     description: string; // Brief description of the page
+    rows: number; // Number of rows on the page
     palette: FlatPalette; // Color palette used for the page
 };
 
