@@ -1,7 +1,5 @@
 import { ObjectPath, TextLocation } from "./util";
 
-
-
 export type TableBookParseIssue = {
     type: 'parsing';
     message: string;

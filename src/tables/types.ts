@@ -190,9 +190,9 @@ export const LiteralExpressionType = 'literal';
 export type LiteralExpression = { type: typeof LiteralExpressionType, of: string | number | boolean; };
 
 /** Type identifier for flat expressions */
-export const FlatExpressionType = 'flat';
+export const RawExpressionType = 'raw';
 /* Flattened Expression, refs are replaced in the expression text*/
-export type FlatExpression<Selector> = { type: typeof FlatExpressionType, expression: string, refs?: Record<string, Selector>; };
+export type RawExpression<Selector> = { type: typeof RawExpressionType, expression: string, refs?: Record<string, Selector>; };
 
 /** All possible expression types for data computation and validation */
 export type Expression<Selector> =
@@ -200,7 +200,7 @@ export type Expression<Selector> =
     | NegatedExpression<Selector>
     | FunctionExpression<Selector>
     | SelectorExpression<Selector>
-    | FlatExpression<Selector>
+    | RawExpression<Selector>
     | LiteralExpression
     ;
 

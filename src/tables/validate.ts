@@ -55,7 +55,9 @@ import {
     Theme,
     UnitSelector, UnitSelectorRegex,
     AllLiteral,
-    AllSelector
+    AllSelector,
+    RawExpressionType,
+    RawExpression
 } from './types';
 
 /* Reference */
@@ -157,6 +159,12 @@ const LiteralExpression: z.ZodType<LiteralExpression> = z.object({
 const SelectorExpression: z.ZodType<SelectorExpression<DataSelector>> = z.object({
     type: z.literal(SelectorExpressionType),
     from: DataSelector
+});
+
+const RawExpression: z.ZodType<RawExpression<DataSelector>> = z.object({
+    type: z.literal(RawExpressionType),
+    expression: z.string(),
+    refs: z.record(z.string(), DataSelector)
 });
 
 const Expression: z.ZodType<Expression<DataSelector>> = z.union([
