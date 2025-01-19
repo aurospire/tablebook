@@ -53,7 +53,9 @@ import {
     TextRule,
     TextType, TextTypeKind,
     Theme,
-    UnitSelector, UnitSelectorRegex
+    UnitSelector, UnitSelectorRegex,
+    AllLiteral,
+    AllSelector
 } from './types';
 
 /* Reference */
@@ -75,13 +77,15 @@ const RangeSelector: z.ZodType<RangeSelector> = z.object({
     to: UnitSelector
 });
 
+const AllSelector: z.ZodType<AllSelector> = z.literal(AllLiteral);
+
 const RowSelector: z.ZodType<RowSelector> = z.union([UnitSelector, RangeSelector]);
 
 const DataSelector: z.ZodType<DataSelector> = z.union([
     SelfSelector,
     z.object({
         column: z.union([ColumnSelector, SelfSelector]),
-        row: z.union([RowSelector, SelfSelector]).optional(),
+        row: z.union([RowSelector, SelfSelector, AllSelector])
     })
 ]);
 

@@ -48,11 +48,14 @@ export const resolveSelector = (
     if (typeof row === 'string') {
         if (row === 'self')
             selectedRowStart = '+0';
-
+        else if (row === 'all') {
+            selectedRowStart = '$0';
+            selectedRowEnd = true;
+        }
         else
             selectedRowStart = row as UnitSelector;
     }
-    else if (row !== undefined) {
+    else {
         if (row.from < row.to) {
             selectedRowStart = row.from;
             selectedRowEnd = row.to;
@@ -61,10 +64,6 @@ export const resolveSelector = (
             selectedRowStart = row.to;
             selectedRowEnd = row.from;
         }
-    }
-    else {
-        selectedRowStart = '$0';
-        selectedRowEnd = true;
     }
 
     return Result.success({

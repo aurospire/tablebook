@@ -24,7 +24,12 @@ export type Reference<Of extends string = string> = `@${Of}`;
 /** Used to reference the current element in the scope where it is used */
 export const SelfLiteral = 'self';
 /** Type for self-referential selection */
-export type SelfSelector = 'self';
+export type SelfSelector = typeof SelfLiteral;
+
+/** Used to reference all elements in the scope where it is used */
+export const AllLiteral = 'all';
+/** Type for all-referential selection */
+export type AllSelector = typeof AllLiteral;
 
 /** Identifies a specific column by name, optionally specifying its table and group */
 export type ColumnSelector = {
@@ -59,14 +64,15 @@ export type RowSelector = UnitSelector | RangeSelector;
 /** 
  * Combines column and row selection to target data within a table
  * Can be either a full selector object or 'self' for current element reference
- * When using object form: column defaults to current column if 'self', row defaults to entire column if undefined
+ * When using object form: column defaults to current column if 'self', row defaults to current row if 'self'
+ * When row is 'all' - refers to all rows in the column
  * When using 'self': refers to current element's exact position (both column and row) 
  */
 export type DataSelector = {
     /** The column to target; 'self' refers to current element's column */
     column: ColumnSelector | SelfSelector;
     /** Optional row filter; 'self' refers to current row, undefined means entire column */
-    row?: RowSelector | SelfSelector;
+    row: RowSelector | SelfSelector | AllSelector;
 } | SelfSelector; // Full self reference - both column and row of current element
 
 

@@ -205,7 +205,7 @@ const resolveLookupBehavior = (
     columns: Map<string, ResolvedColumn>,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
-    let result = resolveSelector({ column: type.values }, columns, page, group, name, path);
+    let result = resolveSelector({ column: type.values, row: 'all' }, columns, page, group, name, path);
 
     if (!result.success)
         return Result.failure(result.info);

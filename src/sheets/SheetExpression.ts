@@ -42,7 +42,8 @@ export const toFormula = (exp: SheetExpression, position: SheetPosition): string
             let result = exp.expression;
             if (exp.refs) {
                 for (const [key, value] of Object.entries(exp.refs)) {
-                    result = result.replace(new RegExp(`\\$${key}`, 'g'), toFormula(value, position));
+                    const selector = SheetSelector().toAddress(value, position);
+                    result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), selector);
                 }
             }
 
