@@ -1,129 +1,156 @@
-import { z } from 'zod';
+import { z, ZodType } from 'zod';
 import {
-    FlatColumnReferences,
-    FlatFormula,
-    FlatNameRegex,
-    FlatColorRegex,
-    FlatEnumType,
-    FlatDecimals,
-    FlatTypes,
-    FlatNumericTypeRegex,
-    FlatEnumTypeRegex,
-    FlatManualSource,
-    FlatFormulaSourceRegex,
-    FlatExternalSourceRegex,
-    FlatPalettes,
-    FlatColumnType,
     FlatBook,
-    FlatPage,
-    FlatGroup,
-    FlatColumn,
-    FlatEnumTypeName,
-    FlatNumericType,
     FlatColor,
+    FlatColorRegex,
+    FlatColumn,
+    FlatColumnSource,
+    FlatColumnType,
+    FlatDecimals,
+    FlatEnumItem,
+    FlatEnumType,
+    FlatEnumTypeRegex,
     FlatExternalSource,
+    FlatExternalSourceRegex,
+    FlatFormula,
     FlatFormulaSource,
-    FlatColumnSource
+    FlatFormulaSourceRegex,
+    FlatGroup,
+    FlatLookupType,
+    FlatLookupTypeRegex,
+    FlatManualSource,
+    FlatNameRegex,
+    FlatNumericType,
+    FlatNumericTypeRegex,
+    FlatPalette,
+    FlatPalettes,
+    FlatPlaceholder,
+    FlatRowSelection,
+    FlatRowSelectionRegex,
+    FlatSelection,
+    FlatTable,
+    FlatTypes
 } from './types';
 
-const FlatColumnReferencesSchema: z.ZodType<FlatColumnReferences> = z.object({
-    page: z.string(),
-    group: z.string(),
-    column: z.string()
-});
+/** Helper for normalizing template strings */
+const TemplateSchema = <T>(name: string, regex: RegExp): ZodType<T> =>
+    z.custom<T>(
+        value => regex.test(value as string),
+        { message: `Invalid ${name} format` }
+    );
 
-const FlatFormulaSchema: z.ZodType<FlatFormula> = z.object({
-    name: z.string(),
-    description: z.string(),
-    formula: z.string(),
-    refs: z.record(FlatColumnReferencesSchema).optional()
-});
+/** Schema for FlatName values. */
+const FlatNameSchema: ZodType<string> = TemplateSchema<string>('FlatName', FlatNameRegex);
 
-const FlatNameSchema: z.ZodType<string> = z.custom<string>(value => FlatNameRegex.test(value as string));
+/** Schema for FlatColor values. */
+const FlatColorSchema: ZodType<FlatColor> = TemplateSchema<FlatColor>('FlatColor', FlatColorRegex);
 
-const FlatColorSchema: z.ZodType<FlatColor> = z.custom<FlatColor>(value => FlatColorRegex.test(value as string));
-
-const FlatEnumSchema: z.ZodType<FlatEnumType> = z.object({
+/** Schema for FlatEnum values. */
+const FlatEnumItemSchema: ZodType<FlatEnumItem> = z.object({
     name: FlatNameSchema,
     value: z.string(),
     description: z.string(),
-    color: FlatColorSchema
+    color: FlatColorSchema,
 });
 
-const FlatDecimalsSchema: z.ZodType<FlatDecimals> = z.number();
+/** Schema for numeric precision values (FlatDecimals). */
+const FlatDecimalsSchema: ZodType<FlatDecimals> = z.number();
 
-const FlatTypesSchema: z.ZodType<typeof FlatTypes[number]> = z.enum(FlatTypes);
+/** Schema for FlatTypes values. */
+const FlatTypesSchema: ZodType<typeof FlatTypes[number]> = z.enum(FlatTypes);
 
-const FlatNumericTypeSchema: z.ZodType<FlatNumericType> = z.custom<FlatNumericType>(value => FlatNumericTypeRegex.test(value as string));
+/** Schema for FlatNumericType values. */
+const FlatNumericTypeSchema: ZodType<FlatNumericType> = TemplateSchema<FlatNumericType>('FlatNumericType', FlatNumericTypeRegex);
 
-const FlatEnumTypeSchema: z.ZodType<FlatEnumType> = z.custom<FlatEnumType>(value => FlatEnumTypeRegex.test(value as string));
+/** Schema for FlatEnumType values. */
+const FlatEnumTypeSchema: ZodType<FlatEnumType> = TemplateSchema<FlatEnumType>('FlatEnumType', FlatEnumTypeRegex);
 
-const FlatColumnTypeSchema: z.ZodType<FlatColumnType> = z.union([
+/** Schema for FlatLookupType values. */
+const FlatLookupTypeSchema: ZodType<FlatLookupType> =  TemplateSchema<FlatLookupType>('FlatLookupType', FlatLookupTypeRegex)
+
+/** Schema for FlatColumnType values. */
+const FlatColumnTypeSchema: ZodType<FlatColumnType> = z.union([
     FlatTypesSchema,
     FlatNumericTypeSchema,
-    FlatEnumTypeSchema
+    FlatEnumTypeSchema,
+    FlatLookupTypeSchema    
 ]);
 
-const FlatFormulaSourceSchema: z.ZodType<FlatFormulaSource> = z.custom<FlatFormulaSource>(value => FlatFormulaSourceRegex.test(value as string));
-const FlatExternalSourceSchema: z.ZodType<FlatExternalSource> = z.custom<FlatExternalSource>(value => FlatExternalSourceRegex.test(value as string));
+/** Schema for FlatFormulaSource values. */
+const FlatFormulaSourceSchema: ZodType<FlatFormulaSource> = TemplateSchema<FlatFormulaSource>('FlatFormulaSource', FlatFormulaSourceRegex);
 
-const FlatColumnSourceSchema: z.ZodType<FlatColumnSource> = z.union([
+/** Schema for FlatExternalSource values. */
+const FlatExternalSourceSchema: ZodType<FlatExternalSource> = TemplateSchema<FlatExternalSource>('FlatExternalSource', FlatExternalSourceRegex);
+
+/** Schema for FlatColumnSource values. */
+const FlatColumnSourceSchema: ZodType<FlatColumnSource> = z.union([
     z.literal(FlatManualSource),
     FlatFormulaSourceSchema,
-    FlatExternalSourceSchema
+    FlatExternalSourceSchema,
 ]);
 
-const FlatColumnSchema: z.ZodType<FlatColumn> = z.object({
-    page: FlatNameSchema,
+/** Schema for FlatRowSelection values. */
+const FlatRowSelectionSchema: ZodType<FlatRowSelection> = TemplateSchema<FlatRowSelection>('FlatRowSelection', FlatRowSelectionRegex);
+
+/** Schema for FlatSelection values. */
+const FlatSelectionSchema: ZodType<FlatSelection> = z.object({
+    table: FlatNameSchema,
+    group: FlatNameSchema,
+    column: FlatNameSchema,
+    rows: FlatRowSelectionSchema,
+});
+
+/** Schema for FlatPlaceholder values. */
+const FlatPlaceholderSchema: ZodType<FlatPlaceholder> = z.object({
+    tag: z.string(),
+    selection: FlatSelectionSchema,
+});
+
+/** Schema for FlatFormula values. */
+const FlatFormulaSchema: ZodType<FlatFormula> = z.object({
+    name: z.string(),
+    description: z.string(),
+    formula: z.string(),
+    refs: z.array(FlatPlaceholderSchema),
+});
+
+/** Schema for FlatColumn values. */
+const FlatColumnSchema: ZodType<FlatColumn> = z.object({
+    table: FlatNameSchema,
     group: FlatNameSchema,
     name: FlatNameSchema,
     description: z.string(),
     source: FlatColumnSourceSchema,
-    type: FlatColumnTypeSchema
+    type: FlatColumnTypeSchema,
 });
 
-const FlatGroupSchema: z.ZodType<FlatGroup> = z.object({
-    page: FlatNameSchema,
+/** Schema for FlatGroup values. */
+const FlatGroupSchema: ZodType<FlatGroup> = z.object({
+    table: FlatNameSchema,
     name: FlatNameSchema,
-    description: z.string()
+    description: z.string(),
 });
 
-const FlatPaletteSchema: z.ZodType<typeof FlatPalettes[number]> = z.enum(FlatPalettes);
+/** Schema for FlatPalette values. */
+const FlatPaletteSchema: ZodType<FlatPalette> = z.enum(FlatPalettes);
 
-const FlatPageSchema: z.ZodType<FlatPage> = z.object({
+/** Schema for FlatTable values. */
+const FlatTableSchema: ZodType<FlatTable> = z.object({
     name: FlatNameSchema,
     description: z.string(),
     rows: z.number(),
-    palette: FlatPaletteSchema
+    palette: FlatPaletteSchema,
 });
 
-const FlatBookSchema: z.ZodType<FlatBook> = z.object({
+/** Schema for FlatBook values. */
+const FlatBookSchema: ZodType<FlatBook> = z.object({
     name: FlatNameSchema,
     description: z.string(),
-    pages: z.array(FlatPageSchema),
+    tables: z.array(FlatTableSchema),
     groups: z.array(FlatGroupSchema),
-    columns: z.array(FlatColumnSchema),
     formulas: z.array(FlatFormulaSchema),
-    enums: z.array(FlatEnumSchema)
+    enums: z.array(FlatEnumItemSchema),
+    columns: z.array(FlatColumnSchema),
 });
 
-export {
-    FlatColumnReferencesSchema,
-    FlatFormulaSchema,
-    FlatNameSchema,
-    FlatColorSchema,
-    FlatEnumSchema,
-    FlatDecimalsSchema,
-    FlatTypesSchema,
-    FlatNumericTypeSchema,
-    FlatEnumTypeSchema,
-    FlatColumnTypeSchema,
-    FlatFormulaSourceSchema,
-    FlatExternalSourceSchema,
-    FlatColumnSourceSchema,
-    FlatColumnSchema,
-    FlatGroupSchema,
-    FlatPaletteSchema,
-    FlatPageSchema,
-    FlatBookSchema
-};
+export { FlatBookSchema };

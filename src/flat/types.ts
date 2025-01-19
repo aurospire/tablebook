@@ -11,8 +11,6 @@ export type FlatAbsolutePrefix = '$';
 /** Represents a unit selection using a prefix and a numeric value. */
 export type FlatUnitSelection = `${FlatAbsolutePrefix | FlatRelativePrefix}${number}`;
 
-/** Regular expression to match row selection patterns. */
-export const FlatRowSelectionRegex = /^([$+\-]\d+)(:[$+\-]\d+)?$/;
 /** 
  * Represents a selection of rows, either as a single unit, a range, or 'all'.
  * 'all' selects all rows in the table.
@@ -26,8 +24,9 @@ export const FlatRowSelectionRegex = /^([$+\-]\d+)(:[$+\-]\d+)?$/;
  * Example using absolute row selection: $1:$3 selects rows 1, 2, and 3.
  * Example using relative row selection: +1:-1 selects the row below the current row until the row above the current row.
  * Example using relative and absolute row selection: +1:$3 selects the row below the current row to row 3.
- */
+*/
 export type FlatRowSelection = `${FlatUnitSelection}${`:${FlatUnitSelection}` | ''}` | 'all';
+export const FlatRowSelectionRegex = /^(?:([$+\-]\d+)(?::([$+\-]\d+))?|all)$/;
 
 /** Represents a reference to a specific column within a table and group. */
 export type FlatSelection = {
@@ -59,72 +58,55 @@ export type FlatFormula = {
     refs: FlatPlaceholder[];
 };
 
-/** Regular expression to validate FlatName. */
-export const FlatNameRegex = /^[A-Z][A-Z0-9_]*$/;
-
 /** Represents a string matching the FlatName pattern. */
 export type FlatName = string;
+export const FlatNameRegex = /^[A-Z][A-Z0-9_]*$/;
 
-/** Regular expression to validate 3- or 6-digit hexadecimal color codes. */
+
+/** Represents a valid hexadecimal 3- or 6-digit hexadecimal color codes. */
+export type FlatColor = `#${string}`;
 export const FlatColorRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
 
-/** Represents a valid hexadecimal color code. */
-export type FlatColor = `#${string}`;
-
-
-export const FlatTextTypeName = 'text';
-export type FlatTextType = {    type: typeof FlatTextTypeName;};
-
-export const FlatEnumTypeName = 'enum';
-export type FlatEnumType = {
-    type: typeof FlatEnumTypeName;
+/** Defines an enumerated value with a name, value, description, and color. */
+export type FlatEnumItem = {
     name: FlatName; // Name of the enum (must match FlatName pattern)
     value: string; // Enum value (e.g., 'small', 'medium', etc.)
     description: string; // Description of the enum value
     color: FlatColor; // Associated color for the enum value
 };
 
-export const FlatLookupTypeName = 'lookup';
-export type FlatLookupType = {
-    type: typeof FlatLookupTypeName;
-    table: FlatName;
-    group: FlatName;
-    column: FlatName;
-};
+/** Represents the available base types for columns. */
+export const FlatTypes = ['text', 'currency', 'date', 'datetime'] as const;
 
-export const FlatNumberTypeNames = ['number', 'percent', 'dollar'] as const;
-export type FlatNumberName = {
-    type: typeof FlatNumberTypeNames[number];
-    decimals: number;
+/** Specifies the precision (number of decimal places) for numeric columns. */
+export type FlatDecimals = number;
 
-    negativeColor?: FlatColor;
-    zeroColor?: FlatColor;
-    positiveColor?: FlatColor;
+/** Represents numeric types with optional specified decimal precision. */
+export type FlatNumericType = `${'number' | 'percent'}:${FlatDecimals}`;
+export const FlatNumericTypeRegex = /^(number|percent)(?::(\d+))?$/;
 
-    min?: number;
-    max?: number;
-};
+/** Represents enum types referencing a FlatName. */
+export type FlatEnumType = `enum:${FlatName}`;
+export const FlatEnumTypeRegex = /^enum:([A-Z][A-Z0-9_]*)$/;
 
-export const FlatTemporalTypeNames = ['date', 'timestamp'] as const;
-export type FlatTemporalType = { type: typeof FlatTemporalTypeNames[number]; };
+// Represents a lookup type referencing a table, group, and column.
+export type FlatLookupType = `lookup:${string}.${string}.${string}`;
+export const FlatLookupTypeRegex = /^lookup:([A-Z][A-Z0-9_]*)\.([A-Z][A-Z0-9_]*)\.([A-Z][A-Z0-9_]*)$/;
 
-export type FlatType = FlatEnumType | FlatTextType | FlatLookupType | FlatNumberName | FlatTemporalType;
-
+/** Represents the type of a column, including text, numeric, and enum types. */
+export type FlatColumnType = typeof FlatTypes[number] | FlatNumericType | FlatEnumType | FlatLookupType;
 
 /** Represents the source type for manual, formula-based, or external data. */
 export const FlatManualSource = 'manual';
 
 /** Represents the source type for formula-derived data. */
 export type FlatFormulaSource = `formula:${FlatName}`;
-
-/** Regular expression to validate FlatFormulaSource. */
 export const FlatFormulaSourceRegex = /^formula:([A-Z][A-Z0-9_]*)$/;
 
 /** Represents the source type for data fetched from an external source. */
 export type FlatExternalSource = `external:${string}`;
-
-/** Regular expression to validate FlatExternalSource. */
 export const FlatExternalSourceRegex = /^external:(.+)$/;
+
 
 /** Represents the source type of a column. */
 export type FlatColumnSource = typeof FlatManualSource | FlatFormulaSource | FlatExternalSource;
@@ -136,7 +118,7 @@ export type FlatColumn = {
     name: FlatName; // Name of the column
     description: string; // Description of the column
     source: FlatColumnSource; // Source type of the column
-    type: string; // Data type of the column
+    type: FlatColumnType; // Data type of the column
 };
 
 /** Represents a group of columns within a table. */
@@ -168,7 +150,7 @@ export type FlatBook = {
     description: string; // Description of the book
     tables: FlatTable[]; // List of tables in the book
     groups: FlatGroup[]; // List of groups in the book
-    columns: FlatColumn[]; // List of columns in the book
     formulas: FlatFormula[]; // List of formulas in the book
-    types: FlatType[];
+    enums: FlatEnumItem[]; // List of enums in the book
+    columns: FlatColumn[]; // List of columns in the book
 };
