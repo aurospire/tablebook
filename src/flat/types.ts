@@ -1,112 +1,174 @@
-/** Represents a reference to a column in a specific page and group. */
-export type FlatColumnReferences = {
-    page: string; // Name of the page containing the referenced column
+/*
+    FlatBook - A declarative data structure for generating Spreadsheets using a simple, flat format via the table paradigm.
+/*
+
+/** Represents a prefix indicating a relative row selection. */
+export type FlatRelativePrefix = '+' | '-';
+
+/** Represents a prefix indicating an absolute row selection. */
+export type FlatAbsolutePrefix = '$';
+
+/** Represents a unit selection using a prefix and a numeric value. */
+export type FlatUnitSelection = `${FlatAbsolutePrefix | FlatRelativePrefix}${number}`;
+
+/** Regular expression to match row selection patterns. */
+export const FlatRowSelectionRegex = /^([$+\-]\d+)(:[$+\-]\d+)?$/;
+/** 
+ * Represents a selection of rows, either as a single unit, a range, or 'all'.
+ * 'all' selects all rows in the table.
+ * $n selects the nth row in the table.
+ * An element refers to a particular cell that a formula is being applied to.
+ * +/-0 selects the current row of an element.
+ * +n selects n rows below the current row of an element.
+ * -n selects n rows above the current row of an element.
+ * 
+ * Range selection are inclusive and can be in any order.
+ * Example using absolute row selection: $1:$3 selects rows 1, 2, and 3.
+ * Example using relative row selection: +1:-1 selects the row below the current row until the row above the current row.
+ * Example using relative and absolute row selection: +1:$3 selects the row below the current row to row 3.
+ */
+export type FlatRowSelection = `${FlatUnitSelection}${`:${FlatUnitSelection}` | ''}` | 'all';
+
+/** Represents a reference to a specific column within a table and group. */
+export type FlatSelection = {
+    table: string; // Name of the table containing the referenced column
     group: string; // Name of the group containing the referenced column
     column: string; // Name of the referenced column
+    rows: FlatRowSelection; // Number of rows included in the selection
 };
 
-/** Defines a formula in the table, with optional references to columns used in the formula. */
+/** Represents a dynamic placeholder tag with a specific selection. */
+export type FlatPlaceholder = {
+    tag: string; // Unique identifier for the placeholder. It does not need to follow a strict pattern but must be easy to replace and should not conflict with valid formula text.
+    selection: FlatSelection; // Selection associated with the placeholder.
+};
+
+/** Defines a formula for use in the table, optionally referencing specific columns. */
 export type FlatFormula = {
     name: string; // Formula name
     description: string; // Brief description of the formula
     formula: string; // The formula logic as a string
     /**
-     * An optional record of column references used in the formula.
+     * Optional references to columns used in the formula.
+     * Placeholders can be any simple, unique string that is easy to replace
+     * and does not conflict with valid formula text.
      * 
-     * Dynamic placeholders are used instead of traditional cell references (e.g., A1 or C1:C)
-     * for better clarity and flexibility. These placeholders follow patterns like `{{TAG}}1`
-     * or `$$TAG$$1:$$TAG$$`.
-     * 
-     * Keys in the `refs` object correspond to the placeholders, and their values specify the
-     * actual column being referenced.
-     * 
-     * NOTE: Keys must be unique strings (e.g., `TAG` or `CUSTOM_TAG`) and should be distinct
-     * enough to allow straightforward replacement during formula parsing or rendering.
+     * Keys in the `refs` object map placeholder tags to the corresponding column selections.
+     * This design ensures flexibility while avoiding potential parsing issues.
      */
-    refs?: Record<string, FlatColumnReferences>;
+    refs: FlatPlaceholder[];
 };
 
-/** Represents a name that matches the pattern [A-Z][A-Z0-9_]*. */
+/** Regular expression to validate FlatName. */
 export const FlatNameRegex = /^[A-Z][A-Z0-9_]*$/;
-export type FlatName = string; // A string that must match the FlatNameRegex pattern
+
+/** Represents a string matching the FlatName pattern. */
+export type FlatName = string;
+
+/** Regular expression to validate 3- or 6-digit hexadecimal color codes. */
+export const FlatColorRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
 
 /** Represents a valid hexadecimal color code. */
-export const FlatColorRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/; // Regex for 3- or 6-digit hexadecimal color codes
 export type FlatColor = `#${string}`;
 
-/** Defines an enum with a name, value, description, and associated color. */
-export type FlatEnum = {
-    name: FlatName; // Enum name (must match FlatName pattern)
+
+export const FlatTextTypeName = 'text';
+export type FlatTextType = {    type: typeof FlatTextTypeName;};
+
+export const FlatEnumTypeName = 'enum';
+export type FlatEnumType = {
+    type: typeof FlatEnumTypeName;
+    name: FlatName; // Name of the enum (must match FlatName pattern)
     value: string; // Enum value (e.g., 'small', 'medium', etc.)
     description: string; // Description of the enum value
-    color: FlatColor; // / Vivid, dark enough for contrast on light background, representative, and distinct within the enum
+    color: FlatColor; // Associated color for the enum value
 };
 
-/** Represents the number of decimal places for numeric columns. */
-export type FlatDecimals = number; // Specifies the precision (number of decimal places)
+export const FlatLookupTypeName = 'lookup';
+export type FlatLookupType = {
+    type: typeof FlatLookupTypeName;
+    table: FlatName;
+    group: FlatName;
+    column: FlatName;
+};
 
-/** Represents the available base types for columns (e.g., text, number, etc.). */
-export const FlatTypes = ['text', 'number', 'percent', 'currency', 'date', 'datetime'] as const;
+export const FlatNumberTypeNames = ['number', 'percent', 'dollar'] as const;
+export type FlatNumberName = {
+    type: typeof FlatNumberTypeNames[number];
+    decimals: number;
 
-export type FlatNumericType = `${'number' | 'percent'}:${FlatDecimals}`; // Numeric type with specified decimal precision
-export const FlatNumericTypeRegex = /^(number|percent):(\d+)$/; // Regex to validate FlatNumericType
+    negativeColor?: FlatColor;
+    zeroColor?: FlatColor;
+    positiveColor?: FlatColor;
 
-export type FlatEnumType = `enum:${FlatName}`; // Enum type referencing a FlatName
-export const FlatEnumTypeRegex = /^enum:([A-Z][A-Z0-9_]*)$/; // Regex to validate FlatEnumType
+    min?: number;
+    max?: number;
+};
 
-/** Represents the type of a column, including text, numeric, percentage, and enum types. */
-export type FlatColumnType = typeof FlatTypes[number] | FlatNumericType | FlatEnumType; // Union of base, numeric, and enum types
+export const FlatTemporalTypeNames = ['date', 'timestamp'] as const;
+export type FlatTemporalType = { type: typeof FlatTemporalTypeNames[number]; };
+
+export type FlatType = FlatEnumType | FlatTextType | FlatLookupType | FlatNumberName | FlatTemporalType;
+
 
 /** Represents the source type for manual, formula-based, or external data. */
-export const FlatManualSource = 'manual'; // Source type for manually entered data
+export const FlatManualSource = 'manual';
 
-export type FlatFormulaSource = `formula:${FlatName}`; // Source type for data derived from a formula
-export const FlatFormulaSourceRegex = /^formula:([A-Z][A-Z0-9_]*)$/; // Regex to validate FlatFormulaSource
+/** Represents the source type for formula-derived data. */
+export type FlatFormulaSource = `formula:${FlatName}`;
 
-export type FlatExternalSource = `external:${string}`; // Source type for data fetched from an external source
-export const FlatExternalSourceRegex = /^external:(.+)$/; // Regex to validate FlatExternalSource
+/** Regular expression to validate FlatFormulaSource. */
+export const FlatFormulaSourceRegex = /^formula:([A-Z][A-Z0-9_]*)$/;
 
-export type FlatColumnSource = typeof FlatManualSource | FlatFormulaSource | FlatExternalSource; // Union of source types
+/** Represents the source type for data fetched from an external source. */
+export type FlatExternalSource = `external:${string}`;
 
-/** Defines a column in the table, including its source (manual, formula, or external) and type. */
+/** Regular expression to validate FlatExternalSource. */
+export const FlatExternalSourceRegex = /^external:(.+)$/;
+
+/** Represents the source type of a column. */
+export type FlatColumnSource = typeof FlatManualSource | FlatFormulaSource | FlatExternalSource;
+
+/** Defines a column in the table. */
 export type FlatColumn = {
-    page: FlatName; // Name of the page the group belongs to
-    group: FlatName; // Name of the group the column belongs to
-    name: FlatName; // Column name (must match FlatName pattern)
-    description: string; // Brief description of the column
+    table: FlatName; // Table the column belongs to
+    group: FlatName; // Group the column belongs to
+    name: FlatName; // Name of the column
+    description: string; // Description of the column
     source: FlatColumnSource; // Source type of the column
-    type: FlatColumnType; // Data type of the column
+    type: string; // Data type of the column
 };
 
-/** Represents a group of columns within a page. */
+/** Represents a group of columns within a table. */
 export type FlatGroup = {
-    page: FlatName; // Name of the page the group belongs to
-    name: FlatName; // Group name
-    description: string; // Brief description of the group
+    table: FlatName; // Table the group belongs to
+    name: FlatName; // Name of the group
+    description: string; // Description of the group
 };
 
-/** Defines a set of predefined colors for styling. */
+/** Predefined color palettes for styling. */
 export const FlatPalettes = ['pink', 'cranberry', 'red', 'rust', 'orange', 'yellow', 'green', 'moss', 'sage',
     'teal', 'slate', 'cyan', 'blue', 'azure', 'skyblue', 'lavender', 'indigo', 'purple', 'plum',
     'mauve', 'coral', 'terracotta', 'bronze', 'sand', 'taupe', 'gray', 'charcoal'] as const;
 
-export type FlatPalette = typeof FlatPalettes[number]; // Represents a valid palette color from FlatPalettes
+/** Represents a color palette from predefined FlatPalettes. */
+export type FlatPalette = typeof FlatPalettes[number];
 
-/** Represents a page in the book, containing groups and a color palette. */
-export type FlatPage = {
-    name: FlatName; // Page name
-    description: string; // Brief description of the page
-    rows: number; // Number of rows on the page
-    palette: FlatPalette; // Color palette used for the page
+/** Represents a table in the book. */
+export type FlatTable = {
+    name: FlatName; // Name of the table
+    description: string; // Description of the table
+    rows: number; // Number of rows in the table
+    palette: FlatPalette; // Color palette used for the table
 };
 
-/** Represents the entire table book, including pages, groups, columns, formulas, and enums. */
+/** Represents the entire table book structure. */
 export type FlatBook = {
-    name: FlatName; // Book name
-    description: string; // Brief description of the book
-    pages: FlatPage[]; // List of pages in the book
+    name: FlatName; // Name of the book
+    description: string; // Description of the book
+    tables: FlatTable[]; // List of tables in the book
     groups: FlatGroup[]; // List of groups in the book
     columns: FlatColumn[]; // List of columns in the book
     formulas: FlatFormula[]; // List of formulas in the book
-    enums: FlatEnum[]; // List of enums in the book
+    types: FlatType[];
 };

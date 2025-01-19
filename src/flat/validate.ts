@@ -4,7 +4,7 @@ import {
     FlatFormula,
     FlatNameRegex,
     FlatColorRegex,
-    FlatEnum,
+    FlatEnumType,
     FlatDecimals,
     FlatTypes,
     FlatNumericTypeRegex,
@@ -18,7 +18,7 @@ import {
     FlatPage,
     FlatGroup,
     FlatColumn,
-    FlatEnumType,
+    FlatEnumTypeName,
     FlatNumericType,
     FlatColor,
     FlatExternalSource,
@@ -43,7 +43,7 @@ const FlatNameSchema: z.ZodType<string> = z.custom<string>(value => FlatNameRege
 
 const FlatColorSchema: z.ZodType<FlatColor> = z.custom<FlatColor>(value => FlatColorRegex.test(value as string));
 
-const FlatEnumSchema: z.ZodType<FlatEnum> = z.object({
+const FlatEnumSchema: z.ZodType<FlatEnumType> = z.object({
     name: FlatNameSchema,
     value: z.string(),
     description: z.string(),

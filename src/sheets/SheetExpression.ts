@@ -35,9 +35,18 @@ export const toFormula = (exp: SheetExpression, position: SheetPosition): string
         case 'function':
             return `${exp.name}(${exp.args.map(arg => toFormula(arg, position)).join(',')})`;
         case 'negated':
-            return `-(${toFormula(exp.on, position)})`;        
+            return `-(${toFormula(exp.on, position)})`;
         case 'selector':
             return SheetSelector().toAddress(exp.from, position);
-    }
+        case 'flat': {
+            let result = exp.expression;
+            if (exp.refs) {
+                for (const [key, value] of Object.entries(exp.refs)) {
+                    result = result.replace(new RegExp(`\\$${key}`, 'g'), toFormula(value, position));
+                }
+            }
 
+            return result;
+        }
+    }
 };

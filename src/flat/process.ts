@@ -43,8 +43,8 @@ export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProc
         });
     }
 
-    for (let p = 0; p < book.pages.length; p++) {
-        const flatPage = book.pages[p];
+    for (let p = 0; p < book.tables.length; p++) {
+        const flatPage = book.tables[p];
 
         const page: TablePage = {
             name: flatPage.name,

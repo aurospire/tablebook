@@ -186,7 +186,7 @@ export type LiteralExpression = { type: typeof LiteralExpressionType, of: string
 /** Type identifier for flat expressions */
 export const FlatExpressionType = 'flat';
 /* Flattened Expression, refs are replaced in the expression text*/
-export type FlatExpression = { type: typeof FlatExpressionType, expression: string, refs?: Record<string, ColumnSelector>; };
+export type FlatExpression<Selector> = { type: typeof FlatExpressionType, expression: string, refs?: Record<string, Selector>; };
 
 /** All possible expression types for data computation and validation */
 export type Expression<Selector> =
@@ -194,8 +194,8 @@ export type Expression<Selector> =
     | NegatedExpression<Selector>
     | FunctionExpression<Selector>
     | SelectorExpression<Selector>
+    | FlatExpression<Selector>
     | LiteralExpression
-    | FlatExpression
     ;
 
 /* Data Rules */
