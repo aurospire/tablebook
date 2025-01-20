@@ -174,4 +174,4 @@ const FlatBookSchema: ZodType<FlatBook> = z.object({
     columns: z.array(FlatColumnSchema),
 });
 
-export { FlatBookSchema };
+export { FlatBookSchema as FlatBookValidator };
