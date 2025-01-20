@@ -1,5 +1,5 @@
 import { TableBookProcessIssue } from "../issues";
-import { ColumnSelector, ColumnType, DataSelector, EnumType, RawExpression, Reference, RowSelector, TableBook, TableColumn, TableGroup, TablePage, TemporalFormat, UnitSelector } from "../tables";
+import { ColumnSelector, ColumnType, DataSelector, EnumType, HeaderStyle, RawExpression, Reference, RowSelector, TableBook, TableColumn, TableGroup, TablePage, TemporalFormat, Theme, UnitSelector } from "../tables";
 import { Result } from "../util";
 import { FlatBook, FlatDollarType, FlatEnumTypeRegex, FlatFormulaSourceRegex, FlatLookupTypeRegex, FlatNumericTypeRegex, FlatRowSelectionRegex, FlatTemporalTypeRegex, FlatTextType } from "./types";
 
@@ -157,12 +157,22 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
         }
     }
 
+    // Gather all the names first
+    for (let c = 0; c < book.columns.length; c++) {
+        const flatColumn = book.columns[c];
+
+        const columnKey = flatColumn.table + '.' + flatColumn.group + '.' + flatColumn.name;
+
+        if (columnSet.has(columnKey))
+            issues.push({ type: 'processing', message: 'Duplicate Column', data: columnKey, path: ['columns', c] });
+        else
+            columnSet.add(columnKey);
+    }
+
     for (let c = 0; c < book.columns.length; c++) {
         const flatColumn = book.columns[c];
 
         const groupKey = flatColumn.table + '.' + flatColumn.group;
-
-        const columnKey = groupKey + '.' + flatColumn.name;
 
         const columnInfo = { table: flatColumn.table, group: flatColumn.group, name: flatColumn.name };
 
@@ -173,9 +183,7 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
             const group = groupMap[groupKey];
 
             if (!group)
-                issues.push({ type: 'processing', message: 'Invalid Group Reference', data: flatColumn.group, path: ['columns', c] });
-            else if (columnSet.has(columnKey))
-                issues.push({ type: 'processing', message: 'Duplicate Column', data: flatColumn, path: ['columns', c] });
+                issues.push({ type: 'processing', message: 'Invalid Group Reference', data: groupKey, path: ['columns', c] });
             else {
 
                 let type: Reference;
@@ -288,7 +296,23 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
         }
     };
 
+    const headerStyle: HeaderStyle = { fore: '#ffffff', bold: true };
+    const main: Theme = { group: '@group', header: '@header', };
+
     return (issues.length === 0)
-        ? Result.success({ name: book.name, pages, definitions: { types } })
+        ? Result.success({
+            name: book.name,
+            pages,
+            definitions: {
+                types, styles: {
+                    group: { fore: '#ffffff', bold: true, between: { type: 'thin', color: '#555555' } },
+                    header: { fore: '#ffffff', bold: true }
+                },
+                themes: {
+                    main: { group: '@group', header: '@header', }
+                }
+            },
+            theme: '@main'
+        })
         : Result.failure(issues);
 };

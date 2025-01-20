@@ -4,6 +4,12 @@
  * ## Overview
  * The FlatBook structure organizes data using tables, groups, columns, and formulas, with support for advanced features like row selection, enums, and lookups.
  * 
+ * ### Naming Conventions
+ * - Names are unique identifiers for tables, groups, columns, formulas, and enums.
+ * - They should ideally be CapitalizedCamelCase, starting with a capital letter and using camel case.
+ * - Names should be descriptive and concise, reflecting the purpose of the item.
+ * - Underscores are allowed in names, but should be used sparingly and only for clarity.
+ * 
  * ### Formula Placeholder
  * - Placeholders are used to reference columns in formulas in an TableColumn-centric way.
  * - Placeholders are defined using a unique identifier and a selection - such as `{{TAG}}` or `$$TAG$$`
@@ -27,18 +33,20 @@
  * 
  * ### Enumerations
  * - Enumerations are predefined lists of values with associated colors.
- * - Example Enum: { name: 'Status', value: 'Active', description: 'Active Status', color: '#00FF00' }
- *                 { name: 'Status', value: 'Inactive', description: 'Inactive Status', color: '#FF0000' }
+ * - Example Enum: { name: 'Status', value: 'Active', description: 'Active Status', color: '#4C9900' }
+ *                 { name: 'Status', value: 'Inactive', description: 'Inactive Status', color: '#993366' }
  * - The `name` field is used to link enum values to columns with the `enum:Status` type.
+ * - Colors should be representative of the value, with each value's color unique to the enum,
+ *   and a deep and vivid color that contrasts well with a light background.
  */
 
 /** Represents a string matching the FlatName pattern. */
 export type FlatName = string;
-export const FlatNameRegex = /^[A-Z][A-Z0-9_]*$/;
+export const FlatNameRegex = /^[A-Z][A-Za-z0-9_]*$/;
 
-/** Represents a valid hexadecimal 3- or 6-digit color code. */
+/** Represents a valid hexadecimal 6-digit color code. */
 export type FlatColor = `#${string}`;
-export const FlatColorRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
+export const FlatColorRegex = /^#([0-9A-Fa-f]{6})$/;
 
 /** Predefined color palettes for styling. */
 export const FlatPalettes = [
@@ -54,28 +62,28 @@ export type FlatPalette = typeof FlatPalettes[number];
 /* Column Types */
 
 /** Represents the text type for columns. */
-export const FlatTextType = 'text';
 export type FlatTextType = typeof FlatTextType;
+export const FlatTextType = 'text';
 
 /** Represents the dollar type for columns. */
-export const FlatDollarType = 'dollar';
 export type FlatDollarType = typeof FlatDollarType;
+export const FlatDollarType = 'dollar';
 
 /** Represents temporal types for columns - with iso | text format. */
 export type FlatTemporalType = `${'date' | 'datetime'}${`:${'iso' | 'text'}` | ''}`;
 export const FlatTemporalTypeRegex = /^(date|datetime)(?::(iso|text))$/;
 
 /** Represents numeric types with optional specified decimal precision. */
-export type FlatNumericType = `${'number' | 'percent'}:${number}`;
+export type FlatNumericType = `${'number' | 'percent'}${`:${number}` | ''}`;
 export const FlatNumericTypeRegex = /^(number|percent)(?::(\d+))?$/;
 
 /** Represents enum types referencing a FlatName. */
 export type FlatEnumType = `enum:${FlatName}`;
-export const FlatEnumTypeRegex = /^enum:([A-Z][A-Z0-9_]*)$/;
+export const FlatEnumTypeRegex = /^enum:([A-Z][A-Za-z0-9_]*)$/;
 
 /** Represents a lookup type referencing a table, group, and column. */
-export type FlatLookupType = `lookup:${string}.${string}.${string}`;
-export const FlatLookupTypeRegex = /^lookup:([A-Z][A-Z0-9_]*)\.([A-Z][A-Z0-9_]*)\.([A-Z][A-Z0-9_]*)$/;
+export type FlatLookupType = `lookup:${FlatName}.${FlatName}.${FlatName}`;
+export const FlatLookupTypeRegex = /^lookup:([A-Z][A-Za-z0-9_]*)\.([A-Z][A-Za-z0-9_]*)\.([A-Z][A-Za-z0-9_]*)$/;
 
 /** Represents the type of a column, including text, numeric, and enum types. */
 export type FlatColumnType = FlatTextType | FlatDollarType | FlatTemporalType | FlatNumericType | FlatEnumType | FlatLookupType;
@@ -84,7 +92,7 @@ export type FlatColumnType = FlatTextType | FlatDollarType | FlatTemporalType | 
 
 /** Represents the source type for formula-derived data. */
 export type FlatFormulaSource = `formula:${FlatName}`;
-export const FlatFormulaSourceRegex = /^formula:([A-Z][A-Z0-9_]*)$/;
+export const FlatFormulaSourceRegex = /^formula:([A-Z][A-Za-z0-9_]*)$/;
 
 /** Represents the source type for data fetched from an external source. */
 export type FlatExternalSource = `external:${string}`;

@@ -10,6 +10,7 @@ export type TableBookParseIssue = {
 export type TableBookValidateIssue = {
     type: 'validating';
     message: string;
+    value?: any
     path: ObjectPath;
 };
 

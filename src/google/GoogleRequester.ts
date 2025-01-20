@@ -134,17 +134,27 @@ export class GoogleRequester {
             }
         });
 
+        if (result.status > 300) {
+            throw new GoogleApiError(this.#requests, result.status, result.statusText, result.data);
+        }
+
         const replies = result.data.replies ?? [];
 
         for (let i = 0; i < this.#processors.length; i++)
             this.#processors[i](replies[i]);
 
-        if (result.status > 300) {
-            console.error(result);
-            console.error(inspect(result.data, { depth: null, colors: true }));
-        }
+
         return result;
     }
 }
 
+export class GoogleApiError extends Error {
+    constructor(
+        public readonly request: GoogleRequest[],
+        public readonly status: number,
+        public readonly statusText: string,
+        public readonly data: any) {
+        super(`Google API request failed: ${statusText}`);
+    }
+}
 

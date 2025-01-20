@@ -6,7 +6,7 @@ import { processTableBook } from './process';
 import { SheetBook, SheetGenerator } from './sheets';
 import { TableBook } from './tables/types';
 import { TableBookValidator } from './tables/validate';
-import { Result, TextLocation } from './util';
+import { ObjectPath, Result, TextLocation } from './util';
 
 
 export type TableBookParseResult = Result<any, TableBookParseIssue[]>;
@@ -62,6 +62,18 @@ export const parseYaml = (data: string): TableBookParseResult => {
         }));
 };
 
+const getData = (data: any, path: ObjectPath): any => {
+    let value = data;
+
+    for (const key of path) {
+        if (value === undefined)
+            return undefined;
+
+        value = value?.[key];
+    }
+
+    return value;
+};
 
 export const tablebook = Object.freeze({
     parse(format: 'json' | 'yaml', data: string): TableBookParseResult {
@@ -79,7 +91,7 @@ export const tablebook = Object.freeze({
 
         return result.success
             ? Result.success(result.data) as any
-            : Result.failure(result.error.issues.map(issue => ({ type: 'validating', message: issue.message, path: issue.path })));
+            : Result.failure(result.error.issues.map(issue => ({ type: 'validating', message: issue.message, path: issue.path, value: getData(data, issue.path) })) as TableBookValidateIssue[]);
     },
 
     convertFlat(data: FlatBook, makeName?: NameMaker): TableBookProcessResult<TableBook> {
@@ -94,3 +106,4 @@ export const tablebook = Object.freeze({
         return await generator.generate(data);
     }
 });
+
