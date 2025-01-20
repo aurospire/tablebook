@@ -1,7 +1,7 @@
 const error = [
   {
     type: 'generating',
-    message: 'Must specify at least one request.',
+    message: 'GoogleRequester: No requests to run',
     data: {
       title: 'OptionsTradingCourseAssignmentGuide',
       pages: [

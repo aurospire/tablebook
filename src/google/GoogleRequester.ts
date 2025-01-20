@@ -1,4 +1,3 @@
-import { inspect } from "util";
 import { SheetData } from "../sheets/SheetData";
 import { SheetRange } from "../sheets/SheetRange";
 import { SheetConditionalStyle, SheetRule } from "../sheets/SheetRule";
@@ -126,35 +125,23 @@ export class GoogleRequester {
     }
 
 
-    async run(api: GoogleApi, id: string) {
-        const result = await api.spreadsheets.batchUpdate({
-            spreadsheetId: id,
-            requestBody: {
-                requests: this.#requests
-            }
-        });
+    async run(api: GoogleApi, id: string, allowEmpty: boolean = false) {
+        if (this.#requests.length) {
+            const result = await api.spreadsheets.batchUpdate({
+                spreadsheetId: id,
+                requestBody: {
+                    requests: this.#requests
+                }
+            });
 
-        if (result.status > 300) {
-            throw new GoogleApiError(this.#requests, result.status, result.statusText, result.data);
+            const replies = result.data.replies ?? [];
+
+            for (let i = 0; i < this.#processors.length; i++)
+                this.#processors[i](replies[i]);
+
+            return { status: result.status, statusText: result.statusText, data: result.data };
         }
-
-        const replies = result.data.replies ?? [];
-
-        for (let i = 0; i < this.#processors.length; i++)
-            this.#processors[i](replies[i]);
-
-
-        return result;
+        else if (!allowEmpty)
+            throw new Error('GoogleRequester: No requests to run');
     }
 }
-
-export class GoogleApiError extends Error {
-    constructor(
-        public readonly request: GoogleRequest[],
-        public readonly status: number,
-        public readonly statusText: string,
-        public readonly data: any) {
-        super(`Google API request failed: ${statusText}`);
-    }
-}
-

@@ -32,6 +32,7 @@ export class GoogleGenerator implements SheetGenerator {
                     if (sheetId == undefined)
                         throw new Error("Failed to add sheet");
 
+
                     await sheet.modify(r => {
                         const multigroup = page.groups.length > 1;
 
@@ -50,56 +51,56 @@ export class GoogleGenerator implements SheetGenerator {
                                     if (group.titleStyle?.between)
                                         r = r.setBorder(sheetId, SheetRange.region(index, 0, group.columns.length, page.rows), { left: group.titleStyle.between, right: group.titleStyle.between });
                                 }
+                            }
 
-                                for (let c = 0; c < group.columns.length; c++) {
-                                    const rowOffset = multigroup ? 1 : 0;
+                            for (let c = 0; c < group.columns.length; c++) {
+                                const rowOffset = multigroup ? 1 : 0;
 
-                                    const column = group.columns[c];
-
-
-                                    // header
-                                    r = r.updateCells(sheetId, SheetRange.cell(index, rowOffset), {
-                                        value: column.title,
-                                        horizontal: 'middle', vertical: 'middle',
-                                        ...column.titleStyle
-                                    });
+                                const column = group.columns[c];
 
 
-                                    // data
-                                    const columnRange = SheetRange.column(index, rowOffset + 1, page.rows - 1 - rowOffset);
-
-                                    r = r.updateCells(sheetId, columnRange, {
-                                        horizontal: 'middle', vertical: 'middle',
-                                        ...column.dataStyle,
-                                        value: column.formula,
-                                        kind: column.behavior?.kind,
-                                        format: column.behavior?.format
-                                    });
-
-                                    if (column.behavior?.rule)
-                                        r = r.setDataValidation(sheetId, columnRange, column.behavior.rule, true);
-
-                                    if (column.behavior?.styles)
-                                        for (const format of column.behavior.styles)
-                                            r = r.setConditionalFormat(sheetId, columnRange, format);
-
-                                    if (column.titleStyle?.beneath)
-                                        r = r.setBorder(sheetId, SheetRange.cell(index, rowOffset), { bottom: column.titleStyle.beneath });
+                                // header
+                                r = r.updateCells(sheetId, SheetRange.cell(index, rowOffset), {
+                                    value: column.title,
+                                    horizontal: 'middle', vertical: 'middle',
+                                    ...column.titleStyle
+                                });
 
 
-                                    if (column.titleStyle?.between) {
-                                        const showLeft = c !== 0;
-                                        const showRight = c != group.columns.length - 1;
+                                // data
+                                const columnRange = SheetRange.column(index, rowOffset + 1, page.rows - 1 - rowOffset);
 
-                                        if (showLeft || showRight)
-                                            r = r.setBorder(sheetId, SheetRange.region(index, rowOffset, 1, page.rows - rowOffset), {
-                                                left: showLeft ? column.titleStyle.between : undefined,
-                                                right: showRight ? column.titleStyle.between : undefined
-                                            });
-                                    }
+                                r = r.updateCells(sheetId, columnRange, {
+                                    horizontal: 'middle', vertical: 'middle',
+                                    ...column.dataStyle,
+                                    value: column.formula,
+                                    kind: column.behavior?.kind,
+                                    format: column.behavior?.format
+                                });
 
-                                    index++;
+                                if (column.behavior?.rule)
+                                    r = r.setDataValidation(sheetId, columnRange, column.behavior.rule, true);
+
+                                if (column.behavior?.styles)
+                                    for (const format of column.behavior.styles)
+                                        r = r.setConditionalFormat(sheetId, columnRange, format);
+
+                                if (column.titleStyle?.beneath)
+                                    r = r.setBorder(sheetId, SheetRange.cell(index, rowOffset), { bottom: column.titleStyle.beneath });
+
+
+                                if (column.titleStyle?.between) {
+                                    const showLeft = c !== 0;
+                                    const showRight = c != group.columns.length - 1;
+
+                                    if (showLeft || showRight)
+                                        r = r.setBorder(sheetId, SheetRange.region(index, rowOffset, 1, page.rows - rowOffset), {
+                                            left: showLeft ? column.titleStyle.between : undefined,
+                                            right: showRight ? column.titleStyle.between : undefined
+                                        });
                                 }
+
+                                index++;
                             }
                         }
 
