@@ -1,22 +1,18 @@
 import { getLocation, parse, ParseError, printParseErrorCode } from 'jsonc-parser';
 import { LineCounter, parseDocument } from 'yaml';
 import { FlatBook, FlatBookValidator, processFlatBook } from './flat';
-import { TableBookIssue, TableBookParseIssue, TableBookProcessIssue, TableBookValidateIssue } from './issues';
+import { TableBookGenerateIssue, TableBookIssue, TableBookParseIssue, TableBookProcessIssue, TableBookValidateIssue } from './issues';
 import { processTableBook } from './process';
 import { SheetBook, SheetGenerator } from './sheets';
 import { TableBook } from './tables/types';
 import { TableBookValidator } from './tables/validate';
 import { Result, TextLocation } from './util';
 
-export type TableBookSource =
-    | { type: 'ts'; data: TableBook; }
-    | { type: 'raw'; data: any; }
-    | { type: 'json'; data: string; of: 'flat' | 'table'; }
-    | { type: 'yaml'; data: string; of: 'flat' | 'table'; }
-    ;
 
 export type TableBookParseResult = Result<any, TableBookParseIssue[]>;
 export type TableBookValidateResult<T> = Result<T, TableBookValidateIssue[]>;
+export type TableBookProcessResult<T> = Result<T, TableBookProcessIssue[]>;
+export type TableBookGenerateResult = Result<undefined, TableBookGenerateIssue[]>;
 
 const bruteForceLocation = (data: string, index: number): TextLocation => {
     const lines = data.slice(0, index).split('\n');
@@ -86,13 +82,13 @@ export const tablebook = Object.freeze({
             : Result.failure(result.error.issues.map(issue => ({ type: 'validating', message: issue.message, path: issue.path })));
     },
 
-    convert<F extends 'flat' | 'table'>(format: F, data: F extends 'flat' ? FlatBook : TableBook): Result<F extends 'flat' ? TableBook : SheetBook, TableBookProcessIssue[]> {
+    convert<F extends 'flat' | 'table'>(format: F, data: F extends 'flat' ? FlatBook : TableBook): TableBookProcessResult<F extends 'flat' ? TableBook : FlatBook> {
         return format === 'flat'
             ? processFlatBook(data as any)
             : processTableBook(data as any) as any;
     },
 
-    async generate(data: SheetBook, generator: SheetGenerator): Promise<Result<undefined, TableBookIssue[]>> {
+    async generate(data: SheetBook, generator: SheetGenerator): Promise<TableBookGenerateResult> {
         return await generator.generate(data);
     }
 });
