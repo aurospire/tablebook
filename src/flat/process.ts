@@ -54,7 +54,13 @@ const temporals: Record<string, TemporalFormat> = {
     ]
 };
 
-export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProcessIssue[]> => {
+export type NameMaker = (parts: string[], column: { table: string, group: string, column: string; }) => string;
+
+const defaultNameMaker = (parts: string[]) => ['flat', ...parts].join(':');
+
+export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<TableBook, TableBookProcessIssue[]> => {
+    makeName ??= defaultNameMaker;
+
     const issues: TableBookProcessIssue[] = [];
 
     const pages: TablePage[] = [];
@@ -95,7 +101,7 @@ export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProc
     }
 
     for (const flatEnum of book.enums) {
-        const name = flatEnum.name + 'enum';
+        const name = flatEnum.name;
         const tableEnum: EnumType = (enumMap[name] ?? (enumMap[name] = { kind: 'enum', items: [] }));
 
         tableEnum.items.push({
@@ -103,6 +109,8 @@ export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProc
             description: flatEnum.description,
             style: { fore: flatEnum.color }
         });
+
+        enumMap[name] = tableEnum;
     }
 
     for (let t = 0; t < book.tables.length; t++) {
@@ -156,8 +164,11 @@ export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProc
 
         const columnKey = groupKey + '.' + flatColumn.name;
 
-        if (!(flatColumn.name in pageMap))
-            issues.push({ type: 'processing', message: 'Invalid Page Reference', data: flatColumn.table, path: ['columns', c] });
+        const columnInfo = { table: flatColumn.table, group: flatColumn.group, column: flatColumn.name };
+
+        if (!(flatColumn.table in pageMap)) {
+            issues.push({ type: 'processing', message: 'Invalid Table Reference', data: flatColumn.table, path: ['columns', c] });
+        }
         else {
             const group = groupMap[groupKey];
 
@@ -172,59 +183,69 @@ export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProc
                 let match;
 
                 if (flatColumn.type === FlatTextType) {
-                    type = '@text';
+                    const fullname = makeName(['text'], columnInfo);
 
-                    if (!('text' in types))
-                        types['text'] = { kind: 'text' };
+                    type = '@' + fullname;
+
+                    if (!(fullname in types))
+                        types[fullname] = { kind: 'text' };
                 }
                 else if (flatColumn.type === FlatDollarType) {
-                    type = '@dollar';
+                    const fullname = makeName(['dollar'], columnInfo);
 
-                    if (!('dollar' in types))
-                        types['dollar'] = { kind: 'numeric', format: { type: 'currency', commas: true, decimal: 2, symbol: '$' } };
+                    type = '@' + fullname;
+
+                    if (!(fullname in types))
+                        types[fullname] = { kind: 'numeric', format: { type: 'currency', commas: true, decimal: 2, symbol: '$' } };
                 }
                 else if (match = flatColumn.type.match(FlatNumericTypeRegex)) {
                     const typename = match[1];
                     const decimals = Number(match[2]) ?? 0;
 
-                    const fulltypename = typename + decimals;
+                    const fullname = makeName([typename, decimals.toString()], columnInfo);
 
-                    type = '@' + fulltypename;
+                    type = '@' + fullname;
 
-                    if (!(fulltypename in types))
-                        types[fulltypename] = { kind: 'numeric', format: { type: typename as any, commas: true, decimal: decimals } };
+                    if (!(fullname in types))
+                        types[fullname] = { kind: 'numeric', format: { type: typename as any, commas: true, decimal: decimals } };
                 }
                 else if (match = flatColumn.type.match(FlatTemporalTypeRegex)) {
                     const typename = match[1];
                     const typeformat = match[2];
 
-                    const fulltypename = typename + typeformat;
+                    const fullname = makeName([typename, typeformat], columnInfo);
 
-                    type = '@' + fulltypename;
+                    type = '@' + fullname;
 
-                    if (!(fulltypename in types)) {
+                    if (!(fullname in types)) {
                         const format = temporals[typename + typeformat];
 
-                        types[fulltypename] = { kind: 'temporal', format };
+                        types[fullname] = { kind: 'temporal', format };
                     }
 
                 }
                 else if (match = flatColumn.type.match(FlatEnumTypeRegex)) {
                     const typename = match[1];
 
-                    const fulltypename = 'enum' + '::' + typename;
-                    type = '@' + fulltypename;
+                    const fullname = makeName(['enum', typename], columnInfo);
+
+                    type = '@' + fullname;
 
                     if (!(typename in enumMap))
-                        issues.push({ type: 'processing', message: 'Invalid Enum Reference', data: flatColumn.type, path: ['columns', c] });
+                        issues.push({ type: 'processing', message: 'Invalid Enum Reference', data: typename, path: ['columns', c] });
+
+                    if (!(fullname in types))
+                        types[fullname] = enumMap[typename];
+
                 }
                 else if (match = flatColumn.type.match(FlatLookupTypeRegex)) {
                     const table = match[1];
                     const group = match[2];
                     const column = match[3];
 
-                    const fulltypename = 'lookup' + '::' + table + '::' + group + '::' + column;
-                    type = '@' + fulltypename;
+                    const fullname = makeName(['lookup', table, group, column], columnInfo);
+
+                    type = '@' + fullname;
                     if (!pageMap[table])
                         issues.push({ type: 'processing', message: 'Invalid Table Reference', data: flatColumn.type, path: ['columns', c] });
                     else if (!groupMap[table + '.' + group])
@@ -232,8 +253,8 @@ export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProc
                     else if (!columnSet.has(table + '.' + group + '.' + column))
                         issues.push({ type: 'processing', message: 'Invalid Column Reference', data: flatColumn.type, path: ['columns', c] });
 
-                    if (!(fulltypename in types))
-                        types[fulltypename] = { kind: 'lookup', values: { page: table, group, name: column } };
+                    if (!(fullname in types))
+                        types[fullname] = { kind: 'lookup', values: { page: table, group, name: column } };
                 }
                 else {
                     issues.push({ type: 'processing', message: 'Invalid Column Type', data: flatColumn.type, path: ['columns', c] });
@@ -256,9 +277,9 @@ export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProc
                 const column: TableColumn = {
                     name: flatColumn.name,
                     description: flatColumn.description,
+                    source,
                     type: type as Reference,
                     expression,
-                    source
 
                 };
 
@@ -268,6 +289,6 @@ export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProc
     };
 
     return (issues.length === 0)
-        ? Result.success({ name: book.name, pages, definitions: { types: enumMap } })
+        ? Result.success({ name: book.name, pages, definitions: { types } })
         : Result.failure(issues);
 };

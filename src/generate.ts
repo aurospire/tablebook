@@ -72,8 +72,8 @@ export const tablebook = Object.freeze({
 
     validate<F extends 'flat' | 'table'>(format: F, data: any): TableBookValidateResult<F extends 'flat' ? FlatBook : TableBook> {
         const validator = format === 'flat'
-            ? TableBookValidator
-            : FlatBookValidator;
+            ? FlatBookValidator
+            : TableBookValidator;
 
         const result = validator.safeParse(data);
 
@@ -81,6 +81,10 @@ export const tablebook = Object.freeze({
             ? Result.success(result.data) as any
             : Result.failure(result.error.issues.map(issue => ({ type: 'validating', message: issue.message, path: issue.path })));
     },
+
+    // convertFlatBook(data: FlatBook, ): TableBookProcessResult<TableBook> {
+    //     return processFlatBook(data);
+    // },
 
     convert<F extends 'flat' | 'table'>(format: F, data: F extends 'flat' ? FlatBook : TableBook): TableBookProcessResult<F extends 'flat' ? TableBook : FlatBook> {
         return format === 'flat'
