@@ -1,15 +1,22 @@
 /**
- * FlatBook - A declarative data structure for generating spreadsheets using a simple, flat format.
+ * FlatBook - A declarative data structure for generating spreadsheets using a simple, flat declarative format.
  * 
  * ## Overview
  * The FlatBook structure organizes data using tables, groups, columns, and formulas, with support for advanced features like row selection, enums, and lookups.
  * 
- * ### Core Concepts
- * - **FlatBook**: The root structure combining all tables, columns, groups, formulas, and enums.
- * - **FlatColumnType**: Specify the type of data a column contains, including numeric, text, enum, and lookup types.
- * - **FlatFormula**: Reusable formulas that reference dynamic column selections using placeholders.
- * - **FlatColumn**: Defines the structure and data source for each column in a table.
- * - **FlatRowSelection**: Select rows with relative, absolute, or range-based methods.
+ * ### Formula Placeholder
+ * - Placeholders are used to reference columns in formulas in an TableColumn-centric way.
+ * - Placeholders are defined using a unique identifier and a selection - such as `{{TAG}}` or `$$TAG$$`
+ * - Example Placeholder Formula: `=SUM({{TAG}})`, where `{{TAG}}` is a placeholder like { table: 'Table', group: 'Group', column: 'Column', rows: 'all' }
+ * - Tags are unique identifiers for placeholders, and selections specify the table, group, column, and rows to include in the formula.
+ * 
+ * ### Column Types
+ * - `text` - Default type for text data.
+ * - `dollar` - Numeric type with currency formatting (ex: $123.45).
+ * - `number`, `percent`: Numeric types with optional decimals (ex: number => 123, number:2 => 123.45, percent:1 => 12.3%).
+ * - `date`, `datetime`: Temporal types with optional ISO or text format (ex: date:iso => YYYY-MM-DD, datetime:text => Sun, Jan 1, 2025 12:00:00 AM).
+ * - `enum`: References predefined values in the `FlatEnumItem` list. (ex: enum:Status)
+ * - `lookup`: References a column (ex: lookup:Table.Group.Column).
  * 
  * ### Row Selection
  * - `all`: Selects all rows.
@@ -18,12 +25,11 @@
  * - `+n` or `-n`: Select n rows relative to the current row the formula is in.
  * - Ranges: Combine selections with `:`, e.g., `$1:$3` or `+1:-1`, or even mixed selections like `$1:+1`.
  * 
- * ### Column Types
- * - `text` - Default type for text data.
- * - `dollar` - Numeric type with currency formatting (ex: $123.45).
- * - `number`, `percent`: Numeric types with optional decimals (ex: number => 123, number:2 => 123.45, percent:1 => 12.3%).
- * - `enum`: References predefined values in the `FlatEnumItem` list. (ex: enum:Status)
- * - `lookup`: References a column (ex: lookup:Table.Group.Column).
+ * ### Enumerations
+ * - Enumerations are predefined lists of values with associated colors.
+ * - Example Enum: { name: 'Status', value: 'Active', description: 'Active Status', color: '#00FF00' }
+ *                 { name: 'Status', value: 'Inactive', description: 'Inactive Status', color: '#FF0000' }
+ * - The `name` field is used to link enum values to columns with the `enum:Status` type.
  */
 
 /** Represents a string matching the FlatName pattern. */
@@ -126,7 +132,7 @@ export type FlatSelection = {
 
 /** Represents a dynamic placeholder tag with a specific selection. */
 export type FlatPlaceholder = {
-    placeholder: string; // Unique identifier for the placeholder
+    tag: string; // Unique identifier for the placeholder
     selection: FlatSelection; // Selection associated with the placeholder
 };
 

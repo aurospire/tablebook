@@ -88,7 +88,7 @@ export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProc
                                 ? from as UnitSelector
                                 : { from: from as UnitSelector, to: to as UnitSelector };
 
-                        return [ref.placeholder, { column, rows }];
+                        return [ref.tag, { column, rows }];
                     }))
             };
         }

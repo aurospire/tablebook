@@ -112,7 +112,7 @@ const FlatSelectionSchema: ZodType<FlatSelection> = z.object({
 
 /** Schema for FlatPlaceholder values. */
 const FlatPlaceholderSchema: ZodType<FlatPlaceholder> = z.object({
-    placeholder: z.string(),
+    tag: z.string(),
     selection: FlatSelectionSchema,
 });
 
