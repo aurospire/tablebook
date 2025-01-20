@@ -1,7 +1,58 @@
 import { TableBookProcessIssue } from "../issues";
-import { Reference, TableBook, TableGroup, TablePage, EnumType, TableColumn, FlatExpression, ColumnType } from "../tables";
+import { ColumnSelector, ColumnType, DataSelector, EnumType, RawExpression, Reference, RowSelector, TableBook, TableColumn, TableGroup, TablePage, TemporalFormat, UnitSelector } from "../tables";
 import { Result } from "../util";
-import { FlatBook, FlatEnumTypeRegex, FlatFormulaSourceRegex, FlatNumericTypeRegex, FlatTypes } from "./types";
+import { FlatBook, FlatDollarType, FlatEnumTypeRegex, FlatFormulaSourceRegex, FlatLookupTypeRegex, FlatNumericTypeRegex, FlatRowSelectionRegex, FlatTemporalTypeRegex, FlatTextType } from "./types";
+
+const temporals: Record<string, TemporalFormat> = {
+    // YYYY-MM-DD
+    dateiso: [
+        { type: 'year', length: 'long' },
+        '-',
+        { type: 'month', length: 'long' },
+        '-',
+        { type: 'day', length: 'long' }
+    ],
+    // YYYY-MM-DDTHH:MM:SS
+    datetimeiso: [
+        { type: 'year', length: 'long' },
+        '-',
+        { type: 'month', length: 'long' },
+        '-',
+        { type: 'day', length: 'long' },
+        'T',
+        { type: 'hour', length: 'long' },
+        ':',
+        { type: 'minute', length: 'long' },
+        ':',
+        { type: 'second', length: 'long' }
+    ],
+    // Sun, Jan 01, 2021
+    datetext: [
+        { type: 'weekday', length: 'short' },
+        ', ',
+        { type: 'month', length: 'short' },
+        ' ',
+        { type: 'day', length: 'long' },
+        ', ',
+        { type: 'year', length: 'long' }
+    ],
+    // Sun, Jan 01, 2021 12:00 AM
+    datetimetext: [
+        { type: 'weekday', length: 'short' },
+        ', ',
+        { type: 'month', length: 'short' },
+        ' ',
+        { type: 'day', length: 'long' },
+        ', ',
+        { type: 'year', length: 'long' },
+        ' ',
+        { type: 'hour', length: 'long' },
+        ':',
+        { type: 'minute', length: 'long' },
+        ' ',
+        { type: 'meridiem', length: 'long' }
+    ]
+};
 
 export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
@@ -9,7 +60,7 @@ export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProc
     const pages: TablePage[] = [];
     const enumMap: Record<string, EnumType> = {};
     const types: Record<string, ColumnType> = {};
-    const formulaMap: Record<string, FlatExpression> = {};
+    const formulaMap: Record<string, RawExpression<DataSelector>> = {};
     const pageMap: Record<string, TablePage> = {};
     const groupMap: Record<string, TableGroup> = {};
     const columnSet: Set<string> = new Set();
@@ -21,13 +72,24 @@ export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProc
             issues.push({ type: 'processing', message: 'Duplicate Formula', data: flatFormula, path: ['formulas', f] });
         else {
             formulaMap[flatFormula.name] = {
-                type: 'flat',
+                type: 'raw',
                 expression: flatFormula.formula,
                 refs: !flatFormula.refs
                     ? undefined
-                    : Object.fromEntries(Object
-                        .entries(flatFormula.refs)
-                        .map(([name, { page, group, column }]) => ([name, { page, group, name: column }])))
+                    : Object.fromEntries(flatFormula.refs.map(ref => {
+
+                        const column: ColumnSelector = { page: ref.selection.table, group: ref.selection.group, name: ref.selection.column };
+
+                        const [_, all, from, to] = ref.selection.rows.match(FlatRowSelectionRegex) ?? ['all', 'all'];
+
+                        const rows: RowSelector = from === 'all'
+                            ? 'all'
+                            : to === undefined
+                                ? from as UnitSelector
+                                : { from: from as UnitSelector, to: to as UnitSelector };
+
+                        return [ref.placeholder, { column, rows }];
+                    }))
             };
         }
     }
@@ -43,21 +105,21 @@ export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProc
         });
     }
 
-    for (let p = 0; p < book.tables.length; p++) {
-        const flatPage = book.tables[p];
+    for (let t = 0; t < book.tables.length; t++) {
+        const flatTable = book.tables[t];
 
         const page: TablePage = {
-            name: flatPage.name,
-            description: flatPage.description,
-            rows: flatPage.rows,
-            theme: '@' + flatPage.palette as Reference,
+            name: flatTable.name,
+            description: flatTable.description,
+            rows: flatTable.rows,
+            theme: '@' + flatTable.palette as Reference,
             groups: []
         };
 
-        if (flatPage.name in pageMap)
-            issues.push({ type: 'processing', message: 'Duplicate Page', data: flatPage, path: ['paths', p] });
+        if (flatTable.name in pageMap)
+            issues.push({ type: 'processing', message: 'Duplicate Table', data: flatTable, path: ['tables', t] });
         else {
-            pageMap[flatPage.name] = page;
+            pageMap[flatTable.name] = page;
             pages.push(page);
         }
     }
@@ -71,12 +133,12 @@ export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProc
             columns: [],
         };
 
-        const key = flatGroup.page + '.' + flatGroup.name;
+        const key = flatGroup.table + '.' + flatGroup.name;
 
-        const page = pageMap[flatGroup.page];
+        const page = pageMap[flatGroup.table];
 
         if (!page)
-            issues.push({ type: 'processing', message: 'Invalid Page Reference', data: flatGroup, path: ['groups', g] });
+            issues.push({ type: 'processing', message: 'Invalid Table Reference', data: flatGroup, path: ['groups', g] });
 
         else if (key in groupMap)
             issues.push({ type: 'processing', message: 'Duplicate Group', data: flatGroup, path: ['groups', g] });
@@ -90,12 +152,12 @@ export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProc
     for (let c = 0; c < book.columns.length; c++) {
         const flatColumn = book.columns[c];
 
-        const groupKey = flatColumn.page + '.' + flatColumn.group;
+        const groupKey = flatColumn.table + '.' + flatColumn.group;
 
         const columnKey = groupKey + '.' + flatColumn.name;
 
         if (!(flatColumn.name in pageMap))
-            issues.push({ type: 'processing', message: 'Invalid Page Reference', data: flatColumn.page, path: ['columns', c] });
+            issues.push({ type: 'processing', message: 'Invalid Page Reference', data: flatColumn.table, path: ['columns', c] });
         else {
             const group = groupMap[groupKey];
 
@@ -107,99 +169,82 @@ export const processFlatBook = (book: FlatBook): Result<TableBook, TableBookProc
 
                 let type: Reference;
 
-                // TODO: Have defaults, but allow custom overrides
-                switch (flatColumn.type) {
-                    case 'text':
-                        type = '@text';
-                        if (!('text' in types))
-                            types['text'] = { kind: 'text' };
-                        break;
-                    case 'number':
-                        type = '@number';
-                        if (!('number' in types))
-                            types['number'] = { kind: 'numeric', format: { type: 'number', commas: true } };
-                        break;
-                    case 'currency':
-                        type = '@currency';
-                        if (!('currency' in types))
-                            types['currency'] = { kind: 'numeric', format: { type: 'currency', commas: true, decimal: 2, symbol: '$' } };
-                        break;
-                    case 'percent':
-                        type = '@percent';
-                        if (!('percent' in types))
-                            types['percent'] = { kind: 'numeric', format: { type: 'percent', commas: true } };
-                        break;
-                    case 'date':
-                        type = '@date';
-                        if (!('date' in types))
-                            // Sun, Jan 01, 1900
-                            types['date'] = {
-                                kind: 'temporal',
-                                format: [
-                                    { type: 'weekday', length: 'short' },
-                                    ', ',
-                                    { type: 'month', length: 'short' },
-                                    ' ',
-                                    { type: 'day', length: 'long' },
-                                    ', ',
-                                    { type: 'year', length: 'long' }
-                                ]
-                            };
-                        break;
-                    case 'datetime':
-                        type = '@datetime';
-                        // 2021-01-01T00:00:00
-                        if (!('datetime' in types))
-                            types['datetime'] = {
-                                kind: 'temporal',
-                                format: [
-                                    { type: 'year', length: 'long' },
-                                    '-',
-                                    { type: 'month', length: 'long' },
-                                    '-',
-                                    { type: 'day', length: 'long' },
-                                    'T',
-                                    { type: 'hour', length: 'long' },
-                                    ':',
-                                    { type: 'minute', length: 'long' },
-                                    ':',
-                                    { type: 'second', length: 'long' }
-                                ]
-                            };
-                        break;
-                    default: {
-                        let match;
+                let match;
 
-                        if (match = flatColumn.type.match(FlatNumericTypeRegex)) {
-                            const typename = match[1];
-                            const decimals = Number(match[2]);
+                if (flatColumn.type === FlatTextType) {
+                    type = '@text';
 
-                            const fulltypename = typename + decimals;
+                    if (!('text' in types))
+                        types['text'] = { kind: 'text' };
+                }
+                else if (flatColumn.type === FlatDollarType) {
+                    type = '@dollar';
 
-                            type = '@' + fulltypename;
+                    if (!('dollar' in types))
+                        types['dollar'] = { kind: 'numeric', format: { type: 'currency', commas: true, decimal: 2, symbol: '$' } };
+                }
+                else if (match = flatColumn.type.match(FlatNumericTypeRegex)) {
+                    const typename = match[1];
+                    const decimals = Number(match[2]) ?? 0;
 
-                            if (!(fulltypename in types))
-                                types[fulltypename] = { kind: 'numeric', format: { type: typename as any, commas: true, decimal: decimals } };
-                        }
-                        else if (match = flatColumn.type.match(FlatEnumTypeRegex)) {
-                            const typename = match[1];
+                    const fulltypename = typename + decimals;
 
-                            type = '@' + typename + 'enum';
+                    type = '@' + fulltypename;
 
-                            if (!(typename in enumMap))
-                                issues.push({ type: 'processing', message: 'Invalid Enum Reference', data: flatColumn.type, path: ['columns', c] });
-                        }
-                        else {
-                            issues.push({ type: 'processing', message: 'Invalid Column Type', data: flatColumn.type, path: ['columns', c] });
-                            type = '@text';
-                        }
+                    if (!(fulltypename in types))
+                        types[fulltypename] = { kind: 'numeric', format: { type: typename as any, commas: true, decimal: decimals } };
+                }
+                else if (match = flatColumn.type.match(FlatTemporalTypeRegex)) {
+                    const typename = match[1];
+                    const typeformat = match[2];
+
+                    const fulltypename = typename + typeformat;
+
+                    type = '@' + fulltypename;
+
+                    if (!(fulltypename in types)) {
+                        const format = temporals[typename + typeformat];
+
+                        types[fulltypename] = { kind: 'temporal', format };
                     }
+
+                }
+                else if (match = flatColumn.type.match(FlatEnumTypeRegex)) {
+                    const typename = match[1];
+
+                    const fulltypename = 'enum' + '::' + typename;
+                    type = '@' + fulltypename;
+
+                    if (!(typename in enumMap))
+                        issues.push({ type: 'processing', message: 'Invalid Enum Reference', data: flatColumn.type, path: ['columns', c] });
+                }
+                else if (match = flatColumn.type.match(FlatLookupTypeRegex)) {
+                    const table = match[1];
+                    const group = match[2];
+                    const column = match[3];
+
+                    const fulltypename = 'lookup' + '::' + table + '::' + group + '::' + column;
+                    type = '@' + fulltypename;
+                    if (!pageMap[table])
+                        issues.push({ type: 'processing', message: 'Invalid Table Reference', data: flatColumn.type, path: ['columns', c] });
+                    else if (!groupMap[table + '.' + group])
+                        issues.push({ type: 'processing', message: 'Invalid Group Reference', data: flatColumn.type, path: ['columns', c] });
+                    else if (!columnSet.has(table + '.' + group + '.' + column))
+                        issues.push({ type: 'processing', message: 'Invalid Column Reference', data: flatColumn.type, path: ['columns', c] });
+
+                    if (!(fulltypename in types))
+                        types[fulltypename] = { kind: 'lookup', values: { page: table, group, name: column } };
+                }
+                else {
+                    issues.push({ type: 'processing', message: 'Invalid Column Type', data: flatColumn.type, path: ['columns', c] });
+                    type = '@text';
                 }
 
-                let source: string | undefined;
-                let expression: FlatExpression | undefined;
 
-                let match = flatColumn.source.match(FlatFormulaSourceRegex);
+                let source: string | undefined;
+                let expression: RawExpression<DataSelector> | undefined;
+
+                match = flatColumn.source.match(FlatFormulaSourceRegex);
 
                 if (match) {
                     source = 'auto';

@@ -38,7 +38,7 @@ export const toFormula = (exp: SheetExpression, position: SheetPosition): string
             return `-(${toFormula(exp.on, position)})`;
         case 'selector':
             return SheetSelector().toAddress(exp.from, position);
-        case 'flat': {
+        case 'raw': {
             let result = exp.expression;
             if (exp.refs) {
                 for (const [key, value] of Object.entries(exp.refs)) {

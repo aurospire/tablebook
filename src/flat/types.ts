@@ -57,7 +57,7 @@ export type FlatDollarType = typeof FlatDollarType;
 
 /** Represents temporal types for columns - with iso | text format. */
 export type FlatTemporalType = `${'date' | 'datetime'}${`:${'iso' | 'text'}` | ''}`;
-export const FlatTemporalTypeRegex = /^(date|datetime)(?::(iso|text))?$/;
+export const FlatTemporalTypeRegex = /^(date|datetime)(?::(iso|text))$/;
 
 /** Represents numeric types with optional specified decimal precision. */
 export type FlatNumericType = `${'number' | 'percent'}:${number}`;
@@ -114,7 +114,7 @@ export type FlatUnitSelection = `${FlatAbsolutePrefix | FlatRelativePrefix}${num
 
 /** Specifies rows in a table using relative, absolute, or range-based selection. */
 export type FlatRowSelection = `${FlatUnitSelection}${`:${FlatUnitSelection}` | ''}` | 'all';
-export const FlatRowSelectionRegex = /^([$+\-]\d+)(?::([$+\-]\d+))?$/;
+export const FlatRowSelectionRegex = /^(?:(all)|(?:([$+\-]\d+)(?::([$+\-]\d+))?))$/;
 
 /** Represents a reference to a specific column within a table and group. */
 export type FlatSelection = {
@@ -126,7 +126,7 @@ export type FlatSelection = {
 
 /** Represents a dynamic placeholder tag with a specific selection. */
 export type FlatPlaceholder = {
-    tag: string; // Unique identifier for the placeholder
+    placeholder: string; // Unique identifier for the placeholder
     selection: FlatSelection; // Selection associated with the placeholder
 };
 

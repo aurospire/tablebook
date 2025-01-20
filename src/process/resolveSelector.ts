@@ -20,7 +20,7 @@ export const resolveSelector = (
     path: ObjectPath
 ): Result<SheetSelector, TableBookProcessIssue[]> => {
 
-    const { column, row } = selector === 'self' ? { column: 'self', row: 'self' } : selector;
+    const { column, rows } = selector === 'self' ? { column: 'self', rows: 'self' } : selector;
 
     let selectedPage: string | undefined;
     let selectedColumn: ResolvedColumn;
@@ -45,24 +45,24 @@ export const resolveSelector = (
     let selectedRowStart: UnitSelector;
     let selectedRowEnd: UnitSelector | true | undefined;
 
-    if (typeof row === 'string') {
-        if (row === 'self')
+    if (typeof rows === 'string') {
+        if (rows === 'self')
             selectedRowStart = '+0';
-        else if (row === 'all') {
+        else if (rows === 'all') {
             selectedRowStart = '$0';
             selectedRowEnd = true;
         }
         else
-            selectedRowStart = row as UnitSelector;
+            selectedRowStart = rows as UnitSelector;
     }
     else {
-        if (row.from < row.to) {
-            selectedRowStart = row.from;
-            selectedRowEnd = row.to;
+        if (rows.from < rows.to) {
+            selectedRowStart = rows.from;
+            selectedRowEnd = rows.to;
         }
         else {
-            selectedRowStart = row.to;
-            selectedRowEnd = row.from;
+            selectedRowStart = rows.to;
+            selectedRowEnd = rows.from;
         }
     }
 

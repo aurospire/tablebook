@@ -59,7 +59,7 @@ export type RangeSelector = {
 };
 
 /** Targets rows in a column using a single position or a range */
-export type RowSelector = UnitSelector | RangeSelector;
+export type RowSelector = UnitSelector | RangeSelector | AllSelector;
 
 /** 
  * Combines column and row selection to target data within a table
@@ -72,7 +72,7 @@ export type DataSelector = {
     /** The column to target; 'self' refers to current element's column */
     column: ColumnSelector | SelfSelector;
     /** Optional row filter; 'self' refers to current row, undefined means entire column */
-    row: RowSelector | SelfSelector | AllSelector;
+    rows: RowSelector | SelfSelector;
 } | SelfSelector; // Full self reference - both column and row of current element
 
 
