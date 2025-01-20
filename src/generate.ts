@@ -1,6 +1,6 @@
 import { getLocation, parse, ParseError, printParseErrorCode } from 'jsonc-parser';
 import { LineCounter, parseDocument } from 'yaml';
-import { FlatBook, FlatBookValidator, processFlatBook } from './flat';
+import { FlatBook, FlatBookValidator, NameMaker, processFlatBook } from './flat';
 import { TableBookGenerateIssue, TableBookIssue, TableBookParseIssue, TableBookProcessIssue, TableBookValidateIssue } from './issues';
 import { processTableBook } from './process';
 import { SheetBook, SheetGenerator } from './sheets';
@@ -82,14 +82,12 @@ export const tablebook = Object.freeze({
             : Result.failure(result.error.issues.map(issue => ({ type: 'validating', message: issue.message, path: issue.path })));
     },
 
-    // convertFlatBook(data: FlatBook, ): TableBookProcessResult<TableBook> {
-    //     return processFlatBook(data);
-    // },
+    convertFlat(data: FlatBook, makeName?: NameMaker): TableBookProcessResult<TableBook> {
+        return processFlatBook(data, makeName);
+    },
 
-    convert<F extends 'flat' | 'table'>(format: F, data: F extends 'flat' ? FlatBook : TableBook): TableBookProcessResult<F extends 'flat' ? TableBook : FlatBook> {
-        return format === 'flat'
-            ? processFlatBook(data as any)
-            : processTableBook(data as any) as any;
+    converTable(data: TableBook): TableBookProcessResult<SheetBook> {
+        return processTableBook(data);
     },
 
     async generate(data: SheetBook, generator: SheetGenerator): Promise<TableBookGenerateResult> {

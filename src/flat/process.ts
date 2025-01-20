@@ -54,7 +54,7 @@ const temporals: Record<string, TemporalFormat> = {
     ]
 };
 
-export type NameMaker = (parts: string[], column: { table: string, group: string, column: string; }) => string;
+export type NameMaker = (parts: string[], column: { table: string, group: string, name: string; }) => string;
 
 const defaultNameMaker = (parts: string[]) => ['flat', ...parts].join(':');
 
@@ -164,7 +164,7 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
 
         const columnKey = groupKey + '.' + flatColumn.name;
 
-        const columnInfo = { table: flatColumn.table, group: flatColumn.group, column: flatColumn.name };
+        const columnInfo = { table: flatColumn.table, group: flatColumn.group, name: flatColumn.name };
 
         if (!(flatColumn.table in pageMap)) {
             issues.push({ type: 'processing', message: 'Invalid Table Reference', data: flatColumn.table, path: ['columns', c] });
