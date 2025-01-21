@@ -15,7 +15,6 @@ export const ReferenceRegex = /^@(.+)$/;
 export type Reference<Of extends string = string> = `@${Of}`;
 
 
-
 /* Data Selection */
 // Selectors are used to target data within a single column of a table
 // They define relationships between columns and rows relative to an element in the table paradigm
