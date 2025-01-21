@@ -1,17 +1,17 @@
 import { TableBookProcessIssue } from "../issues";
 import { SheetBorder, SheetTitleStyle } from "../sheets";
-import { Color, HeaderStyle, Reference, Style } from "../tables/types";
+import { TableColor, TableHeaderStyle, TableReference, TableStyle } from "../tables/types";
 import { ColorObject, ObjectPath, Result } from "../util";
 import { resolveColor } from "./resolveColor";
 import { isReference, resolveReference } from "./resolveReference";
 
 export const resolveStyle = (
-    style: HeaderStyle | Reference,
-    colors: Record<string, Color | Reference>,
-    styles: Record<string, Style | Reference>,
+    style: TableHeaderStyle | TableReference,
+    colors: Record<string, TableColor | TableReference>,
+    styles: Record<string, TableStyle | TableReference>,
     path: ObjectPath
 ): Result<SheetTitleStyle, TableBookProcessIssue[]> => {
-    let resolved: HeaderStyle;
+    let resolved: TableHeaderStyle;
 
     const issues: TableBookProcessIssue[] = [];
 

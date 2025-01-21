@@ -1,10 +1,10 @@
 import { TableBookProcessIssue } from "../issues";
 import { SheetSelector } from "../sheets";
-import { DataSelector, UnitSelector } from "../tables/types";
+import { TableSelector, TableUnitSelector } from "../tables/types";
 import { ObjectPath, Result } from "../util";
 import { ResolvedColumn, toLookupName } from "./resolveColumns";
 
-const modifyUnitSelector = (selector: UnitSelector, grouped: boolean): UnitSelector => {
+const modifyUnitSelector = (selector: TableUnitSelector, grouped: boolean): TableUnitSelector => {
     if (selector[0] !== '$')
         return selector;
 
@@ -14,7 +14,7 @@ const modifyUnitSelector = (selector: UnitSelector, grouped: boolean): UnitSelec
 };
 
 export const resolveSelector = (
-    selector: DataSelector,
+    selector: TableSelector,
     columns: Map<string, ResolvedColumn>,
     page: string, group: string, name: string,
     path: ObjectPath
@@ -42,8 +42,8 @@ export const resolveSelector = (
         selectedPage = column.page;
     }
 
-    let selectedRowStart: UnitSelector;
-    let selectedRowEnd: UnitSelector | true | undefined;
+    let selectedRowStart: TableUnitSelector;
+    let selectedRowEnd: TableUnitSelector | true | undefined;
 
     if (typeof rows === 'string') {
         if (rows === 'self')
@@ -53,7 +53,7 @@ export const resolveSelector = (
             selectedRowEnd = true;
         }
         else
-            selectedRowStart = rows as UnitSelector;
+            selectedRowStart = rows as TableUnitSelector;
     }
     else {
         if (rows.from < rows.to) {

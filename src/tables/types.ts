@@ -9,10 +9,10 @@
 
 /* Reference */
 /** Regex pattern for validating Reference strings. Must start with @ followed by allowed characters */
-export const ReferenceRegex = /^@(.+)$/;
+export const TableReferenceRegex = /^@(.+)$/;
 
 /** Type for referencing context-dependent items (color, style, theme, type) defined in TableBook */
-export type Reference<Of extends string = string> = `@${Of}`;
+export type TableReference = `@${string}`;
 
 
 /* Data Selection */
@@ -21,17 +21,17 @@ export type Reference<Of extends string = string> = `@${Of}`;
 // Selection is column-based; multi-column or horizontal selection is not supported
 
 /** Used to reference the current element in the scope where it is used */
-export const SelfLiteral = 'self';
+export const TableSelfLiteral = 'self';
 /** Type for self-referential selection */
-export type SelfSelector = typeof SelfLiteral;
+export type TableSelfSelector = typeof TableSelfLiteral;
 
 /** Used to reference all elements in the scope where it is used */
-export const AllLiteral = 'all';
+export const TableAllLiteral = 'all';
 /** Type for all-referential selection */
-export type AllSelector = typeof AllLiteral;
+export type TableAllSelector = typeof TableAllLiteral;
 
 /** Identifies a specific column by name, optionally specifying its table and group */
-export type ColumnSelector = {
+export type TableColumnSelector = {
     /** The table containing the column; defaults to the element's page */
     page?: string;
     /** The group containing the column; defaults to the element's group */
@@ -41,24 +41,24 @@ export type ColumnSelector = {
 };
 
 /** Regex for validating unit selector syntax ($/+/-)number */
-export const UnitSelectorRegex = /^([$+\-])(\d+)$/;
+export const TableUnitSelectorRegex = /^([$+\-])(\d+)$/;
 /** Valid prefixes for unit selection: $ for absolute index, +/- for relative offset */
-export type UnitPrefix = '$' | '+' | '-';
+export type TableUnitPrefix = '$' | '+' | '-';
 /** Targets a single row in a column using absolute ($) or relative (+/-) indexing */
-export type UnitSelector = `${UnitPrefix}${number}`;
+export type TableUnitSelector = `${TableUnitPrefix}${number}`;
 
 
 /** Targets a range of rows within a column between two inclusive endpoints */
-export type RangeSelector = {
+export type TableRangeSelector = {
     /** One boundary of the range (compiler determines order) */
-    from: UnitSelector;
+    from: TableUnitSelector;
 
     /** The other boundary of the range (compiler determines order) */
-    to: UnitSelector;
+    to: TableUnitSelector;
 };
 
 /** Targets rows in a column using a single position or a range */
-export type RowSelector = UnitSelector | RangeSelector | AllSelector;
+export type TableRowSelector = TableUnitSelector | TableRangeSelector | TableAllSelector;
 
 /** 
  * Combines column and row selection to target data within a table
@@ -67,29 +67,29 @@ export type RowSelector = UnitSelector | RangeSelector | AllSelector;
  * When row is 'all' - refers to all rows in the column
  * When using 'self': refers to current element's exact position (both column and row) 
  */
-export type DataSelector = {
+export type TableSelector = {
     /** The column to target; 'self' refers to current element's column */
-    column: ColumnSelector | SelfSelector;
+    column: TableColumnSelector | TableSelfSelector;
     /** Optional row filter; 'self' refers to current row, undefined means entire column */
-    rows: RowSelector | SelfSelector;
-} | SelfSelector; // Full self reference - both column and row of current element
+    rows: TableRowSelector | TableSelfSelector;
+} | TableSelfSelector; // Full self reference - both column and row of current element
 
 
 /* Styling */
 /** Hex color code in 6-digit format */
-export const ColorRegex = /^#[A-Za-z0-9]{6}$/;
+export const TableColorRegex = /^#[A-Za-z0-9]{6}$/;
 /** Type for hex color values */
-export type Color = `#${string}`;
+export type TableColor = `#${string}`;
 
 /** Text formatting options */
-export type TextForm = boolean | {};
+export type TableTextForm = boolean | {};
 
 /** Style definition for text and background */
-export type Style = {
+export type TableStyle = {
     /** Text color, defaults to black */
-    fore?: Color | Reference;
+    fore?: TableColor | TableReference;
     /** Background color, defaults to white */
-    back?: Color | Reference;
+    back?: TableColor | TableReference;
     /** Bolded, defaults to false */
     bold?: boolean;
     /** Italicized, defaults to false */
@@ -97,161 +97,161 @@ export type Style = {
 };
 
 /** Available border line styles */
-export const BorderTypes = ['none', 'thin', 'medium', 'thick', 'dotted', 'dashed', 'double'] as const;
+export const TableBorderTypes = ['none', 'thin', 'medium', 'thick', 'dotted', 'dashed', 'double'] as const;
 
 /** Border line style type */
-export type BorderType = typeof BorderTypes[number];
+export type TableBorderType = typeof TableBorderTypes[number];
 
 /** Border definition */
-export type Border = {
+export type TableBorder = {
     /** Border line style */
-    type: BorderType;
+    type: TableBorderType;
     /** Border color */
-    color: Color | Reference;
+    color: TableColor | TableReference;
 };
 
 /** Group and column partition styling */
-export type Partition = {
+export type TablePartition = {
     /** Border beneath the Group-Header or Column-Header */
-    beneath?: Border;
+    beneath?: TableBorder;
     /** Border between the Groups-Columns or individual Columns */
-    between?: Border;
+    between?: TableBorder;
 };
 
 /** Extended style for headers including partition borders */
-export type HeaderStyle = Style & Partition;
+export type TableHeaderStyle = TableStyle & TablePartition;
 
 /** Theme definition for consistent styling */
-export type Theme = {
+export type TableTheme = {
     /** Deep overriding inheritance from standard palettes/themes - order matters */
-    inherits?: (Reference)[];
+    inherits?: (TableReference)[];
     /** Tab color */
-    tab?: Color | Reference;
+    tab?: TableColor | TableReference;
     /** Group header styling */
-    group?: HeaderStyle | Reference;
+    group?: TableHeaderStyle | TableReference;
     /** Column header styling */
-    header?: HeaderStyle | Reference;
+    header?: TableHeaderStyle | TableReference;
     /** Data cell styling */
-    data?: Style | Reference;
+    data?: TableStyle | TableReference;
 };
 
 
 
 /* Operators */
 /** Valid comparison operators for conditional expressions */
-export const ComparisonOperators = ['=', '<>', '>', '<', '>=', '<='] as const;
+export const TableComparisonOperators = ['=', '<>', '>', '<', '>=', '<='] as const;
 /** Type representing valid comparison operators */
-export type ComparisonOperator = typeof ComparisonOperators[number];
+export type TableComparisonOperator = typeof TableComparisonOperators[number];
 
 /** Valid merge operators for combining values */
-export const MergeOperators = ['+', '-', '*', '/', '^', '&'] as const;
+export const TableMergeOperators = ['+', '-', '*', '/', '^', '&'] as const;
 /** Type representing valid merge operators */
-export type MergeOperator = typeof MergeOperators[number];
+export type TableMergeOperator = typeof TableMergeOperators[number];
 
 /* Expressions */
 /** Type identifier for compound expressions that combine multiple values */
-export const CompoundExpressionType = 'compound';
+export const TableCompoundExpressionType = 'compound';
 /** Expression that combines multiple values using comparison or merge operators */
-export type CompoundExpression<Selector> = {
-    type: typeof CompoundExpressionType;
-    with: ComparisonOperator | MergeOperator;
-    items: Expression<Selector>[];
+export type TableCompoundExpression<Selector> = {
+    type: typeof TableCompoundExpressionType;
+    with: TableComparisonOperator | TableMergeOperator;
+    items: TableExpression<Selector>[];
 };
 
 /** Type identifier for negated expressions */
-export const NegatedExpressionType = 'negated';
+export const TableNegatedExpressionType = 'negated';
 /** Expression that inverts the result of another expression */
-export type NegatedExpression<Selector> = {
-    type: typeof NegatedExpressionType;
-    on: Expression<Selector>;
+export type TableNegatedExpression<Selector> = {
+    type: typeof TableNegatedExpressionType;
+    on: TableExpression<Selector>;
 };
 
 /** Type identifier for function expressions */
-export const FunctionExpressionType = 'function';
+export const TableFunctionExpressionType = 'function';
 /** Expression that applies a named function to a list of arguments */
-export type FunctionExpression<Selector> = {
-    type: typeof FunctionExpressionType;
+export type TableFunctionExpression<Selector> = {
+    type: typeof TableFunctionExpressionType;
     name: string;
-    args: Expression<Selector>[];
+    args: TableExpression<Selector>[];
 }; // Function validity is user-responsibility 
 
 /** Type identifier for selector expressions */
-export const SelectorExpressionType = 'selector';
+export const TableSelectorExpressionType = 'selector';
 /** Expression that references data via a selector */
-export type SelectorExpression<Selector> = {
-    type: typeof SelectorExpressionType;
+export type TableSelectorExpression<Selector> = {
+    type: typeof TableSelectorExpressionType;
     from: Selector;
 };
 
 /** Type identifier for literal expressions */
-export const LiteralExpressionType = 'literal';
+export const TableLiteralExpressionType = 'literal';
 /** Direct value expression */
-export type LiteralExpression = { type: typeof LiteralExpressionType, of: string | number | boolean; };
+export type TableLiteralExpression = { type: typeof TableLiteralExpressionType, of: string | number | boolean; };
 
 /** Type identifier for flat expressions */
-export const RawExpressionType = 'raw';
+export const TableRawExpressionType = 'raw';
 /* Flattened Expression, refs are replaced in the expression text */
-export type RawExpression<Selector> = { type: typeof RawExpressionType, text: string, refs?: Record<string, Selector>; };
+export type TableRawExpression<Selector> = { type: typeof TableRawExpressionType, text: string, refs?: Record<string, Selector>; };
 
 /** All possible expression types for data computation and validation */
-export type Expression<Selector> =
-    | CompoundExpression<Selector>
-    | NegatedExpression<Selector>
-    | FunctionExpression<Selector>
-    | SelectorExpression<Selector>
-    | RawExpression<Selector>
-    | LiteralExpression
+export type TableExpression<Selector> =
+    | TableCompoundExpression<Selector>
+    | TableNegatedExpression<Selector>
+    | TableFunctionExpression<Selector>
+    | TableSelectorExpression<Selector>
+    | TableRawExpression<Selector>
+    | TableLiteralExpression
     ;
 
 /* Data Rules */
 /** Regex pattern for validating temporal strings in ISO format */
-export const TemporalStringRegex = /^\d{4}-\d{2}-\d{2}$/;
+export const TableTemporalStringRegex = /^\d{4}-\d{2}-\d{2}$/;
 /** Date string in YYYY-MM-DD format */
-export type DateString = `${number}-${number}-${number}`;
+export type TableDateString = `${number}-${number}-${number}`;
 /** String representing either a date or datetime */
-export type TemporalString = DateString;
+export type TableTemporalString = TableDateString;
 
 
 /** Rule comparing a value to a fixed target using a comparison operator */
-export type ComparisonRule<T> = { type: ComparisonOperator; value: T; };
+export type TableComparisonRule<T> = { type: TableComparisonOperator; value: T; };
 
 
 /** Type for custom rules using DataSelector expressions */
-export const CustomRuleType = 'custom';
+export const TableCustomRuleType = 'custom';
 /** Rule using a custom expression for complex validations */
-export type CustomRule = { type: typeof CustomRuleType; expression: Expression<DataSelector>; };
+export type TableCustomRule = { type: typeof TableCustomRuleType; expression: TableExpression<TableSelector>; };
 
 
 /** Available range operators for numeric and temporal comparisons */
-export const RangeOperators = ['between', 'outside'] as const;
+export const TableRangeOperators = ['between', 'outside'] as const;
 /** Range operator type */
-export type RangeOperator = typeof RangeOperators[number];
+export type TableRangeOperator = typeof TableRangeOperators[number];
 /** Rule validating if a value falls within or outside a range */
-export type RangeRule<T> = { type: RangeOperator; low: T; high: T; };
+export type TableRangeRule<T> = { type: TableRangeOperator; low: T; high: T; };
 
 
 /** Rule for validating numeric values */
-export type NumericRule = ComparisonRule<number> | RangeRule<number> | CustomRule;
+export type TableNumericRule = TableComparisonRule<number> | TableRangeRule<number> | TableCustomRule;
 
 /** Rule for validating temporal values */
-export type TemporalRule = ComparisonRule<TemporalString> | RangeRule<TemporalString> | CustomRule;
+export type TableTemporalRule = TableComparisonRule<TableTemporalString> | TableRangeRule<TableTemporalString> | TableCustomRule;
 
 
 /** Available text matching operators */
-export const MatchOperators = ['is', 'contains', 'begins', 'ends'] as const;
+export const TableMatchOperators = ['is', 'contains', 'begins', 'ends'] as const;
 /** Text matching operator type */
-export type MatchOperator = typeof MatchOperators[number];
+export type TableMatchOperator = typeof TableMatchOperators[number];
 /** Rule for string pattern matching */
-export type MatchRule = { type: MatchOperator; value: string; };
+export type TableMatchRule = { type: TableMatchOperator; value: string; };
 
 /** Rule for validating text values */
-export type TextRule = MatchRule | CustomRule;
+export type TableTextRule = TableMatchRule | TableCustomRule;
 
 
 /** Defines a style to apply when a rule condition is met */
-export type ConditionalStyle<Rule> = {
+export type TableConditionalStyle<Rule> = {
     rule: Rule;
-    apply: Style | Reference;
+    apply: TableStyle | TableReference;
 };
 
 /* Numeric Formats */
@@ -261,149 +261,149 @@ export type ConditionalStyle<Rule> = {
 * flex: Uses '#' - Shows digit if present, shows nothing if no value
 * align: Uses '?' - Shows digit if present, shows blank space if no value 
 */
-export type DigitPlaceholder = {
+export type TableDigitPlaceholder = {
     fixed?: number;  // Number of '0' digits
     flex?: number;   // Number of '#' digits
     align?: number;  // Number of '?' digits
 };
 
 /** Base configuration for all numeric format types */
-export type BaseNumberFormat<Type extends string> = {
+export type TableBaseNumberFormat<Type extends string> = {
     type: Type;
-    integer?: number | DigitPlaceholder;   // Formatting for digits before decimal
-    decimal?: number | DigitPlaceholder;    // Formatting for digits after decimal
+    integer?: number | TableDigitPlaceholder;   // Formatting for digits before decimal
+    decimal?: number | TableDigitPlaceholder;    // Formatting for digits after decimal
     commas?: boolean;  // Whether to separate thousands with commas
 };
 
 /** Format type for regular numbers */
-export const NumberFormatType = 'number';
+export const TableNumberFormatType = 'number';
 /** Configures how regular numbers display */
-export type NumberFormat = BaseNumberFormat<typeof NumberFormatType>;
+export type TableNumberFormat = TableBaseNumberFormat<typeof TableNumberFormatType>;
 
 /** Format type for percentages */
-export const PercentFormatType = 'percent';
+export const TablePercentFormatType = 'percent';
 /** Configures how percentages display, adds % symbol */
-export type PercentFormat = BaseNumberFormat<typeof PercentFormatType>;
+export type TablePercentFormat = TableBaseNumberFormat<typeof TablePercentFormatType>;
 
 /** Format type for currency values */
-export const CurrencyFormatType = 'currency';
+export const TableCurrencyFormatType = 'currency';
 /** Available positions for currency symbols */
-export const CurrencySymbolPositions = ['prefix', 'suffix'] as const;
+export const TableCurrencySymbolPositions = ['prefix', 'suffix'] as const;
 /** Configures how currency values display */
-export type CurrencyFormat = BaseNumberFormat<typeof CurrencyFormatType> & {
+export type TableCurrencyFormat = TableBaseNumberFormat<typeof TableCurrencyFormatType> & {
     symbol?: string;  // Currency symbol, defaults to '$'
-    position?: typeof CurrencySymbolPositions[number];  // Where to place the symbol
+    position?: typeof TableCurrencySymbolPositions[number];  // Where to place the symbol
 };
 
 /** All available numeric format types */
-export type NumericFormat =
-    | NumberFormat
-    | PercentFormat
-    | CurrencyFormat
+export type TableNumericFormat =
+    | TableNumberFormat
+    | TablePercentFormat
+    | TableCurrencyFormat
     ;
 
 
 /* Temporal Formats */
 
 /** Available lengths for temporal unit display */
-export const TemporalUnitLengths = ['short', 'long'] as const;
+export const TableTemporalUnitLengths = ['short', 'long'] as const;
 /** Controls if unit shows abbreviated or full form */
-export type TemporalUnitLength = typeof TemporalUnitLengths[number];
+export type TableTemporalUnitLength = typeof TableTemporalUnitLengths[number];
 
 /** Available types of temporal units for formatting */
-export const TemporalUnitTypes = ['year', 'month', 'monthname', 'weekday', 'day', 'hour', 'meridiem', 'minute', 'second'] as const;
+export const TableTemporalUnitTypes = ['year', 'month', 'monthname', 'weekday', 'day', 'hour', 'meridiem', 'minute', 'second'] as const;
 /** Individual temporal unit that can be formatted */
-export type TemporalUnitType = typeof TemporalUnitTypes[number];
+export type TableTemporalUnitType = typeof TableTemporalUnitTypes[number];
 
 /** Configures how a specific temporal unit should display */
-export type TemporalUnit = { type: TemporalUnitType, length: TemporalUnitLength; };
+export type TableTemporalUnit = { type: TableTemporalUnitType, length: TableTemporalUnitLength; };
 
 /** Element in temporal format pattern - either a unit or literal string */
-export type TemporalItem = TemporalUnit | string;
+export type TableTemporalItem = TableTemporalUnit | string;
 
 /** Complete format pattern for temporal values */
-export type TemporalFormat = TemporalItem[];
+export type TableTemporalFormat = TableTemporalItem[];
 
 
 
 /* Data Types */
 
 /** Identifies a text type in the type system */
-export const TextTypeKind = 'text';
+export const TableTextTypeKind = 'text';
 /** 
  * Text data type for string values
  * Supports validation rules, conditional styling, and computed expressions
  */
-export type TextType = {
-    kind: typeof TextTypeKind;
+export type TableTextType = {
+    kind: typeof TableTextTypeKind;
     /** Optional validation rule for the text content */
-    rule?: TextRule;
+    rule?: TableTextRule;
     /** Optional array of conditional styles based on text rules */
-    styles?: ConditionalStyle<TextRule>[];
+    styles?: TableConditionalStyle<TableTextRule>[];
 };
 
 /** 
  * Represents a single value in an enum type
  * Can be either a simple string or an object with an associated style
  */
-export type EnumItem = { name: string; description?: string; style?: Style | Reference; };
+export type TableEnumItem = { name: string; description?: string; style?: TableStyle | TableReference; };
 
 /** Identifies an enum type in the type system */
-export const EnumTypeKind = 'enum';
+export const TableEnumTypeKind = 'enum';
 /** 
  * Enumerated data type with a fixed set of possible values
  * Each value can have its own style
  */
-export type EnumType = {
-    kind: typeof EnumTypeKind;
+export type TableEnumType = {
+    kind: typeof TableEnumTypeKind;
     /** Array of valid values for this enum */
-    items: EnumItem[];
+    items: TableEnumItem[];
 };
 
 
 /** Identifies a lookup type in the type system */
-export const LookupTypeKind = 'lookup';
+export const TableLookupTypeKind = 'lookup';
 /** 
  * Lookup data type that references valid values from another column
  * Useful for maintaining consistency and relationships between columns
  */
-export type LookupType = {
-    kind: typeof LookupTypeKind;
+export type TableLookupType = {
+    kind: typeof TableLookupTypeKind;
     /** Column containing the valid values for this lookup */
-    values: ColumnSelector;
+    values: TableColumnSelector;
 };
 
 
 /** Identifies a numeric type in the type system */
-export const NumericTypeKind = 'numeric';
+export const TableNumericTypeKind = 'numeric';
 /** 
  * Numeric data type for numbers and calculations
  * Supports formatting options, validation rules, and computed expressions
  */
-export type NumericType = {
-    kind: typeof NumericTypeKind;
+export type TableNumericType = {
+    kind: typeof TableNumericTypeKind;
     /** Optional validation rule for the numeric value */
-    rule?: NumericRule;
+    rule?: TableNumericRule;
     /** Optional array of conditional styles based on numeric rules */
-    styles?: ConditionalStyle<NumericRule>[];
+    styles?: TableConditionalStyle<TableNumericRule>[];
     /** Optional formatting for how the number should be displayed */
-    format?: NumericFormat | Reference;
+    format?: TableNumericFormat | TableReference;
 };
 
 /** Identifies a temporal type in the type system */
-export const TemporalTypeKind = 'temporal';
+export const TableTemporalTypeKind = 'temporal';
 /** 
  * Temporal data type for dates and times
  * Supports multiple format options, validation rules, and computed expressions
  */
-export type TemporalType = {
-    kind: typeof TemporalTypeKind;
+export type TableTemporalType = {
+    kind: typeof TableTemporalTypeKind;
     /** Optional validation rule for the temporal value */
-    rule?: TemporalRule;
+    rule?: TableTemporalRule;
     /** Optional array of conditional styles based on temporal rules */
-    styles?: ConditionalStyle<TemporalRule>[];
+    styles?: TableConditionalStyle<TableTemporalRule>[];
     /** Optional formatting for how the date/time should be displayed */
-    format?: TemporalFormat | Reference;
+    format?: TableTemporalFormat | TableReference;
 };
 
 
@@ -411,7 +411,7 @@ export type TemporalType = {
  * Union of all possible data types in the system
  * Can be a concrete type definition or a reference to a predefined type
  */
-export type ColumnType = TextType | EnumType | LookupType | NumericType | TemporalType;
+export type TableColumnType = TableTextType | TableEnumType | TableLookupType | TableNumericType | TableTemporalType;
 
 
 
@@ -428,7 +428,7 @@ export type TableUnit = {
     /** Unique identifier following TableUnitNameRegex pattern */
     name: string;
     /** Optional theme override for this unit */
-    theme?: Theme | Reference;
+    theme?: TableTheme | TableReference;
     /** Optional description of the unit's purpose */
     description?: string;
 };
@@ -439,11 +439,11 @@ export type TableUnit = {
 */
 export type TableColumn = TableUnit & {
     /** Data type defining the content and behavior of this column */
-    type: ColumnType | Reference;
+    type: TableColumnType | TableReference;
     /** Optional metadata describing where the column's data comes from */
     source?: string;
     /** Optional expression to compute the value */
-    expression?: Expression<DataSelector>;
+    expression?: TableExpression<TableSelector>;
 };
 
 /** 
@@ -472,20 +472,20 @@ export type TablePage = TableUnit & {
 */
 export type TableDefinitions = {
     /** Custom color definitions. Includes prebuilt colors from StandardPalettes->main */
-    colors?: Record<string, Color | Reference>;
+    colors?: Record<string, TableColor | TableReference>;
     /** Reusable style definitions */
-    styles?: Record<string, HeaderStyle | Reference>;
+    styles?: Record<string, TableHeaderStyle | TableReference>;
     /** Custom theme definitions. Includes prebuilt Themes build from StandardPalettes */
-    themes?: Record<string, Theme | Reference>;
+    themes?: Record<string, TableTheme | TableReference>;
     /** Format definitions for numbers and dates */
     formats?: {
         /** Custom numeric format definitions */
-        numeric?: Record<string, NumericFormat | Reference>;
+        numeric?: Record<string, TableNumericFormat | TableReference>;
         /** Custom temporal format definitions */
-        temporal?: Record<string, TemporalFormat | Reference>;
+        temporal?: Record<string, TableTemporalFormat | TableReference>;
     };
     /** Reusable type definitions */
-    types?: Record<string, ColumnType | Reference>;
+    types?: Record<string, TableColumnType | TableReference>;
 };
 
 /** 

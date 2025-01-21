@@ -1,7 +1,7 @@
 import { TableBookProcessIssue } from "../issues";
 import { StandardPalettes } from "../palettes";
 import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "../sheets/SheetBook";
-import { Reference, TableBook, TableColumn, TableGroup, TablePage, Theme } from "../tables/types";
+import { TableReference, TableBook, TableColumn, TableGroup, TablePage, TableTheme } from "../tables/types";
 import { ColorHex, ObjectPath, Result } from "../util";
 import { resolveBehavior } from "./resolveBehavior";
 import { resolveColumns } from "./resolveColumns";
@@ -20,7 +20,7 @@ export const standardColors: Record<string, ColorHex> = Object.fromEntries(
  * Standard themes derived from predefined palettes.
  * Maps palette colors to `tab`, `group`, `header`, and `data` styling.
  */
-export const standardThemes: Record<string, Theme> = Object.fromEntries(
+export const standardThemes: Record<string, TableTheme> = Object.fromEntries(
     Object.entries(StandardPalettes).map(([key, palette]) => [key, {
         tab: palette.main,
         group: { back: palette.darkest },
@@ -67,7 +67,7 @@ export const processTableBook = (book: TableBook, logger?: ProcessLog): Result<S
 
         const page = book.pages[p]; logger?.page?.(page);
 
-        const pageParents: (Theme | Reference)[] = book.theme ? [book.theme] : [];
+        const pageParents: (TableTheme | TableReference)[] = book.theme ? [book.theme] : [];
 
         const pageTheme = resolveTheme(page.theme ?? {}, colors, styles, themes, pageParents, [], pagePath);
 

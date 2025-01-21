@@ -1,12 +1,12 @@
 import { TableBookProcessIssue } from "../issues";
-import { Reference } from "../tables/types";
+import { TableReference } from "../tables/types";
 import { ObjectPath, Result } from "../util";
 
-export const isReference = (value: unknown): value is Reference => typeof value === 'string' && value.startsWith('@');
+export const isReference = (value: unknown): value is TableReference => typeof value === 'string' && value.startsWith('@');
 
 export const resolveReference = <T>(
-    ref: Reference,
-    map: Record<string, T | Reference>,
+    ref: TableReference,
+    map: Record<string, T | TableReference>,
     is: (value: unknown) => boolean,
     path: ObjectPath
 ): Result<T, TableBookProcessIssue[]> => {

@@ -3,7 +3,7 @@ import { toFormula } from "../sheets/SheetExpression";
 import { SheetPosition } from "../sheets/SheetPosition";
 import { SheetSelector } from "../sheets/SheetSelector";
 import { SheetRule } from "../sheets/SheetRule";
-import { ComparisonOperator, MatchOperator, RangeOperator } from "../tables/types";
+import { TableComparisonOperator, TableMatchOperator, TableRangeOperator } from "../tables/types";
 import { GoogleCondition } from "./GoogleTypes";
 
 export const GoogleNumberConditionTypeMap: Record<string, string> = {
@@ -15,7 +15,7 @@ export const GoogleNumberConditionTypeMap: Record<string, string> = {
     '<=': 'NUMBER_LESS_THAN_EQ',
     'between': 'NUMBER_BETWEEN',
     'outside': 'NUMBER_NOT_BETWEEN',
-} satisfies Record<ComparisonOperator | RangeOperator, string>;
+} satisfies Record<TableComparisonOperator | TableRangeOperator, string>;
 
 export const GoogleDateConditionTypeMap: Record<string, string> = {
     '=': 'DATE_EQ',
@@ -26,14 +26,14 @@ export const GoogleDateConditionTypeMap: Record<string, string> = {
     '<=': 'DATE_ON_OR_BEFORE',
     'between': 'DATE_BETWEEN',
     'outside': 'DATE_NOT_BETWEEN',
-} satisfies Record<ComparisonOperator | RangeOperator, string>;
+} satisfies Record<TableComparisonOperator | TableRangeOperator, string>;
 
 export const GoogleTextConditionTypeMap: Record<string, string> = {
     'is': 'TEXT_EQ',
     'contains': 'TEXT_CONTAINS',
     'begins': 'TEXT_STARTS_WITH',
     'ends': 'TEXT_ENDS_WITH',
-} satisfies Record<MatchOperator, string>;
+} satisfies Record<TableMatchOperator, string>;
 
 
 export const GoogleOneOfListConditionType = 'ONE_OF_LIST';

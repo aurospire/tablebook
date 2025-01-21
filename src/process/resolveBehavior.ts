@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { TableBookProcessIssue } from "../issues";
 import { SheetBehavior, SheetConditionalStyle, SheetPosition, SheetRule } from "../sheets";
-import { Color, ColumnType, ComparisonRule, EnumType, LookupType, NumericFormat, NumericType, Reference, Style, TemporalFormat, TemporalString, TemporalType, TextRule, TextType } from "../tables/types";
+import { TableColor, TableColumnType, TableComparisonRule, TableEnumType, TableLookupType, TableNumericFormat, TableNumericType, TableReference, TableStyle, TableTemporalFormat, TableTemporalString, TableTemporalType, TableTextRule, TableTextType } from "../tables/types";
 import { ObjectPath, Result } from "../util";
 import { ResolvedColumn } from "./resolveColumns";
 import { resolveExpression } from "./resolveExpression";
@@ -10,7 +10,7 @@ import { resolveSelector } from "./resolveSelector";
 import { resolveStyle } from "./resolveStyle";
 
 const resolveNumericRule = (
-    rule: NumericType['rule'] & {},
+    rule: TableNumericType['rule'] & {},
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
     path: ObjectPath
@@ -39,17 +39,17 @@ const resolveNumericRule = (
         return Result.success({
             type: rule.type,
             target: 'number',
-            value: (rule as ComparisonRule<number>).value
+            value: (rule as TableComparisonRule<number>).value
         });
     }
 };
 
-const resolveTemporalString = (value: TemporalString): DateTime => {
+const resolveTemporalString = (value: TableTemporalString): DateTime => {
     return DateTime.fromISO(value);
 };
 
 const resolveTemporalRule = (
-    rule: TemporalType['rule'] & {},
+    rule: TableTemporalType['rule'] & {},
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
     path: ObjectPath
@@ -78,17 +78,17 @@ const resolveTemporalRule = (
         return Result.success({
             type: rule.type,
             target: 'temporal',
-            value: resolveTemporalString((rule as ComparisonRule<TemporalString>).value)
+            value: resolveTemporalString((rule as TableComparisonRule<TableTemporalString>).value)
         });
     }
 };
 
 const resolveTextBehavior = (
-    resolved: TextType,
+    resolved: TableTextType,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
-    colors: Record<string, Reference | Color>,
-    styles: Record<string, Reference | Style>,
+    colors: Record<string, TableReference | TableColor>,
+    styles: Record<string, TableReference | TableStyle>,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
 
@@ -167,9 +167,9 @@ const resolveTextBehavior = (
 };
 
 export const resolveEnumBehavior = (
-    type: EnumType,
-    colors: Record<string, Color | Reference>,
-    styles: Record<string, Style | Reference>,
+    type: TableEnumType,
+    colors: Record<string, TableColor | TableReference>,
+    styles: Record<string, TableStyle | TableReference>,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
@@ -200,7 +200,7 @@ export const resolveEnumBehavior = (
 };
 
 const resolveLookupBehavior = (
-    type: LookupType,
+    type: TableLookupType,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
     path: ObjectPath
@@ -220,17 +220,17 @@ const resolveLookupBehavior = (
 };
 
 const resolveNumericBehavior = (
-    type: NumericType,
+    type: TableNumericType,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
-    colors: Record<string, Color | Reference>,
-    styles: Record<string, Style | Reference>,
-    numeric: Record<string, Reference | NumericFormat>,
+    colors: Record<string, TableColor | TableReference>,
+    styles: Record<string, TableStyle | TableReference>,
+    numeric: Record<string, TableReference | TableNumericFormat>,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
 
-    let resolvedFormat: NumericFormat | undefined;
+    let resolvedFormat: TableNumericFormat | undefined;
     if (type.format) {
         if (isReference(type.format)) {
             const resolved = resolveReference(type.format, numeric, v => typeof v === 'object', path);
@@ -293,17 +293,17 @@ const resolveNumericBehavior = (
 
 
 const resolveTemporalBehavior = (
-    type: TemporalType,
+    type: TableTemporalType,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
-    colors: Record<string, Color | Reference>,
-    styles: Record<string, Style | Reference>,
-    temporal: Record<string, Reference | TemporalFormat>,
+    colors: Record<string, TableColor | TableReference>,
+    styles: Record<string, TableStyle | TableReference>,
+    temporal: Record<string, TableReference | TableTemporalFormat>,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
 
-    let resolvedFormat: TemporalFormat | undefined;
+    let resolvedFormat: TableTemporalFormat | undefined;
     if (type.format) {
         if (isReference(type.format)) {
             const resolved = resolveReference(type.format, temporal, v => typeof v === 'object', path);
@@ -365,17 +365,17 @@ const resolveTemporalBehavior = (
 };
 
 export const resolveBehavior = (
-    type: ColumnType | Reference,
+    type: TableColumnType | TableReference,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
-    types: Record<string, ColumnType | Reference>,
-    colors: Record<string, Color | Reference>,
-    styles: Record<string, Style | Reference>,
-    numeric: Record<string, Reference | NumericFormat>,
-    temporal: Record<string, Reference | TemporalFormat>,
+    types: Record<string, TableColumnType | TableReference>,
+    colors: Record<string, TableColor | TableReference>,
+    styles: Record<string, TableStyle | TableReference>,
+    numeric: Record<string, TableReference | TableNumericFormat>,
+    temporal: Record<string, TableReference | TableTemporalFormat>,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
-    let resolved: ColumnType;
+    let resolved: TableColumnType;
 
     if (isReference(type)) {
         const result = resolveReference(type, types, v => !isReference(v), path);

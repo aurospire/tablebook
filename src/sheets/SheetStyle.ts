@@ -1,4 +1,4 @@
-import { BorderType } from "../tables/types";
+import { TableBorderType } from "../tables/types";
 import { ColorObject } from "../util/Color";
 
 
@@ -10,7 +10,7 @@ export type SheetStyle = {
 };
 
 export type SheetBorder = {
-    type: BorderType;
+    type: TableBorderType;
     color?: ColorObject;
 };
 

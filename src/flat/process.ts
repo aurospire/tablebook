@@ -1,9 +1,9 @@
 import { TableBookProcessIssue } from "../issues";
-import { ColumnSelector, ColumnType, DataSelector, EnumType, HeaderStyle, RawExpression, Reference, RowSelector, SelfSelector, TableBook, TableColumn, TableGroup, TablePage, TemporalFormat, Theme, UnitSelector } from "../tables";
+import { TableColumnSelector, TableColumnType, TableSelector, TableEnumType, TableHeaderStyle, TableRawExpression, TableReference, TableRowSelector, TableSelfSelector, TableBook, TableColumn, TableGroup, TablePage, TableTemporalFormat, TableTheme, TableUnitSelector } from "../tables";
 import { Result } from "../util";
 import { FlatBook, FlatDollarType, FlatEnumTypeRegex, FlatFormulaSourceRegex, FlatLookupTypeRegex, FlatNumericTypeRegex, FlatRowSelectionRegex, FlatTemporalTypeRegex, FlatTextType } from "./types";
 
-const temporals: Record<string, TemporalFormat> = {
+const temporals: Record<string, TableTemporalFormat> = {
     // YYYY-MM-DD
     dateiso: [
         { type: 'year', length: 'long' },
@@ -64,9 +64,9 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
     const issues: TableBookProcessIssue[] = [];
 
     const pages: TablePage[] = [];
-    const enumMap: Record<string, EnumType> = {};
-    const types: Record<string, ColumnType> = {};
-    const formulaMap: Record<string, RawExpression<DataSelector>> = {};
+    const enumMap: Record<string, TableEnumType> = {};
+    const types: Record<string, TableColumnType> = {};
+    const formulaMap: Record<string, TableRawExpression<TableSelector>> = {};
     const pageMap: Record<string, TablePage> = {};
     const groupMap: Record<string, TableGroup> = {};
     const columnSet: Set<string> = new Set();
@@ -84,16 +84,16 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
                     ? undefined
                     : Object.fromEntries(flatFormula.refs.map(ref => {
 
-                        const column: ColumnSelector = { page: ref.selection.page, group: ref.selection.group, name: ref.selection.column };
+                        const column: TableColumnSelector = { page: ref.selection.page, group: ref.selection.group, name: ref.selection.column };
 
                         const [_, self, all, from, to] = ref.selection.rows.match(FlatRowSelectionRegex) ?? ['all', 'all'];
 
-                        const rows: RowSelector | SelfSelector =
+                        const rows: TableRowSelector | TableSelfSelector =
                             self ? 'self' :
                                 all ? 'all' :
                                     to === undefined
-                                        ? from as UnitSelector
-                                        : { from: from as UnitSelector, to: to as UnitSelector };
+                                        ? from as TableUnitSelector
+                                        : { from: from as TableUnitSelector, to: to as TableUnitSelector };
 
                         return [ref.tag, { column, rows }];
                     }))
@@ -103,7 +103,7 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
 
     for (const flatEnum of book.enums) {
         const name = flatEnum.name;
-        const tableEnum: EnumType = (enumMap[name] ?? (enumMap[name] = { kind: 'enum', items: [] }));
+        const tableEnum: TableEnumType = (enumMap[name] ?? (enumMap[name] = { kind: 'enum', items: [] }));
 
         tableEnum.items.push({
             name: flatEnum.value,
@@ -121,7 +121,7 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
             name: flatTable.name,
             description: flatTable.description,
             rows: flatTable.rows,
-            theme: '@' + flatTable.palette as Reference,
+            theme: '@' + flatTable.palette as TableReference,
             groups: []
         };
 
@@ -187,7 +187,7 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
                 issues.push({ type: 'processing', message: 'Invalid Group Reference', data: groupKey, path: ['columns', c] });
             else {
 
-                let type: Reference;
+                let type: TableReference;
 
                 let match;
 
@@ -272,7 +272,7 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
 
 
                 let source: string | undefined;
-                let expression: RawExpression<DataSelector> | undefined;
+                let expression: TableRawExpression<TableSelector> | undefined;
 
                 match = flatColumn.source.match(FlatFormulaSourceRegex);
 
@@ -287,7 +287,7 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
                     name: flatColumn.name,
                     description: flatColumn.description,
                     source,
-                    type: type as Reference,
+                    type: type as TableReference,
                     expression,
 
                 };
@@ -297,8 +297,8 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
         }
     };
 
-    const headerStyle: HeaderStyle = { fore: '#ffffff', bold: true };
-    const main: Theme = { group: '@group', header: '@header', };
+    const headerStyle: TableHeaderStyle = { fore: '#ffffff', bold: true };
+    const main: TableTheme = { group: '@group', header: '@header', };
 
     return (issues.length === 0)
         ? Result.success({

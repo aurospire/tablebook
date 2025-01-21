@@ -1,19 +1,19 @@
 import { TableBookProcessIssue } from "../issues";
 import { SheetSelector } from "../sheets";
-import { Expression, DataSelector } from "../tables/types";
+import { TableExpression, TableSelector } from "../tables/types";
 import { ObjectPath, Result } from "../util";
 import { ResolvedColumn } from "./resolveColumns";
 import { resolveSelector } from "./resolveSelector";
 
 export const resolveExpression = (
-    expression: Expression<DataSelector>,
+    expression: TableExpression<TableSelector>,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
     path: ObjectPath
-): Result<Expression<SheetSelector>, TableBookProcessIssue[]> => {
+): Result<TableExpression<SheetSelector>, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
 
-    let resolved: Expression<SheetSelector> | undefined;
+    let resolved: TableExpression<SheetSelector> | undefined;
 
     switch (expression.type) {
         case "literal": {
@@ -33,7 +33,7 @@ export const resolveExpression = (
                         issues.push(...result.info);
                         return undefined;
                     }
-                }).filter((value): value is Expression<SheetSelector> => value !== undefined)
+                }).filter((value): value is TableExpression<SheetSelector> => value !== undefined)
             };
             break;
         }
@@ -50,7 +50,7 @@ export const resolveExpression = (
                         issues.push(...result.info);
                         return undefined;
                     }
-                }).filter((value): value is Expression<SheetSelector> => value !== undefined)
+                }).filter((value): value is TableExpression<SheetSelector> => value !== undefined)
             };
             break;
         }

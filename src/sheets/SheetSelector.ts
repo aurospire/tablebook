@@ -1,4 +1,4 @@
-import { UnitSelector, UnitPrefix, UnitSelectorRegex } from "../tables/types";
+import { TableUnitSelector, TableUnitPrefix, TableUnitSelectorRegex } from "../tables/types";
 import { SheetPosition } from "./SheetPosition";
 
 /**
@@ -9,19 +9,19 @@ import { SheetPosition } from "./SheetPosition";
  * - If `.to.row` is missing, the range extends to the end of the column.
  */
 export type SheetSelector = {
-    from: SheetPosition<UnitSelector>;
-    to?: Partial<SheetPosition<UnitSelector>>;
+    from: SheetPosition<TableUnitSelector>;
+    to?: Partial<SheetPosition<TableUnitSelector>>;
     page?: string;
 };
 
 /**
- * Converts a value to a {@link UnitSelector} by applying an offset and optional prefix.
- * @param value - The numeric value or existing {@link UnitSelector} to convert.
+ * Converts a value to a {@link TableUnitSelector} by applying an offset and optional prefix.
+ * @param value - The numeric value or existing {@link TableUnitSelector} to convert.
  * @param offset - The offset to apply, always positive (default: `0`).
  * @param prefix - The prefix to use (`$`, `+`, or `-`) (optional).
- * @returns A {@link UnitSelector} string.
+ * @returns A {@link TableUnitSelector} string.
  */
-export const modifyUnitSelector = (value: number | UnitSelector, offset: number = 0, prefix?: UnitPrefix): UnitSelector => {
+export const modifyUnitSelector = (value: number | TableUnitSelector, offset: number = 0, prefix?: TableUnitPrefix): TableUnitSelector => {
     const magnitude = typeof value === 'number' ? value : Number(value.slice(value[0] === '$' ? 1 : 0));
 
     const result = magnitude + offset;
@@ -31,7 +31,7 @@ export const modifyUnitSelector = (value: number | UnitSelector, offset: number 
         : value[0] === '-'
             ? (result > 0 ? '+' : '-')
             : value[0]
-    ) as UnitPrefix;
+    ) as TableUnitPrefix;
 
     return `${prefix}${Math.abs(result)}`;
 };
@@ -58,16 +58,16 @@ export const letterfy = (value: number): string => {
 };
 
 /**
- * Encodes a {@link UnitSelector} value based on an offset, current value, and letter preference.
+ * Encodes a {@link TableUnitSelector} value based on an offset, current value, and letter preference.
  * @param offset - The offset to apply (can be `undefined` or `null`).
  * @param current - The current numeric value.
  * @param letter - Whether to convert to column letters.
  * @returns The encoded value as a string.
  */
-export const encodeUnitSelector = (offset: UnitSelector, current: number, letter: boolean): string => {
+export const encodeUnitSelector = (offset: TableUnitSelector, current: number, letter: boolean): string => {
     let base = '';
 
-    let [_, type, number] = offset?.match(UnitSelectorRegex) ?? [];
+    let [_, type, number] = offset?.match(TableUnitSelectorRegex) ?? [];
 
     let value = Number(number ?? 0);
 
@@ -91,7 +91,7 @@ export const encodeUnitSelector = (offset: UnitSelector, current: number, letter
  * @param from - The base position for relative selectors (optional).
  * @returns The address string.
  */
-export const toAddress = (position?: Partial<SheetPosition<UnitSelector>>, from?: SheetPosition): string => {
+export const toAddress = (position?: Partial<SheetPosition<TableUnitSelector>>, from?: SheetPosition): string => {
     const col = position?.col !== undefined ? encodeUnitSelector(position.col, from?.col ?? 0, true) : '';
     const row = position?.row !== undefined ? encodeUnitSelector(position.row, from?.row ?? 0, false) : '';
     return col + row;
@@ -112,84 +112,84 @@ export const toAddress = (position?: Partial<SheetPosition<UnitSelector>>, from?
 export const SheetSelector = (page?: string) => Object.freeze({
     /**
      * Creates a selector for a single cell.
-     * @param col - The column index or {@link UnitSelector}.
-     * @param row - The row index or {@link UnitSelector}.
+     * @param col - The column index or {@link TableUnitSelector}.
+     * @param row - The row index or {@link TableUnitSelector}.
      * @returns A {@link SheetSelector} object targeting the specified cell.
      */
-    cell: (col: number | UnitSelector, row: number | UnitSelector): SheetSelector => ({
+    cell: (col: number | TableUnitSelector, row: number | TableUnitSelector): SheetSelector => ({
         page, from: SheetPosition(modifyUnitSelector(col), modifyUnitSelector(row)),
     }),
 
     /**
      * Creates a selector for a row or part of a row.
-     * @param index - The starting row index or {@link UnitSelector}.
+     * @param index - The starting row index or {@link TableUnitSelector}.
      * @param offset - The starting column index (default: `0`).
      * @param width - The number of columns to include (optional).
      * @returns A {@link SheetSelector} object targeting the specified row range.
      */
-    row: (index: number | UnitSelector, offset: number | UnitSelector = 0, width?: number): SheetSelector => {
+    row: (index: number | TableUnitSelector, offset: number | TableUnitSelector = 0, width?: number): SheetSelector => {
         const startRow = modifyUnitSelector(index);
         const startCol = modifyUnitSelector(offset);
         return {
             page,
             from: SheetPosition(startCol, startRow),
             to: {
-                col: width !== undefined ? modifyUnitSelector(offset, width - 1, startCol[0] as UnitPrefix) : undefined,
-                row: modifyUnitSelector(index, 0, startRow[0] as UnitPrefix),
+                col: width !== undefined ? modifyUnitSelector(offset, width - 1, startCol[0] as TableUnitPrefix) : undefined,
+                row: modifyUnitSelector(index, 0, startRow[0] as TableUnitPrefix),
             },
         };
     },
 
     /**
      * Creates a selector for a column or part of a column.
-     * @param index - The starting column index or {@link UnitSelector}.
+     * @param index - The starting column index or {@link TableUnitSelector}.
      * @param offset - The starting row index (default: `0`).
      * @param height - The number of rows to include (optional).
      * @returns A {@link SheetSelector} object targeting the specified column range.
      */
-    column: (index: number | UnitSelector, offset: number | UnitSelector = 0, height?: number): SheetSelector => {
+    column: (index: number | TableUnitSelector, offset: number | TableUnitSelector = 0, height?: number): SheetSelector => {
         const startCol = modifyUnitSelector(index);
         const startRow = modifyUnitSelector(offset);
         return {
             page,
             from: SheetPosition(startCol, startRow),
             to: {
-                col: modifyUnitSelector(index, 0, startCol[0] as UnitPrefix),
-                row: height !== undefined ? modifyUnitSelector(offset, height - 1, startRow[0] as UnitPrefix) : undefined,
+                col: modifyUnitSelector(index, 0, startCol[0] as TableUnitPrefix),
+                row: height !== undefined ? modifyUnitSelector(offset, height - 1, startRow[0] as TableUnitPrefix) : undefined,
             },
         };
     },
 
     /**
      * Creates a selector for a rectangular region.
-     * @param col - The starting column index or {@link UnitSelector}.
-     * @param row - The starting row index or {@link UnitSelector}.
+     * @param col - The starting column index or {@link TableUnitSelector}.
+     * @param row - The starting row index or {@link TableUnitSelector}.
      * @param width - The number of columns to include (optional).
      * @param height - The number of rows to include (optional).
      * @returns A {@link SheetSelector} object targeting the specified region.
      */
-    region: (col: number | UnitSelector, row: number | UnitSelector, width?: number, height?: number): SheetSelector => {
+    region: (col: number | TableUnitSelector, row: number | TableUnitSelector, width?: number, height?: number): SheetSelector => {
         const startCol = modifyUnitSelector(col);
         const startRow = modifyUnitSelector(row);
         return {
             page: page,
             from: SheetPosition(startCol, startRow),
             to: {
-                col: width !== undefined ? modifyUnitSelector(col, width - 1, startCol[0] as UnitPrefix) : undefined,
-                row: height !== undefined ? modifyUnitSelector(row, height - 1, startRow[0] as UnitPrefix) : undefined,
+                col: width !== undefined ? modifyUnitSelector(col, width - 1, startCol[0] as TableUnitPrefix) : undefined,
+                row: height !== undefined ? modifyUnitSelector(row, height - 1, startRow[0] as TableUnitPrefix) : undefined,
             },
         };
     },
 
     /**
      * Creates a selector for a custom range.
-     * @param col - The starting column index or {@link UnitSelector}.
-     * @param row - The starting row index or {@link UnitSelector}.
-     * @param toCol - The ending column index or {@link UnitSelector} (optional).
-     * @param toRow - The ending row index or {@link UnitSelector} (optional).
+     * @param col - The starting column index or {@link TableUnitSelector}.
+     * @param row - The starting row index or {@link TableUnitSelector}.
+     * @param toCol - The ending column index or {@link TableUnitSelector} (optional).
+     * @param toRow - The ending row index or {@link TableUnitSelector} (optional).
      * @returns A {@link SheetSelector} object targeting the specified range.
      */
-    make: (col: number | UnitSelector, row: number | UnitSelector, toCol?: number | UnitSelector, toRow?: number | UnitSelector): SheetSelector => {
+    make: (col: number | TableUnitSelector, row: number | TableUnitSelector, toCol?: number | TableUnitSelector, toRow?: number | TableUnitSelector): SheetSelector => {
         return {
             page: page,
             from: { col: modifyUnitSelector(col), row: modifyUnitSelector(row) },

@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { ComparisonOperator, Expression, MatchOperator, RangeOperator } from "../tables/types";
+import { TableComparisonOperator, TableExpression, TableMatchOperator, TableRangeOperator } from "../tables/types";
 import { SheetStyle } from "./SheetStyle";
 import { SheetSelector } from "./SheetSelector";
 
@@ -9,14 +9,14 @@ export type DateTarget = 'temporal';
 
 // Generic Rule for Comparison
 export type SheetComparisonRule<TTarget, TValue> = {
-    type: ComparisonOperator;
+    type: TableComparisonOperator;
     target: TTarget;
     value: TValue;
 };
 
 // Generic Rule for Ranges
 export type SheetRangeRule<TTarget, TValue> = {
-    type: RangeOperator;
+    type: TableRangeOperator;
     target: TTarget;
     low: TValue;
     high: TValue;
@@ -30,7 +30,7 @@ export type SheetDateComparisonRule = SheetComparisonRule<DateTarget, DateTime>;
 export type SheetDateRangeRule = SheetRangeRule<DateTarget, DateTime>;
 
 export type SheetMatchRule = {
-    type: MatchOperator;
+    type: TableMatchOperator;
     value: string;
 };
 
@@ -46,7 +46,7 @@ export type SheetLookupRule = {
 
 export type SheetFormulaRule = {
     type: 'formula';
-    expression: Expression<SheetSelector>;
+    expression: TableExpression<SheetSelector>;
 };
 
 // Consolidated SheetRule Type

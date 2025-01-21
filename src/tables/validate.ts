@@ -1,89 +1,89 @@
 import { z } from 'zod';
 import {
-    Border, BorderType, BorderTypes,
-    Color,
-    ColorRegex,
-    ColumnSelector,
-    ColumnType,
-    ComparisonOperator,
-    ComparisonOperators,
-    CompoundExpression, CompoundExpressionType,
-    CurrencyFormat, CurrencyFormatType, CurrencySymbolPositions,
-    CustomRule, CustomRuleType,
-    DataSelector,
+    TableBorder, TableBorderType, TableBorderTypes,
+    TableColor,
+    TableColorRegex,
+    TableColumnSelector,
+    TableColumnType,
+    TableComparisonOperator,
+    TableComparisonOperators,
+    TableCompoundExpression, TableCompoundExpressionType,
+    TableCurrencyFormat, TableCurrencyFormatType, TableCurrencySymbolPositions,
+    TableCustomRule, TableCustomRuleType,
+    TableSelector,
     TableDefinitions,
-    DigitPlaceholder,
-    EnumItem, EnumType, EnumTypeKind,
-    Expression,
-    FunctionExpression, FunctionExpressionType,
-    HeaderStyle,
-    LiteralExpression,
-    LiteralExpressionType,
-    LookupType, LookupTypeKind,
-    MatchOperators,
-    MatchRule,
-    MergeOperator, MergeOperators,
-    NegatedExpression, NegatedExpressionType,
-    NumberFormat, NumberFormatType,
-    NumericFormat,
-    NumericRule,
-    NumericType, NumericTypeKind,
-    Partition,
-    PercentFormat, PercentFormatType,
-    RangeOperators,
-    RangeSelector,
-    RangeRule,
-    Reference, ReferenceRegex,
-    RowSelector,
-    SelectorExpression, SelectorExpressionType,
-    SelfLiteral, SelfSelector,
-    Style,
+    TableDigitPlaceholder,
+    TableEnumItem, TableEnumType, TableEnumTypeKind,
+    TableExpression,
+    TableFunctionExpression, TableFunctionExpressionType,
+    TableHeaderStyle,
+    TableLiteralExpression,
+    TableLiteralExpressionType,
+    TableLookupType, TableLookupTypeKind,
+    TableMatchOperators,
+    TableMatchRule,
+    TableMergeOperator, TableMergeOperators,
+    TableNegatedExpression, TableNegatedExpressionType,
+    TableNumberFormat, TableNumberFormatType,
+    TableNumericFormat,
+    TableNumericRule,
+    TableNumericType, TableNumericTypeKind,
+    TablePartition,
+    TablePercentFormat, TablePercentFormatType,
+    TableRangeOperators,
+    TableRangeSelector,
+    TableRangeRule,
+    TableReference, TableReferenceRegex,
+    TableRowSelector,
+    TableSelectorExpression, TableSelectorExpressionType,
+    TableSelfLiteral, TableSelfSelector,
+    TableStyle,
     TableBook, TableColumn,
     TableGroup, TablePage,
     TableUnit, TableUnitNameRegex,
-    TemporalFormat,
-    TemporalItem,
-    TemporalRule,
-    TemporalString,
-    TemporalStringRegex,
-    TemporalType, TemporalTypeKind,
-    TemporalUnit,
-    TemporalUnitLength, TemporalUnitLengths,
-    TemporalUnitType, TemporalUnitTypes,
-    TextRule,
-    TextType, TextTypeKind,
-    Theme,
-    UnitSelector, UnitSelectorRegex,
-    AllLiteral,
-    AllSelector,
-    RawExpressionType,
-    RawExpression
+    TableTemporalFormat,
+    TableTemporalItem,
+    TableTemporalRule,
+    TableTemporalString,
+    TableTemporalStringRegex,
+    TableTemporalType, TableTemporalTypeKind,
+    TableTemporalUnit,
+    TableTemporalUnitLength, TableTemporalUnitLengths,
+    TableTemporalUnitType, TableTemporalUnitTypes,
+    TableTextRule,
+    TableTextType, TableTextTypeKind,
+    TableTheme,
+    TableUnitSelector, TableUnitSelectorRegex,
+    TableAllLiteral,
+    TableAllSelector,
+    TableRawExpressionType,
+    TableRawExpression
 } from './types';
 
 /* Reference */
-const Reference: z.ZodType<Reference> = z.custom<Reference>(value => ReferenceRegex.test(value as string));
+const Reference: z.ZodType<TableReference> = z.custom<TableReference>(value => TableReferenceRegex.test(value as string));
 
 /* Data Reference */
-const SelfSelector: z.ZodType<SelfSelector> = z.literal(SelfLiteral);
+const SelfSelector: z.ZodType<TableSelfSelector> = z.literal(TableSelfLiteral);
 
-const ColumnSelector: z.ZodType<ColumnSelector> = z.object({
+const ColumnSelector: z.ZodType<TableColumnSelector> = z.object({
     page: z.string().optional(),
     group: z.string().optional(),
     name: z.string()
 });
 
-const UnitSelector: z.ZodType<UnitSelector> = z.custom<UnitSelector>(value => UnitSelectorRegex.test(value as string));
+const UnitSelector: z.ZodType<TableUnitSelector> = z.custom<TableUnitSelector>(value => TableUnitSelectorRegex.test(value as string));
 
-const RangeSelector: z.ZodType<RangeSelector> = z.object({
+const RangeSelector: z.ZodType<TableRangeSelector> = z.object({
     from: UnitSelector,
     to: UnitSelector
 });
 
-const AllSelector: z.ZodType<AllSelector> = z.literal(AllLiteral);
+const AllSelector: z.ZodType<TableAllSelector> = z.literal(TableAllLiteral);
 
-const RowSelector: z.ZodType<RowSelector> = z.union([UnitSelector, RangeSelector]);
+const RowSelector: z.ZodType<TableRowSelector> = z.union([UnitSelector, RangeSelector]);
 
-const DataSelector: z.ZodType<DataSelector> = z.union([
+const DataSelector: z.ZodType<TableSelector> = z.union([
     SelfSelector,
     z.object({
         column: z.union([ColumnSelector, SelfSelector]),
@@ -92,36 +92,36 @@ const DataSelector: z.ZodType<DataSelector> = z.union([
 ]);
 
 /* Styling */
-const Color: z.ZodType<Color> = z.custom(value => ColorRegex.test(value as string));
+const Color: z.ZodType<TableColor> = z.custom(value => TableColorRegex.test(value as string));
 
 
 const ColorReference = z.union([Color, Reference]);
 
-const Style: z.ZodType<Style> = z.object({
+const Style: z.ZodType<TableStyle> = z.object({
     fore: ColorReference.optional(),
     back: ColorReference.optional(),
     bold: z.boolean().optional(),
     italic: z.boolean().optional()
 });
 
-const BorderType: z.ZodType<BorderType> = z.enum(BorderTypes);
+const BorderType: z.ZodType<TableBorderType> = z.enum(TableBorderTypes);
 
-const Border: z.ZodType<Border> = z.object({
+const Border: z.ZodType<TableBorder> = z.object({
     type: BorderType,
     color: ColorReference,
 });
 
-const Partition: z.ZodType<Partition> = z.object({
+const Partition: z.ZodType<TablePartition> = z.object({
     beneath: Border.optional(),
     between: Border.optional()
 });
 
-const HeaderStyle: z.ZodType<HeaderStyle> = Style.and(Partition);
+const HeaderStyle: z.ZodType<TableHeaderStyle> = Style.and(Partition);
 
 const HeaderStyleReference = z.union([HeaderStyle, Reference]);
 const StyleReference = z.union([Style, Reference]);
 
-const Theme: z.ZodType<Theme> = z.object({
+const Theme: z.ZodType<TableTheme> = z.object({
     inherits: z.array(Reference).optional(),
     tab: ColorReference.optional(),
     group: HeaderStyleReference.optional(),
@@ -130,44 +130,44 @@ const Theme: z.ZodType<Theme> = z.object({
 });
 
 /* Operators */
-const ComparisonOperator: z.ZodType<ComparisonOperator> = z.enum(ComparisonOperators);
-const MergeOperator: z.ZodType<MergeOperator> = z.enum(MergeOperators);
+const ComparisonOperator: z.ZodType<TableComparisonOperator> = z.enum(TableComparisonOperators);
+const MergeOperator: z.ZodType<TableMergeOperator> = z.enum(TableMergeOperators);
 
 /* Expressions */
-const CompoundExpression: z.ZodType<CompoundExpression<DataSelector>> = z.object({
-    type: z.literal(CompoundExpressionType),
+const CompoundExpression: z.ZodType<TableCompoundExpression<TableSelector>> = z.object({
+    type: z.literal(TableCompoundExpressionType),
     with: z.union([ComparisonOperator, MergeOperator]),
     items: z.array(z.lazy(() => Expression))
 });
 
-const NegatedExpression: z.ZodType<NegatedExpression<DataSelector>> = z.object({
-    type: z.literal(NegatedExpressionType),
+const NegatedExpression: z.ZodType<TableNegatedExpression<TableSelector>> = z.object({
+    type: z.literal(TableNegatedExpressionType),
     on: z.lazy(() => Expression)
 });
 
-const FunctionExpression: z.ZodType<FunctionExpression<DataSelector>> = z.object({
-    type: z.literal(FunctionExpressionType),
+const FunctionExpression: z.ZodType<TableFunctionExpression<TableSelector>> = z.object({
+    type: z.literal(TableFunctionExpressionType),
     name: z.string().transform(value => value.toUpperCase()),
     args: z.array(z.lazy(() => Expression))
 });
 
-const LiteralExpression: z.ZodType<LiteralExpression> = z.object({
-    type: z.literal(LiteralExpressionType),
+const LiteralExpression: z.ZodType<TableLiteralExpression> = z.object({
+    type: z.literal(TableLiteralExpressionType),
     of: z.union([z.string(), z.number(), z.boolean()])
 });
 
-const SelectorExpression: z.ZodType<SelectorExpression<DataSelector>> = z.object({
-    type: z.literal(SelectorExpressionType),
+const SelectorExpression: z.ZodType<TableSelectorExpression<TableSelector>> = z.object({
+    type: z.literal(TableSelectorExpressionType),
     from: DataSelector
 });
 
-const RawExpression: z.ZodType<RawExpression<DataSelector>> = z.object({
-    type: z.literal(RawExpressionType),
+const RawExpression: z.ZodType<TableRawExpression<TableSelector>> = z.object({
+    type: z.literal(TableRawExpressionType),
     text: z.string(),
     refs: z.record(z.string(), DataSelector)
 });
 
-const Expression: z.ZodType<Expression<DataSelector>> = z.union([
+const Expression: z.ZodType<TableExpression<TableSelector>> = z.union([
     CompoundExpression,
     NegatedExpression,
     FunctionExpression,
@@ -176,7 +176,7 @@ const Expression: z.ZodType<Expression<DataSelector>> = z.union([
 ]);
 
 /* Data Rules */
-const TemporalString: z.ZodType<TemporalString> = z.custom(value => TemporalStringRegex.test(value as string));
+const TemporalString: z.ZodType<TableTemporalString> = z.custom(value => TableTemporalStringRegex.test(value as string));
 
 const makeValueRules = <T>(type: z.ZodType<T>) => {
     const comparison = z.object({
@@ -185,27 +185,27 @@ const makeValueRules = <T>(type: z.ZodType<T>) => {
     });
 
     const between = z.object({
-        type: z.enum(RangeOperators),
+        type: z.enum(TableRangeOperators),
         low: type,
         high: type
-    }) as z.ZodType<RangeRule<T>>;
+    }) as z.ZodType<TableRangeRule<T>>;
 
     return z.union([comparison, between]);
 };
 
-const MatchRule: z.ZodType<MatchRule> = z.object({
-    type: z.enum(MatchOperators),
+const MatchRule: z.ZodType<TableMatchRule> = z.object({
+    type: z.enum(TableMatchOperators),
     value: z.string()
 });
 
-const CustomRule: z.ZodType<CustomRule> = z.object({
-    type: z.literal(CustomRuleType),
+const CustomRule: z.ZodType<TableCustomRule> = z.object({
+    type: z.literal(TableCustomRuleType),
     expression: Expression
 });
 
-const NumericRule: z.ZodType<NumericRule> = z.union([makeValueRules(z.number()), CustomRule]);
-const TemporalRule: z.ZodType<TemporalRule> = z.union([makeValueRules(TemporalString), CustomRule]);
-const TextRule: z.ZodType<TextRule> = z.union([MatchRule, CustomRule]);
+const NumericRule: z.ZodType<TableNumericRule> = z.union([makeValueRules(z.number()), CustomRule]);
+const TemporalRule: z.ZodType<TableTemporalRule> = z.union([makeValueRules(TemporalString), CustomRule]);
+const TextRule: z.ZodType<TableTextRule> = z.union([MatchRule, CustomRule]);
 
 const makeConditionalStyle = <Rule extends z.ZodType<any>>(rule: Rule) => {
     return z.object({
@@ -219,7 +219,7 @@ const NumericConditionalStyle = makeConditionalStyle(NumericRule);
 const TemporalConditionalStyle = makeConditionalStyle(TemporalRule);
 
 /* Numeric Formats */
-const DigitPlaceholder: z.ZodType<DigitPlaceholder> = z.object({
+const DigitPlaceholder: z.ZodType<TableDigitPlaceholder> = z.object({
     fixed: z.number().int().min(0).optional(),
     flex: z.number().int().min(0).optional(),
     align: z.number().int().min(0).optional(),
@@ -236,62 +236,62 @@ const makeNumberFormat = <Type extends string>(type: Type) => {
     });
 };
 
-const NumberFormat: z.ZodType<NumberFormat> = makeNumberFormat(NumberFormatType);
-const PercentFormat: z.ZodType<PercentFormat> = makeNumberFormat(PercentFormatType);
-const CurrencyFormat: z.ZodType<CurrencyFormat> = makeNumberFormat(CurrencyFormatType).and(z.object({
+const NumberFormat: z.ZodType<TableNumberFormat> = makeNumberFormat(TableNumberFormatType);
+const PercentFormat: z.ZodType<TablePercentFormat> = makeNumberFormat(TablePercentFormatType);
+const CurrencyFormat: z.ZodType<TableCurrencyFormat> = makeNumberFormat(TableCurrencyFormatType).and(z.object({
     symbol: z.string().optional(),
-    position: z.enum(CurrencySymbolPositions).optional()
+    position: z.enum(TableCurrencySymbolPositions).optional()
 }));
 
-const NumericFormat: z.ZodType<NumericFormat> = z.union([
+const NumericFormat: z.ZodType<TableNumericFormat> = z.union([
     NumberFormat,
     PercentFormat,
     CurrencyFormat
 ]);
 
 /* Temporal Format */
-const TemporalUnitLength: z.ZodType<TemporalUnitLength> = z.enum(TemporalUnitLengths);
-const TemporalUnitType: z.ZodType<TemporalUnitType> = z.enum(TemporalUnitTypes);
-const TemporalUnit: z.ZodType<TemporalUnit> = z.object({
+const TemporalUnitLength: z.ZodType<TableTemporalUnitLength> = z.enum(TableTemporalUnitLengths);
+const TemporalUnitType: z.ZodType<TableTemporalUnitType> = z.enum(TableTemporalUnitTypes);
+const TemporalUnit: z.ZodType<TableTemporalUnit> = z.object({
     type: TemporalUnitType,
     length: TemporalUnitLength
 });
 
-const TemporalItem: z.ZodType<TemporalItem> = z.union([TemporalUnit, z.string()]);
-const TemporalFormat: z.ZodType<TemporalFormat> = z.array(TemporalItem);
+const TemporalItem: z.ZodType<TableTemporalItem> = z.union([TemporalUnit, z.string()]);
+const TemporalFormat: z.ZodType<TableTemporalFormat> = z.array(TemporalItem);
 
 /* Data Types */
-const TextType: z.ZodType<TextType> = z.object({
-    kind: z.literal(TextTypeKind),
+const TextType: z.ZodType<TableTextType> = z.object({
+    kind: z.literal(TableTextTypeKind),
     rule: TextRule.optional(),
     styles: z.array(TextConditionalStyle).optional()
 });
 
-const EnumItem: z.ZodType<EnumItem> = z.object({
+const EnumItem: z.ZodType<TableEnumItem> = z.object({
     name: z.string(),
     description: z.string().optional(),
     style: StyleReference.optional()
 });
 
-const EnumType: z.ZodType<EnumType> = z.object({
-    kind: z.literal(EnumTypeKind),
+const EnumType: z.ZodType<TableEnumType> = z.object({
+    kind: z.literal(TableEnumTypeKind),
     items: z.array(EnumItem)
 });
 
-const LookupType: z.ZodType<LookupType> = z.object({
-    kind: z.literal(LookupTypeKind),
+const LookupType: z.ZodType<TableLookupType> = z.object({
+    kind: z.literal(TableLookupTypeKind),
     values: ColumnSelector
 });
 
-const NumericType: z.ZodType<NumericType> = z.object({
-    kind: z.literal(NumericTypeKind),
+const NumericType: z.ZodType<TableNumericType> = z.object({
+    kind: z.literal(TableNumericTypeKind),
     rule: NumericRule.optional(),
     styles: z.array(NumericConditionalStyle).optional(),
     format: z.union([NumericFormat, Reference]).optional()
 });
 
-const TemporalType: z.ZodType<TemporalType> = z.object({
-    kind: z.literal(TemporalTypeKind),
+const TemporalType: z.ZodType<TableTemporalType> = z.object({
+    kind: z.literal(TableTemporalTypeKind),
     rule: TemporalRule.optional(),
     styles: z.array(TemporalConditionalStyle).optional(),
     format: z.union([TemporalFormat, Reference]).optional()
@@ -299,7 +299,7 @@ const TemporalType: z.ZodType<TemporalType> = z.object({
 
 
 
-const ColumnType: z.ZodType<ColumnType> = z.union([
+const ColumnType: z.ZodType<TableColumnType> = z.union([
     TextType,
     EnumType,
     LookupType,

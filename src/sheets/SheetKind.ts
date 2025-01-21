@@ -1,13 +1,13 @@
-import { BaseNumberFormat, DigitPlaceholder, NumericFormat, TemporalFormat, TemporalUnitLength, TemporalUnitType } from "../tables/types";
+import { TableBaseNumberFormat, TableDigitPlaceholder, TableNumericFormat, TableTemporalFormat, TableTemporalUnitLength, TableTemporalUnitType } from "../tables/types";
 
 export type SheetKind = 'text' | 'number' | 'percent' | 'currency' | 'temporal';
 
 export type SheetType = {
     kind?: SheetKind | null;
-    format?: NumericFormat | TemporalFormat | null;
+    format?: TableNumericFormat | TableTemporalFormat | null;
 };
 
-const processDigitPlaceholder = (digits: number | DigitPlaceholder | undefined, reversed: boolean): string | undefined => {
+const processDigitPlaceholder = (digits: number | TableDigitPlaceholder | undefined, reversed: boolean): string | undefined => {
     if (!digits) return undefined;
 
     if (typeof digits === 'number')
@@ -20,7 +20,7 @@ const processDigitPlaceholder = (digits: number | DigitPlaceholder | undefined, 
     return reversed ? align + fixed + flex : flex + fixed + align;
 };
 
-const processBaseNumber = (format: BaseNumberFormat<string>) => {
+const processBaseNumber = (format: TableBaseNumberFormat<string>) => {
     let result = '';
 
     result = processDigitPlaceholder(format.integer, false) ?? '#';
@@ -55,9 +55,9 @@ export const temporalTable: Record<string, string> = {
     secondshort: 's',
     meridiemlong: 'AM/PM',
     meridiemshort: 'a/p',
-} satisfies Record<`${TemporalUnitType}${TemporalUnitLength}`, string>;
+} satisfies Record<`${TableTemporalUnitType}${TableTemporalUnitLength}`, string>;
 
-export const toPattern = (format: NumericFormat | TemporalFormat): string => {
+export const toPattern = (format: TableNumericFormat | TableTemporalFormat): string => {
     if (Array.isArray(format)) {
         return format.map(item => {
             return typeof item === 'string' ? `"${item}"` : temporalTable[item.type + item.length];
