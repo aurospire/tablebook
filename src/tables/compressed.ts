@@ -26,10 +26,10 @@
  *   - `"fore": "@green"` references the `green` color from `definitions.colors`.
  * - **Styles**:
  *   - `"style": "@header"` refers to a predefined style in `definitions.styles`.
+ * - **Type**:
+ *   - `"type": "@currency"` references a format in `definitions.types`. (we see that each type has its own namespace)
  * - **Formats**:
  *   - `"format": "@currency"` references a format in `definitions.formats.numeric`. (if the parent type is numeric)
- * * - **Type**:
- *   - `"type": "@currency"` references a format in `definitions.types`. (we see that each type has its own namespace)
  * 
  * 
  * Predefined Palettes:
@@ -75,23 +75,28 @@
  * - Range between positions: { from: "$1", to: "$5" } includes rows 1-5
  * - Range between relative positions: { from: "+1", to: "+5" } includes rows 1-5 after current
  * - 'self' refers to current row in scope
- * - Undefined means "all rows"
+ * - 'all' refers to all rows in scope
  * 
  * Data Selection:
- * - Full column: { column: { name: "Price" } }
+ * - Full column: { column: { name: "Price" }, row: "all" }
  * - Single cell: { column: { name: "Price" }, row: "$5" }
  * - Cell range: { column: { name: "Price" }, row: { from: "$1", to: "$5" } }
  * - Relative cells: { column: { name: "Price" }, row: "+1" }
- * - Current cell: "self"
+ * - Different column, Same row { column: { group: 'Identity", name: "Id" }, row: "self" }
+ * - Same column, Different row { column: "self", row: "$5" }
+ * - Current cell: "self" // Only useful for validation/conditional formatting custom expressions
  * 
- * From Expressions:
+ * Expressions:
  * - Require full DataSelectors - not simply ColumnSelectors.
+ * - Can be compound, negated, function, selector, or raw.
+ * - Raw expressions can be used for custom expressions with references to DataSelectors.
+ *   - Examples: { type: "raw", text: "SUM(@Revenue) + 10", refs: { "@Revenue": { column: { group: "Revenue", name: "Price" }, row: "all" } } }
  * 
  * Types are documented with JSON Schema patterns:
  * {
  *   "Reference": {
- *     "pattern": "^@[A-Za-z_][A-Za-z0-9_]+$",
- *     "description": "References start with @ followed by allowed characters"
+ *     "pattern": "^@.+$",
+ *     "description": "References start with @ followed by any characters"
  *   },
  *   "TableUnitName": {
  *     "pattern": "^[A-Z][A-Za-z0-9_]*$", 
@@ -146,6 +151,8 @@ export type Reference = `@${string}`;
 /* Data Selection Types */
 export type SelfSelector = 'self';
 
+export type AllSelector = 'all';
+
 export type ColumnSelector = { page?: string; group?: string; name: string; };
 
 export type UnitSelector = `$${number}` | `+${number}` | `-${number}`;
@@ -154,7 +161,7 @@ export type RangeRowSelector = { from: UnitSelector; to: UnitSelector; };
 
 export type RowSelector = UnitSelector | RangeRowSelector;
 
-export type DataSelector = { column: ColumnSelector | SelfSelector; row?: RowSelector | SelfSelector; } | SelfSelector;
+export type DataSelector = { column: ColumnSelector | SelfSelector; row: RowSelector | SelfSelector | AllSelector; } | SelfSelector;
 
 /* Styling Types */
 export type Color = `#${string}`;
@@ -195,9 +202,11 @@ export type FunctionExpression<T> = { type: 'function'; name: string; args: Expr
 
 export type SelectorExpression<T> = { type: 'selector'; from: T; };
 
+export type RawExpression<T> = { type: 'raw'; text: string; refs: { [tag: string]: T; }; };
+
 export type LiteralExpression = { type: 'literal', of: string | number | boolean; };
 
-export type Expression<T> = CompoundExpression<T> | NegatedExpression<T> | FunctionExpression<T> | SelectorExpression<T> | LiteralExpression;
+export type Expression<T> = CompoundExpression<T> | NegatedExpression<T> | FunctionExpression<T> | SelectorExpression<T> | RawExpression<T> | LiteralExpression;
 
 /* Data Rule Types */
 // YYYY-MM-DD

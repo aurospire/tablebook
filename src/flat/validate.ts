@@ -28,7 +28,7 @@ import {
     FlatRowSelection,
     FlatRowSelectionRegex,
     FlatSelection,
-    FlatTable,
+    FlatPage,
     FlatTemporalType,
     FlatTemporalTypeRegex,
     FlatTextType,
@@ -104,7 +104,7 @@ const FlatRowSelectionSchema: ZodType<FlatRowSelection> = TemplateSchema<FlatRow
 
 /** Schema for FlatSelection values. */
 const FlatSelectionSchema: ZodType<FlatSelection> = z.object({
-    table: FlatNameSchema,
+    page: FlatNameSchema,
     group: FlatNameSchema,
     column: FlatNameSchema,
     rows: FlatRowSelectionSchema,
@@ -138,7 +138,7 @@ const FlatFormulaSchema: ZodType<FlatFormula> = z.object({
 
 /** Schema for FlatColumn values. */
 const FlatColumnSchema: ZodType<FlatColumn> = z.object({
-    table: FlatNameSchema,
+    page: FlatNameSchema,
     group: FlatNameSchema,
     name: FlatNameSchema,
     description: z.string(),
@@ -148,13 +148,13 @@ const FlatColumnSchema: ZodType<FlatColumn> = z.object({
 
 /** Schema for FlatGroup values. */
 const FlatGroupSchema: ZodType<FlatGroup> = z.object({
-    table: FlatNameSchema,
+    page: FlatNameSchema,
     name: FlatNameSchema,
     description: z.string(),
 });
 
 /** Schema for FlatTable values. */
-const FlatTableSchema: ZodType<FlatTable> = z.object({
+const FlatTableSchema: ZodType<FlatPage> = z.object({
     name: FlatNameSchema,
     description: z.string(),
     rows: z.number(),
@@ -167,7 +167,7 @@ const FlatTableSchema: ZodType<FlatTable> = z.object({
 const FlatBookSchema: ZodType<FlatBook> = z.object({
     name: FlatNameSchema,
     description: z.string(),
-    tables: z.array(FlatTableSchema),
+    pages: z.array(FlatTableSchema),
     groups: z.array(FlatGroupSchema),
     formulas: z.array(FlatFormulaSchema),
     enums: z.array(FlatEnumItemSchema),

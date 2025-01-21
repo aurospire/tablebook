@@ -54,7 +54,7 @@ const temporals: Record<string, TemporalFormat> = {
     ]
 };
 
-export type NameMaker = (parts: string[], column: { table: string, group: string, name: string; }) => string;
+export type NameMaker = (parts: string[], column: { page: string, group: string, name: string; }) => string;
 
 const defaultNameMaker = (parts: string[]) => ['flat', ...parts].join(':');
 
@@ -84,7 +84,7 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
                     ? undefined
                     : Object.fromEntries(flatFormula.refs.map(ref => {
 
-                        const column: ColumnSelector = { page: ref.selection.table, group: ref.selection.group, name: ref.selection.column };
+                        const column: ColumnSelector = { page: ref.selection.page, group: ref.selection.group, name: ref.selection.column };
 
                         const [_, self, all, from, to] = ref.selection.rows.match(FlatRowSelectionRegex) ?? ['all', 'all'];
 
@@ -114,8 +114,8 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
         enumMap[name] = tableEnum;
     }
 
-    for (let t = 0; t < book.tables.length; t++) {
-        const flatTable = book.tables[t];
+    for (let t = 0; t < book.pages.length; t++) {
+        const flatTable = book.pages[t];
 
         const page: TablePage = {
             name: flatTable.name,
@@ -142,9 +142,9 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
             columns: [],
         };
 
-        const key = flatGroup.table + '.' + flatGroup.name;
+        const key = flatGroup.page + '.' + flatGroup.name;
 
-        const page = pageMap[flatGroup.table];
+        const page = pageMap[flatGroup.page];
 
         if (!page)
             issues.push({ type: 'processing', message: 'Invalid Table Reference', data: flatGroup, path: ['groups', g] });
@@ -162,7 +162,7 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
     for (let c = 0; c < book.columns.length; c++) {
         const flatColumn = book.columns[c];
 
-        const columnKey = flatColumn.table + '.' + flatColumn.group + '.' + flatColumn.name;
+        const columnKey = flatColumn.page + '.' + flatColumn.group + '.' + flatColumn.name;
 
         if (columnSet.has(columnKey))
             issues.push({ type: 'processing', message: 'Duplicate Column', data: columnKey, path: ['columns', c] });
@@ -173,12 +173,12 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
     for (let c = 0; c < book.columns.length; c++) {
         const flatColumn = book.columns[c];
 
-        const groupKey = flatColumn.table + '.' + flatColumn.group;
+        const groupKey = flatColumn.page + '.' + flatColumn.group;
 
-        const columnInfo = { table: flatColumn.table, group: flatColumn.group, name: flatColumn.name };
+        const columnInfo = { page: flatColumn.page, group: flatColumn.group, name: flatColumn.name };
 
-        if (!(flatColumn.table in pageMap)) {
-            issues.push({ type: 'processing', message: 'Invalid Table Reference', data: flatColumn.table, path: ['columns', c] });
+        if (!(flatColumn.page in pageMap)) {
+            issues.push({ type: 'processing', message: 'Invalid Table Reference', data: flatColumn.page, path: ['columns', c] });
         }
         else {
             const group = groupMap[groupKey];
@@ -248,22 +248,22 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
 
                 }
                 else if (match = flatColumn.type.match(FlatLookupTypeRegex)) {
-                    const table = match[1];
+                    const page = match[1];
                     const group = match[2];
                     const column = match[3];
 
-                    const fullname = makeName(['lookup', table, group, column], columnInfo);
+                    const fullname = makeName(['lookup', page, group, column], columnInfo);
 
                     type = '@' + fullname;
-                    if (!pageMap[table])
+                    if (!pageMap[page])
                         issues.push({ type: 'processing', message: 'Invalid Table Reference', data: flatColumn.type, path: ['columns', c] });
-                    else if (!groupMap[table + '.' + group])
+                    else if (!groupMap[page + '.' + group])
                         issues.push({ type: 'processing', message: 'Invalid Group Reference', data: flatColumn.type, path: ['columns', c] });
-                    else if (!columnSet.has(table + '.' + group + '.' + column))
+                    else if (!columnSet.has(page + '.' + group + '.' + column))
                         issues.push({ type: 'processing', message: 'Invalid Column Reference', data: flatColumn.type, path: ['columns', c] });
 
                     if (!(fullname in types))
-                        types[fullname] = { kind: 'lookup', values: { page: table, group, name: column } };
+                        types[fullname] = { kind: 'lookup', values: { page: page, group, name: column } };
                 }
                 else {
                     issues.push({ type: 'processing', message: 'Invalid Column Type', data: flatColumn.type, path: ['columns', c] });
