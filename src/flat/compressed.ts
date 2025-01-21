@@ -2,10 +2,10 @@
  * Book - A declarative data structure for generating spreadsheets using a simple, flat declarative format.
  * 
  * ## Overview
- * The Book structure organizes data using tables, groups, columns, and formulas, with support for advanced features like row selection, enums, and lookups.
+ * The Book structure organizes data using pages, groups, columns, and formulas, with support for advanced features like row selection, enums, and lookups.
  * 
  * ### Naming Conventions
- * - Names are unique identifiers for tables, groups, columns, formulas, and enums.
+ * - Names are unique identifiers for pages, groups, columns, formulas, and enums.
  * - They should ideally be CapitalizedCamelCase, starting with a capital letter and using camel case.
  * - Names: /^[A-Z][A-Z0-9_]*$/ 
  * - Names should be descriptive and concise, reflecting the purpose of the item.
@@ -14,8 +14,8 @@
  * ### Formula Placeholder
  * - Placeholders are used to reference columns in formulas in an TableColumn-centric way.
  * - Placeholders are defined using a unique identifier and a selection - such as `{{TAG}}` or `$$TAG$$`
- * - Example Placeholder Formula: `=SUM({{TAG}})`, where `{{TAG}}` is a placeholder like { table: 'Table', group: 'Group', column: 'Column', rows: 'all' }
- * - Tags are unique identifiers for placeholders, and selections specify the table, group, column, and rows to include in the formula.
+ * - Example Placeholder Formula: `=SUM({{TAG}})`, where `{{TAG}}` is a placeholder like { page: 'Table', group: 'Group', column: 'Column', rows: 'all' }
+ * - Tags are unique identifiers for placeholders, and selections specify the page, group, column, and rows to include in the formula.
  * 
  * ### Column Types
  * - `text` - Default type for text data.
@@ -64,7 +64,7 @@ export type UnitSelection = `${'$' | '+' | '-'}${number}`;
 
 export type RowSelection = `${UnitSelection}${`:${UnitSelection}` | ''}` | 'all';
 
-export type Selection = { table: string; group: string; column: string; rows: RowSelection; };
+export type Selection = { page: string; group: string; column: string; rows: RowSelection; };
 
 export type Placeholder = { tag: string; selection: Selection; };
 
@@ -74,10 +74,10 @@ export type Formula = { name: string; description: string; formula: string; refs
 
 export type Table = { name: Name; description: string; rows: number; palette: Palette; };
 
-export type Group = { name: Name; description: string; table: Name; };
+export type Group = { name: Name; description: string; page: Name; };
 
 export type Book = {
     name: Name; description: string;
     formulas: Formula[]; enums: EnumItem[];
-    tables: Table[]; groups: Group[]; columns: Column[];
+    pages: Table[]; groups: Group[]; columns: Column[];
 };
