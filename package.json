@@ -1,0 +1,52 @@
+{
+    "name": "tablebook",
+    "description": "A library for creating structured, table-based workbooks with support for named columns, groups, styles, and formulas using declarative JSON/YAML.",
+    "author": "aurospire",
+    "version": "0.1.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aurospire/tablebook.git"
+    },
+    "license": "MIT",
+    "main": "dist/index.ts",
+    "types": "dist/index.d.ts",
+    "files": [
+        "/dist"
+    ],
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "typesVersions": {
+        "*": {}
+    },
+    "config": {
+        "watch": "./src;package*.json"
+    },
+    "scripts": {
+        "start": "node ./dist/index.js",
+        "watch": "nodemon -e ts,js,tsx,jsx,json --watch src --watch 'package*.json' --exec 'tsc -p . && node ./dist/index.js || exit 1'",
+        "build": "tsc -p .",
+        "test": "jest --config test/jest.config.ts",
+        "vigil": "nodemon -e ts,js,tsx,jsx,json --watch src --watch 'package*.json' --watch test --exec 'tsc -p . && jest --config test/jest.config.ts || exit 1'"
+    },
+    "dependencies": {
+        "@googleapis/sheets": "^9.3.1",
+        "exceljs": "^4.4.0",
+        "jsonc-parser": "^3.3.1",
+        "luxon": "^3.5.0",
+        "yaml": "^2.7.0",
+        "zod": "^3.24.1"
+    },
+    "devDependencies": {
+        "@types/jest": "^29.5.14",
+        "@types/luxon": "^3.4.2",
+        "@types/node": "^22.10.1",
+        "jest": "^29.7.0",
+        "jestype": "^1.0.0",
+        "nodemon": "^3.1.7",
+        "ts-jest": "^29.2.5",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.7.2",
+        "varcor": "^0.8.0"
+    }
+}
