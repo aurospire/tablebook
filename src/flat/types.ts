@@ -25,9 +25,9 @@
  * - `lookup`: References a column (ex: lookup:Table.Group.Column).
  * 
  * ### Row Selection
- * - `all`: Selects all rows.
  * - `$n`: Selects the nth row of a column
- * - `+0` or `-0`: Selects the current row relative to the current row the formula is in.
+ * - `all`: Selects all rows.
+ * - `self`: Selects the current row relative to the current row the formula is in.
  * - `+n` or `-n`: Select n rows relative to the current row the formula is in.
  * - Ranges: Combine selections with `:`, e.g., `$1:$3` or `+1:-1`, or even mixed selections like `$1:+1`.
  * 
@@ -127,8 +127,8 @@ export type FlatAbsolutePrefix = '$';
 export type FlatUnitSelection = `${FlatAbsolutePrefix | FlatRelativePrefix}${number}`;
 
 /** Specifies rows in a table using relative, absolute, or range-based selection. */
-export type FlatRowSelection = `${FlatUnitSelection}${`:${FlatUnitSelection}` | ''}` | 'all';
-export const FlatRowSelectionRegex = /^(?:(all)|(?:([$+\-]\d+)(?::([$+\-]\d+))?))$/;
+export type FlatRowSelection = 'self' | 'all' | `${FlatUnitSelection}${`:${FlatUnitSelection}` | ''}`;
+export const FlatRowSelectionRegex = /^(?:(self)|(all)|(?:([$+\-]\d+)(?::([$+\-]\d+))?))$/;
 
 /** Represents a reference to a specific column within a table and group. */
 export type FlatSelection = {

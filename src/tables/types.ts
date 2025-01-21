@@ -9,7 +9,7 @@
 
 /* Reference */
 /** Regex pattern for validating Reference strings. Must start with @ followed by allowed characters */
-export const ReferenceRegex = /^@[A-Za-z_][A-Za-z0-9_]+$/;
+export const ReferenceRegex = /^@(.+)$/;
 
 /** Type for referencing context-dependent items (color, style, theme, type) defined in TableBook */
 export type Reference<Of extends string = string> = `@${Of}`;
@@ -191,8 +191,8 @@ export type LiteralExpression = { type: typeof LiteralExpressionType, of: string
 
 /** Type identifier for flat expressions */
 export const RawExpressionType = 'raw';
-/* Flattened Expression, refs are replaced in the expression text*/
-export type RawExpression<Selector> = { type: typeof RawExpressionType, expression: string, refs?: Record<string, Selector>; };
+/* Flattened Expression, refs are replaced in the expression text */
+export type RawExpression<Selector> = { type: typeof RawExpressionType, text: string, refs?: Record<string, Selector>; };
 
 /** All possible expression types for data computation and validation */
 export type Expression<Selector> =

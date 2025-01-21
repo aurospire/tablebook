@@ -73,7 +73,26 @@ export const resolveExpression = (
 
             break;
         }
+        case 'raw': {
+            let result = expression.text;
+
+            if (expression.refs) {
+                for (const [tag, selector] of Object.entries(expression.refs)) {
+                    const selectorResult = resolveSelector(selector, columns, page, group, name, path);
+
+                    if (selectorResult.success) {
+                        const value = selectorResult.value;
+
+                        value.page = value.page === page ? undefined : value.page;                        
+
+                        result = result.replace(tag, SheetSelector().toAddress(selectorResult.value));
+                    }
+                    else
+                        issues.push(...selectorResult.info);
+                }
+            }
+        }
     }
 
-    return resolved && issues.length === 0 ? Result.success(resolved) : Result.failure(issues);
+    return resolved && issues.length === 0 ? Result.success(resolved) : Result.failure(issues, resolved);
 };

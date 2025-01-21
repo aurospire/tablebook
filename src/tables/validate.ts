@@ -163,7 +163,7 @@ const SelectorExpression: z.ZodType<SelectorExpression<DataSelector>> = z.object
 
 const RawExpression: z.ZodType<RawExpression<DataSelector>> = z.object({
     type: z.literal(RawExpressionType),
-    expression: z.string(),
+    text: z.string(),
     refs: z.record(z.string(), DataSelector)
 });
 

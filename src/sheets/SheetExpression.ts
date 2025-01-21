@@ -39,7 +39,7 @@ export const toFormula = (exp: SheetExpression, position: SheetPosition): string
         case 'selector':
             return SheetSelector().toAddress(exp.from, position);
         case 'raw': {
-            let result = exp.expression;
+            let result = exp.text;
             if (exp.refs) {
                 for (const [key, value] of Object.entries(exp.refs)) {
                     const selector = SheetSelector().toAddress(value, position);

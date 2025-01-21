@@ -1,5 +1,5 @@
 import { TableBookProcessIssue } from "../issues";
-import { ColumnSelector, ColumnType, DataSelector, EnumType, HeaderStyle, RawExpression, Reference, RowSelector, TableBook, TableColumn, TableGroup, TablePage, TemporalFormat, Theme, UnitSelector } from "../tables";
+import { ColumnSelector, ColumnType, DataSelector, EnumType, HeaderStyle, RawExpression, Reference, RowSelector, SelfSelector, TableBook, TableColumn, TableGroup, TablePage, TemporalFormat, Theme, UnitSelector } from "../tables";
 import { Result } from "../util";
 import { FlatBook, FlatDollarType, FlatEnumTypeRegex, FlatFormulaSourceRegex, FlatLookupTypeRegex, FlatNumericTypeRegex, FlatRowSelectionRegex, FlatTemporalTypeRegex, FlatTextType } from "./types";
 
@@ -79,20 +79,21 @@ export const processFlatBook = (book: FlatBook, makeName?: NameMaker): Result<Ta
         else {
             formulaMap[flatFormula.name] = {
                 type: 'raw',
-                expression: flatFormula.formula,
+                text: flatFormula.formula,
                 refs: !flatFormula.refs
                     ? undefined
                     : Object.fromEntries(flatFormula.refs.map(ref => {
 
                         const column: ColumnSelector = { page: ref.selection.table, group: ref.selection.group, name: ref.selection.column };
 
-                        const [_, all, from, to] = ref.selection.rows.match(FlatRowSelectionRegex) ?? ['all', 'all'];
+                        const [_, self, all, from, to] = ref.selection.rows.match(FlatRowSelectionRegex) ?? ['all', 'all'];
 
-                        const rows: RowSelector = from === 'all'
-                            ? 'all'
-                            : to === undefined
-                                ? from as UnitSelector
-                                : { from: from as UnitSelector, to: to as UnitSelector };
+                        const rows: RowSelector | SelfSelector =
+                            self ? 'self' :
+                                all ? 'all' :
+                                    to === undefined
+                                        ? from as UnitSelector
+                                        : { from: from as UnitSelector, to: to as UnitSelector };
 
                         return [ref.tag, { column, rows }];
                     }))
