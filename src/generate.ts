@@ -7,6 +7,7 @@ import { SheetBook, SheetGenerator } from './sheets';
 import { TableBook } from './tables/types';
 import { TableBookValidator } from './tables/validate';
 import { ObjectPath, Result, TextLocation } from './util';
+import { ZodIssue } from 'zod';
 
 
 export type TableBookParseResult = Result<any, TableBookParseIssue[]>;
@@ -75,30 +76,44 @@ const getData = (data: any, path: ObjectPath): any => {
     return value;
 };
 
+const mapValidatorIssue = (issue: ZodIssue, data: any): TableBookValidateIssue => {
+    return {
+        type: 'validating',
+        message: issue.message,
+        path: issue.path,
+        value: getData(data, issue.path)
+    };
+};
+
 export const tablebook = Object.freeze({
+    flat: Object.freeze({
+        validate: (data: any): TableBookValidateResult<FlatBook> => {
+            const result = FlatBookValidator.safeParse(data);
+
+            return result.success
+                ? Result.success(result.data)
+                : Result.failure(result.error.issues.map(issue => mapValidatorIssue(issue, data)));
+        },
+        convert(data: FlatBook, makeName?: NameMaker): TableBookProcessResult<TableBook> {
+            return processFlatBook(data, makeName);
+        }
+    }),
+
     parse(format: 'json' | 'yaml', data: string): TableBookParseResult {
         return format === 'json'
             ? parseJson(data)
             : parseYaml(data);
     },
 
-    validate<F extends 'flat' | 'table'>(format: F, data: any): TableBookValidateResult<F extends 'flat' ? FlatBook : TableBook> {
-        const validator = format === 'flat'
-            ? FlatBookValidator
-            : TableBookValidator;
-
-        const result = validator.safeParse(data);
+    validate(data: any): TableBookValidateResult<TableBook> {
+        const result = TableBookValidator.safeParse(data);
 
         return result.success
-            ? Result.success(result.data) as any
-            : Result.failure(result.error.issues.map(issue => ({ type: 'validating', message: issue.message, path: issue.path, value: getData(data, issue.path) })) as TableBookValidateIssue[]);
+            ? Result.success(result.data)
+            : Result.failure(result.error.issues.map(issue => mapValidatorIssue(issue, data)));
     },
 
-    convertFlat(data: FlatBook, makeName?: NameMaker): TableBookProcessResult<TableBook> {
-        return processFlatBook(data, makeName);
-    },
-
-    converTable(data: TableBook): TableBookProcessResult<SheetBook> {
+    convert(data: TableBook): TableBookProcessResult<SheetBook> {
         return processTableBook(data);
     },
 
