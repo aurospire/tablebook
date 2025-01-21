@@ -8,9 +8,12 @@ import { GoogleSheet } from "./GoogleSheet";
 const dbg = <T>(x: T): T => { console.log(x); return x; };
 export class GoogleGenerator implements SheetGenerator {
     #sheet: GoogleSheet;
+    #reset: boolean;
 
-    constructor(sheet: GoogleSheet) {
+    constructor(sheet: GoogleSheet, reset: boolean) {
         this.#sheet = sheet;
+
+        this.#reset = reset;
     }
 
     async generate(book: SheetBook): Promise<Result<undefined, TableBookGenerateIssue[]>> {
@@ -18,7 +21,7 @@ export class GoogleGenerator implements SheetGenerator {
             const sheet = this.#sheet;
 
             // clear the sheet
-            const resetSheetId = await sheet.reset();
+            const resetSheetId = this.#reset ? await sheet.reset() : undefined;
 
             await sheet.modify(r => r.setTitle(book.title));
 
@@ -110,7 +113,8 @@ export class GoogleGenerator implements SheetGenerator {
             }
 
             // remove the reset sheet
-            await sheet.modify(r => r.dropSheets(resetSheetId));
+            if (resetSheetId)
+                await sheet.modify(r => r.dropSheets(resetSheetId));
 
             return Result.success(undefined);
         }

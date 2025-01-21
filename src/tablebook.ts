@@ -8,6 +8,7 @@ import { SheetBook, SheetGenerator } from './sheets';
 import { TableBook } from './tables/types';
 import { TableBookValidator } from './tables/validate';
 import { ObjectPath, Result, TextLocation } from './util';
+import { GoogleGenerator, GoogleSheet } from './google';
 
 /** The result of parsing a TableBook, either successful or containing parse issues. */
 export type TableBookParseResult = Result<any, TableBookParseIssue[]>;
@@ -167,5 +168,25 @@ export const tablebook = Object.freeze({
      */
     async generate(data: SheetBook, generator: SheetGenerator): Promise<TableBookGenerateResult> {
         return await generator.generate(data);
-    }
+    },
+
+
+    /**
+     * A collection of utilities for generating TableBook Generators.    
+     */
+    generators: Object.freeze({
+        /**
+         * Creates a Google Sheets generator.
+         * @param email - The email associated with the Google API.
+         * @param key - The API key for authentication.
+         * @param sheetId - The ID of the target Google Sheet.
+         * @param reset - Whether to reset the sheet's contents before generating new content.
+         * @returns A promise resolving to a `SheetGenerator`.
+         */
+        async google(email: string, key: string, sheetId: string, reset: boolean): Promise<SheetGenerator> {
+            const googleSheet = await GoogleSheet.open(email, key, sheetId);
+
+            return new GoogleGenerator(googleSheet, reset);
+        }
+    })
 });
