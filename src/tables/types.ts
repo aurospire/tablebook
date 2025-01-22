@@ -397,7 +397,7 @@ export type TableDigitPlaceholder = {
 };
 
 /** Base configuration for all numeric format types */
-export type TableBaseNumberFormat<Type extends string> = {
+export type TableBaseNumericFormat<Type extends string> = {
     type: Type;
     integer?: number | TableDigitPlaceholder;   // Formatting for digits before decimal
     decimal?: number | TableDigitPlaceholder;    // Formatting for digits after decimal
@@ -407,19 +407,19 @@ export type TableBaseNumberFormat<Type extends string> = {
 /** Format type for regular numbers */
 export const TableNumberFormatType = 'number';
 /** Configures how regular numbers display */
-export type TableNumberFormat = TableBaseNumberFormat<typeof TableNumberFormatType>;
+export type TableNumberFormat = TableBaseNumericFormat<typeof TableNumberFormatType>;
 
 /** Format type for percentages */
 export const TablePercentFormatType = 'percent';
 /** Configures how percentages display, adds % symbol */
-export type TablePercentFormat = TableBaseNumberFormat<typeof TablePercentFormatType>;
+export type TablePercentFormat = TableBaseNumericFormat<typeof TablePercentFormatType>;
 
 /** Format type for currency values */
 export const TableCurrencyFormatType = 'currency';
 /** Available positions for currency symbols */
 export const TableCurrencySymbolPositions = ['prefix', 'suffix'] as const;
 /** Configures how currency values display */
-export type TableCurrencyFormat = TableBaseNumberFormat<typeof TableCurrencyFormatType> & {
+export type TableCurrencyFormat = TableBaseNumericFormat<typeof TableCurrencyFormatType> & {
     symbol?: string;  // Currency symbol, defaults to '$'
     position?: typeof TableCurrencySymbolPositions[number];  // Where to place the symbol
 };
@@ -474,8 +474,14 @@ export type TableTextType = {
 /** 
  * Represents a single value in an enum type
  * Can be either a simple string or an object with an associated style
+ * If both color and style are provided, color will override the style's fore color
  */
-export type TableEnumItem = { name: string; description?: string; style?: TableStyle | TableReference; };
+export type TableEnumItem = {
+    name: string;
+    description?: string;
+    style?: TableStyle | TableReference;
+    color?: TableColor | TableReference;
+};
 
 /** Identifies an enum type in the type system */
 export const TableEnumTypeKind = 'enum';
@@ -499,7 +505,7 @@ export const TableLookupTypeKind = 'lookup';
 export type TableLookupType = {
     kind: typeof TableLookupTypeKind;
     /** Column containing the valid values for this lookup */
-    values: TableColumnSelector;
+    column: TableColumnSelector;
 };
 
 

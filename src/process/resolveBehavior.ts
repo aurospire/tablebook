@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import { TableBookProcessIssue } from "../issues";
-import { SheetBehavior, SheetConditionalStyle, SheetPosition, SheetRule } from "../sheets";
+import { SheetBehavior, SheetConditionalStyle, SheetPosition, SheetRule, SheetStyle } from "../sheets";
 import { TableColor, TableColumnType, TableComparisonRule, TableEnumType, TableLookupType, TableNumericFormat, TableNumericType, TableReference, TableStyle, TableTemporalFormat, TableTemporalString, TableTemporalType, TableTextRule, TableTextType } from "../tables/types";
 import { ObjectPath, Result } from "../util";
 import { ResolvedColumn } from "./resolveColumns";
@@ -8,6 +8,7 @@ import { resolveExpression } from "./resolveExpression";
 import { isReference, resolveReference } from "./resolveReference";
 import { resolveSelector } from "./resolveSelector";
 import { resolveStyle } from "./resolveStyle";
+import { resolveColor } from "./resolveColor";
 
 const resolveNumericRule = (
     rule: TableNumericType['rule'] & {},
@@ -184,14 +185,32 @@ export const resolveEnumBehavior = (
             if (typeof item === 'string' || item.style === undefined)
                 return undefined;
 
-            const applyResult = resolveStyle(item.style, colors, styles, path);
+            // Resolve the style
+            let style: SheetStyle | undefined = undefined;
 
-            if (!applyResult.success)
-                issues.push(...applyResult.info);
+            const styleResult = resolveStyle(item.style, colors, styles, path);
+            const colorResult = item.color ? resolveColor(item.color, colors, path) : Result.success(undefined);
+
+            if (styleResult.success) 
+                style = styleResult.value;
             else
+                issues.push(...styleResult.info);
+                
+            if (colorResult.success) {
+                // If a style already exists, change the forecolor to it
+                if (style)
+                    style.fore = colorResult.value;
+                // Otherwise, create a new style
+                else
+                    style = { fore: colorResult.value };
+            }
+            else
+                issues.push(...colorResult.info);
+
+            if (style)
                 return {
                     rule: { type: 'is', value: item.name },
-                    apply: applyResult.value
+                    apply: style
                 };
         }).filter((value): value is SheetConditionalStyle => value !== undefined)
     };
@@ -205,7 +224,7 @@ const resolveLookupBehavior = (
     columns: Map<string, ResolvedColumn>,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
-    let result = resolveSelector({ column: type.values, rows: 'all' }, columns, page, group, name, path);
+    let result = resolveSelector({ column: type.column, rows: 'all' }, columns, page, group, name, path);
 
     if (!result.success)
         return Result.failure(result.info);

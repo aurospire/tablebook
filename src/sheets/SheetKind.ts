@@ -1,4 +1,4 @@
-import { TableBaseNumberFormat, TableDigitPlaceholder, TableNumericFormat, TableTemporalFormat, TableTemporalUnitLength, TableTemporalUnitType } from "../tables/types";
+import { TableBaseNumericFormat, TableDigitPlaceholder, TableNumericFormat, TableTemporalFormat, TableTemporalUnitLength, TableTemporalUnitType } from "../tables/types";
 
 export type SheetKind = 'text' | 'number' | 'percent' | 'currency' | 'temporal';
 
@@ -20,7 +20,7 @@ const processDigitPlaceholder = (digits: number | TableDigitPlaceholder | undefi
     return reversed ? align + fixed + flex : flex + fixed + align;
 };
 
-const processBaseNumber = (format: TableBaseNumberFormat<string>) => {
+const processBaseNumber = (format: TableBaseNumericFormat<string>) => {
     let result = '';
 
     result = processDigitPlaceholder(format.integer, false) ?? '#';

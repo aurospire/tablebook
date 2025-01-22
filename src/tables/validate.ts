@@ -273,7 +273,8 @@ const TableTextType: z.ZodType<TableTextType> = z.object({
 const TableEnumItem: z.ZodType<TableEnumItem> = z.object({
     name: z.string(),
     description: z.string().optional(),
-    style: TableStyleReference.optional()
+    style: TableStyleReference.optional(),
+    color: TableColorReference.optional()
 });
 
 const TableEnumType: z.ZodType<TableEnumType> = z.object({
@@ -283,7 +284,7 @@ const TableEnumType: z.ZodType<TableEnumType> = z.object({
 
 const TableLookupType: z.ZodType<TableLookupType> = z.object({
     kind: z.literal(TableLookupTypeKind),
-    values: TableColumnSelector
+    column: TableColumnSelector
 });
 
 const TableNumericType: z.ZodType<TableNumericType> = z.object({
