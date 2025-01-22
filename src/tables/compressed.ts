@@ -118,17 +118,17 @@
  */
 
 /* Common String Literals */
-export type DataTypeNames = 'text' | 'numeric' | 'temporal' | 'enum' | 'lookup';
+export type TableDataTypeNames = 'text' | 'numeric' | 'temporal' | 'enum' | 'lookup';
 
-export type RangeType = 'between' | 'outside';
+export type TableRangeType = 'between' | 'outside';
 
-export type MatchType = 'is' | 'contains' | 'begins' | 'ends';
+export type TableMatchType = 'is' | 'contains' | 'begins' | 'ends';
 
-export type ExpressionType = 'compound' | 'negated' | 'function' | 'selector' | 'self';
+export type TableExpressionType = 'compound' | 'negated' | 'function' | 'selector' | 'self';
 
-export type BorderStyle = 'none' | 'thin' | 'medium' | 'thick' | 'dotted' | 'dashed' | 'double';
+export type TableBorderStyle = 'none' | 'thin' | 'medium' | 'thick' | 'dotted' | 'dashed' | 'double';
 
-export type NumberFormatType = 'number' | 'percent' | 'currency';
+export type TableNumberFormatType = 'number' | 'percent' | 'currency';
 
 export type CurrencyPosition = 'prefix' | 'suffix';
 
@@ -168,7 +168,7 @@ export type Color = `#${string}`;
 
 export type Style = { fore?: Color | PaletteReference | Reference; back?: Color | PaletteReference | Reference; bold?: boolean; italic?: boolean; };
 
-export type Border = { type: BorderStyle; color: Color | PaletteReference | Reference; };
+export type Border = { type: TableBorderStyle; color: Color | PaletteReference | Reference; };
 
 export type Partition = { beneath?: Border; between?: Border; };
 
@@ -216,9 +216,9 @@ export type ComparisonRule<T> = { type: CompareOp; value: T; };
 
 export type CustomRule = { type: 'custom'; expression: Expression<DataSelector>; };
 
-export type RangeRule<T> = { type: RangeType; low: T; high: T; };
+export type RangeRule<T> = { type: TableRangeType; low: T; high: T; };
 
-export type MatchRule = { type: MatchType; value: string; };
+export type MatchRule = { type: TableMatchType; value: string; };
 
 export type NumericRule = ComparisonRule<number> | RangeRule<number> | CustomRule;
 
@@ -232,7 +232,7 @@ export type ConditionalStyle<T> = { rule: T; apply: Style | Reference; };
 export type DigitPlaceholder = { fixed?: number; flex?: number; align?: number; };
 
 // numbers instead of Placeholders => { fixed: number }
-export type BaseNumberFormat<T extends NumberFormatType> = { type: T; integer?: number | DigitPlaceholder; decimal?: number | DigitPlaceholder; commas?: boolean; };
+export type BaseNumberFormat<T extends TableNumberFormatType> = { type: T; integer?: number | DigitPlaceholder; decimal?: number | DigitPlaceholder; commas?: boolean; };
 
 export type NumberFormat = BaseNumberFormat<'number'>;
 
