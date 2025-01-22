@@ -1,4 +1,4 @@
-import { FlatPalette } from "./flat/types";
+import { TablePalettes } from "./tables";
 import { ColorHex } from "./util";
 
 /**
@@ -64,4 +64,4 @@ export const StandardPalettes = {
     taupe: palette('#483C32', '#6B5D4F', '#857667', '#E5DBD1'), // Neutral brown-gray
     gray: palette('#3B3B3B', '#656565', '#7E7E7E', '#E8E8E8'), // Neutral gray shades
     charcoal: palette('#2A2A2A', '#4D4D4D', '#676767', '#E2E2E2'), // Deep gray tones
-} satisfies Record<FlatPalette, ReturnType<typeof palette>>;
+} satisfies Record<typeof TablePalettes[number], ReturnType<typeof palette>>;

@@ -129,7 +129,7 @@
 export const TableReferenceRegex = /^@(.+)$/;
 
 /** Type for referencing context-dependent items (color, style, theme, type) defined in TableBook */
-export type TableReference = `@${string}`;
+export type TableReference<T extends string = string> = `@${T}`;
 
 
 /* Data Selection */
@@ -252,10 +252,18 @@ export type TableTheme = {
     data?: TableStyle | TableReference;
 };
 
-export type TablePaletteReference = '@pink' | '@cranberry' | '@red' | '@rust' | '@orange' | '@yellow' |
-    '@green' | '@moss' | '@sage' | '@teal' | '@slate' | '@cyan' | '@blue' | '@azure' | '@skyblue' |
-    '@lavender' | '@indigo' | '@purple' | '@plum' | '@mauve' | '@coral' | '@terracotta' | '@bronze' |
-    '@sand' | '@taupe' | '@gray' | '@charcoal';
+
+/* Palettes */
+/** Predefined color palettes for use in themes and references */
+export const TablePalettes = [
+    'pink', 'cranberry', 'red', 'rust', 'orange', 'yellow',
+    'green', 'moss', 'sage', 'teal', 'slate', 'cyan', 'blue', 'azure', 'skyblue',
+    'lavender', 'indigo', 'purple', 'plum', 'mauve', 'coral', 'terracotta', 'bronze',
+    'sand', 'taupe', 'gray', 'charcoal'
+] as const;
+
+/** Predefined color palettes for use in themes and references */
+export type TablePaletteReference = TableReference<typeof TablePalettes[number]>;
 
 
 /* Operators */
