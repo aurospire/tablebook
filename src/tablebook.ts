@@ -8,6 +8,7 @@ import { SheetBook, SheetGenerator } from './sheets';
 import { TableBook } from './tables/types';
 import { TableBookValidator } from './tables/validate';
 import { ObjectPath, Result, TextLocation } from './util';
+import { LiteTableBook } from './tables/lite';
 
 /** The result of parsing a TableBook, either successful or containing parse issues. */
 export type TableBookParseResult = Result<any, TableBookParseIssue[]>;
@@ -134,6 +135,15 @@ export const tablebook = Object.freeze({
      */
     process(data: TableBook, onMissing?: MissingReferenceResolvers, logger?: TableProcessLogger): TableBookProcessResult<SheetBook> {
         return processTableBook(data, onMissing, logger);
+    },
+
+    /**
+     * Converts a LiteTableBook into a SheetBook.
+     * @param data - The LiteTableBook to convert.
+     * @returns A `TableBookProcessResult` with the converted data or processing issues.
+     */
+    proceessLite(data: LiteTableBook, logger?: TableProcessLogger): TableBookProcessResult<SheetBook> {
+        return processTableBook(data, {}, logger);
     },
 
     /**
