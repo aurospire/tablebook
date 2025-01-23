@@ -10,7 +10,7 @@ export class ReferenceResolver<T> {
     #refs: Record<string, T | TableReference>;
     #onMissing: MissingReferenceResolver<T>[];
 
-    constructor(refs?: Record<string, T | TableReference>, ...onMissing: (MissingReferenceResolver<T> | undefined)[]) {
+    constructor(refs: Record<string, T | TableReference> | undefined, onMissing: (MissingReferenceResolver<T> | undefined)[] = []) {
         this.#refs = { ...(refs ?? {}) };
         this.#onMissing = onMissing.filter((fn): fn is MissingReferenceResolver<T> => fn !== undefined);
     }

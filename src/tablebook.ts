@@ -133,17 +133,8 @@ export const tablebook = Object.freeze({
      * @param logger - Optional logger for processing messages.
      * @returns A `TableBookProcessResult` with the converted data or processing issues.
      */
-    process(data: TableBook, onMissing?: MissingReferenceResolvers, logger?: TableProcessLogger): TableBookProcessResult<SheetBook> {
+    process(data: TableBook, onMissing?: MissingReferenceResolvers[], logger?: TableProcessLogger): TableBookProcessResult<SheetBook> {
         return processTableBook(data, onMissing, logger);
-    },
-
-    /**
-     * Converts a LiteTableBook into a SheetBook.
-     * @param data - The LiteTableBook to convert.
-     * @returns A `TableBookProcessResult` with the converted data or processing issues.
-     */
-    proceessLite(data: LiteTableBook, logger?: TableProcessLogger): TableBookProcessResult<SheetBook> {
-        return processTableBook(data, {}, logger);
     },
 
     /**
