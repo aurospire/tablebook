@@ -1,33 +1,26 @@
 import { TableBookProcessIssue } from "../issues";
-import { StandardPalettes } from "../palettes";
+import { StandardPalette, StandardPalettes } from "../palettes";
 import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "../sheets/SheetBook";
-import { TableReference, TableBook, TableColumn, TableGroup, TablePage, TableTheme } from "../tables/types";
-import { ColorHex, ObjectPath, Result } from "../util";
+import { TableBook, TableColor, TableColumn, TableColumnType, TableGroup, TableNumericFormat, TablePage, TableReference, TableStyle, TableTemporalFormat, TableTheme } from "../tables/types";
+import { ObjectPath, Result } from "../util";
 import { resolveBehavior } from "./resolveBehavior";
 import { resolveColumns } from "./resolveColumns";
 import { resolveExpression } from "./resolveExpression";
+import { MissingReferenceResolver, ReferenceResolver } from "./resolveReference";
 import { resolveTheme } from "./resolveTheme";
 
-/**
- * Main color reference for each palette.
- * Maps palette names to their `main` color.
- */
-export const standardColors: Record<string, ColorHex> = Object.fromEntries(
-    Object.entries(StandardPalettes).map(([key, palette]) => [key, palette.main])
-);
 
-/**
- * Standard themes derived from predefined palettes.
- * Maps palette colors to `tab`, `group`, `header`, and `data` styling.
- */
-export const standardThemes: Record<string, TableTheme> = Object.fromEntries(
-    Object.entries(StandardPalettes).map(([key, palette]) => [key, {
-        tab: palette.main,
-        group: { back: palette.darkest },
-        header: { back: palette.dark },
-        data: { back: palette.lightest },
-    }])
-);
+export type MissingReferenceResolvers = {
+    colors?: MissingReferenceResolver<TableColor>;
+    styles?: MissingReferenceResolver<TableStyle>;
+    themes?: MissingReferenceResolver<TableTheme>;
+    format?: {
+        numerics?: MissingReferenceResolver<TableNumericFormat>;
+        temporal?: MissingReferenceResolver<TableTemporalFormat>;
+    };
+    types?: MissingReferenceResolver<TableColumnType>;
+};
+
 
 export type ProcessLog = {
     book?: (book: TableBook) => void;
@@ -36,7 +29,26 @@ export type ProcessLog = {
     column?: (column: TableColumn) => void;
 };
 
-export const processTableBook = (book: TableBook, logger?: ProcessLog): Result<SheetBook, TableBookProcessIssue[]> => {
+
+const standardThemResolver: MissingReferenceResolver<TableTheme> = (name, path) => {
+    if (name in StandardPalettes) {
+        const palette: StandardPalette = (StandardPalettes as any)[name];
+
+        const theme: TableTheme = {
+            tab: palette.main,
+            group: { back: palette.darkest },
+            header: { back: palette.dark },
+            data: { back: palette.lightest },
+        };
+
+        return Result.success(theme);
+    }
+    else {
+        return Result.failure({ message: `Standard theme not found.`, path, data: name });
+    }
+};
+
+export const processTableBook = (book: TableBook, missing?: MissingReferenceResolvers, logger?: ProcessLog): Result<SheetBook, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
 
     logger?.book?.(book);
@@ -54,12 +66,12 @@ export const processTableBook = (book: TableBook, logger?: ProcessLog): Result<S
     const columns = columnsResult.value!;
 
     // Reify definitions
-    const colors = { ...(book.definitions?.colors ?? {}), ...standardColors };
-    const styles = book.definitions?.styles ?? {};
-    const themes = { ...(book.definitions?.themes ?? {}), ...standardThemes };
-    const numeric = book.definitions?.formats?.numeric ?? {};
-    const temporal = book.definitions?.formats?.temporal ?? {};
-    const types = book.definitions?.types ?? {};
+    const colors = new ReferenceResolver(book.definitions?.colors, missing?.colors);
+    const styles = new ReferenceResolver(book.definitions?.styles, missing?.styles);
+    const themes = new ReferenceResolver(book.definitions?.themes, standardThemResolver, missing?.themes);
+    const numeric = new ReferenceResolver(book.definitions?.formats?.numeric, missing?.format?.numerics);
+    const temporal = new ReferenceResolver(book.definitions?.formats?.temporal, missing?.format?.temporal);
+    const types = new ReferenceResolver(book.definitions?.types, missing?.types);
 
 
     for (let p = 0; p < book.pages.length; p++) {

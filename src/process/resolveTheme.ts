@@ -3,7 +3,7 @@ import { SheetTitleStyle, SheetStyle } from "../sheets";
 import { TableTheme, TableReference, TableColor, TableStyle } from "../tables/types";
 import { ColorObject, ObjectPath, Result } from "../util";
 import { resolveColor } from "./resolveColor";
-import { isReference, resolveReference } from "./resolveReference";
+import { isReference, ReferenceResolver } from "./resolveReference";
 import { resolveStyle } from "./resolveStyle";
 
 export type SheetTheme = {
@@ -43,9 +43,9 @@ export const mergeThemes = (base: SheetTheme, override: SheetTheme): SheetTheme 
 
 export const resolveTheme = (
     theme: TableTheme | TableReference,
-    colors: Record<string, TableColor | TableReference>,
-    styles: Record<string, TableStyle | TableReference>,
-    themes: Record<string, TableTheme | TableReference>,
+    colors: ReferenceResolver<TableColor>,
+    styles: ReferenceResolver<TableStyle>,
+    themes: ReferenceResolver<TableTheme>,
     parents: (TableTheme | TableReference)[],
     chain: TableTheme[],
     path: ObjectPath
@@ -54,7 +54,7 @@ export const resolveTheme = (
     const issues: TableBookProcessIssue[] = [];
 
     if (isReference(theme)) {
-        const result = resolveReference(theme, themes, v => typeof v === 'object', path);
+        const result = themes.resolve(theme, path);
 
         if (result.success)
             resolved = result.value;

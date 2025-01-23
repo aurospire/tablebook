@@ -1,11 +1,11 @@
 import { TableBookProcessIssue } from "../issues";
 import { TableColor, TableReference } from "../tables/types";
 import { ColorObject, Colors, ObjectPath, Result } from "../util";
-import { isReference, resolveReference } from "./resolveReference";
+import { isReference, ReferenceResolver } from "./resolveReference";
 
 export const resolveColor = (
     color: TableColor | TableReference,
-    colors: Record<string, TableColor | TableReference>,
+    colors: ReferenceResolver<TableColor>,
     path: ObjectPath
 ): Result<ColorObject, TableBookProcessIssue[]> => {
 
@@ -13,7 +13,7 @@ export const resolveColor = (
         return Result.success(Colors.toObject(color as TableColor));
     }
     else if (isReference(color)) {
-        const result = resolveReference(color, colors, v => typeof v === 'string' && v.startsWith('#'), path);
+        const result = colors.resolve(color, path);
         if (result.success)
             return Result.success(Colors.toObject(result.value as TableColor));
         else

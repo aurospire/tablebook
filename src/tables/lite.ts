@@ -13,7 +13,6 @@ export type LiteTableSelector = {
 
 export type LiteTableColor = `#${string}`;
 
-
 export type LiteTablePalette =
     'pink' | 'cranberry' | 'red' | 'rust' | 'orange' | 'yellow' |
     'green' | 'moss' | 'sage' | 'teal' | 'slate' | 'cyan' | 'blue' | 'azure' | 'skyblue' |
