@@ -22,7 +22,7 @@ export type MissingReferenceResolvers = {
 };
 
 
-export type ProcessLog = {
+export type TableProcessLogger = {
     book?: (book: TableBook) => void;
     page?: (page: TablePage) => void;
     group?: (group: TableGroup) => void;
@@ -48,7 +48,7 @@ const standardThemResolver: MissingReferenceResolver<TableTheme> = (name, path) 
     }
 };
 
-export const processTableBook = (book: TableBook, missing?: MissingReferenceResolvers, logger?: ProcessLog): Result<SheetBook, TableBookProcessIssue[]> => {
+export const processTableBook = (book: TableBook, onMissing?: MissingReferenceResolvers, logger?: TableProcessLogger): Result<SheetBook, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
 
     logger?.book?.(book);
@@ -66,12 +66,12 @@ export const processTableBook = (book: TableBook, missing?: MissingReferenceReso
     const columns = columnsResult.value!;
 
     // Reify definitions
-    const colors = new ReferenceResolver(book.definitions?.colors, missing?.colors);
-    const styles = new ReferenceResolver(book.definitions?.styles, missing?.styles);
-    const themes = new ReferenceResolver(book.definitions?.themes, standardThemResolver, missing?.themes);
-    const numeric = new ReferenceResolver(book.definitions?.formats?.numeric, missing?.format?.numerics);
-    const temporal = new ReferenceResolver(book.definitions?.formats?.temporal, missing?.format?.temporal);
-    const types = new ReferenceResolver(book.definitions?.types, missing?.types);
+    const colors = new ReferenceResolver(book.definitions?.colors, onMissing?.colors);
+    const styles = new ReferenceResolver(book.definitions?.styles, onMissing?.styles);
+    const themes = new ReferenceResolver(book.definitions?.themes, standardThemResolver, onMissing?.themes);
+    const numeric = new ReferenceResolver(book.definitions?.formats?.numeric, onMissing?.format?.numerics);
+    const temporal = new ReferenceResolver(book.definitions?.formats?.temporal, onMissing?.format?.temporal);
+    const types = new ReferenceResolver(book.definitions?.types, onMissing?.types);
 
 
     for (let p = 0; p < book.pages.length; p++) {

@@ -3,7 +3,7 @@ import { LineCounter, parseDocument } from 'yaml';
 import { ZodIssue } from 'zod';
 import { GoogleGenerator, GoogleSheet } from './google';
 import { TableBookGenerateIssue, TableBookParseIssue, TableBookProcessIssue, TableBookValidateIssue } from './issues';
-import { processTableBook } from './process';
+import { MissingReferenceResolvers, processTableBook, TableProcessLogger } from './process';
 import { SheetBook, SheetGenerator } from './sheets';
 import { TableBook } from './tables/types';
 import { TableBookValidator } from './tables/validate';
@@ -128,10 +128,12 @@ export const tablebook = Object.freeze({
     /**
      * Converts a TableBook into a SheetBook.
      * @param data - The TableBook to convert.
+     * @param onMissing - Optional resolvers for missing references.
+     * @param logger - Optional logger for processing messages.
      * @returns A `TableBookProcessResult` with the converted data or processing issues.
      */
-    convert(data: TableBook): TableBookProcessResult<SheetBook> {
-        return processTableBook(data);
+    process(data: TableBook, onMissing?: MissingReferenceResolvers, logger?: TableProcessLogger): TableBookProcessResult<SheetBook> {
+        return processTableBook(data, onMissing, logger);
     },
 
     /**
