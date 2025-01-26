@@ -1,4 +1,8 @@
-import { TableBaseNumericFormat, TableDigitPlaceholder, TableNumericFormat, TableTemporalFormat, TableTemporalUnitLength, TableTemporalUnitType } from "../tables/types";
+import {
+    TableBaseNumericFormat, TableDigitPlaceholder,
+    TableNumericFormat, TableTemporalFormat, 
+    TableTemporalUnitLength, TableTemporalUnitType
+} from "../tables/types";
 
 export type SheetKind = 'text' | 'number' | 'percent' | 'currency' | 'temporal';
 
