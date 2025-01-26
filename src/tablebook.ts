@@ -105,11 +105,11 @@ const mapValidatorIssue = (issue: ZodIssue, data: any): TableBookValidateIssue =
 export const tablebook = Object.freeze({
     /**
      * Parses an object from JSON or YAML format.
-     * @param format - The format of the data (`json` or `yaml`).
      * @param data - The data to parse.
+     * @param format - The format of the data (`json` or `yaml`).
      * @returns A `TableBookParseResult` with the parsed data or parsing issues.
      */
-    parse(format: 'json' | 'yaml', data: string): TableBookParseResult {
+    parse(data: string, format: 'json' | 'yaml' ): TableBookParseResult {
         return format === 'json' ? parseJson(data) : parseYaml(data);
     },
 
