@@ -1149,3 +1149,460 @@ const rawExpression: TableRawExpression = {
 
 ---
 ---
+
+### **9. TableColumnType**
+
+The `TableColumnType` defines the type of data in a column. It determines how data is validated, formatted, and optionally styled conditionally. There are five main types:
+
+1. **Text** (`TableTextType`)
+2. **Enum** (`TableEnumType`)
+3. **Lookup** (`TableLookupType`)
+4. **Numeric** (`TableNumericType`)
+5. **Temporal** (`TableTemporalType`)
+
+---
+
+### **9.1 TableConditionalStyle**
+
+The `TableConditionalStyle` type applies styling to data when a specific rule or condition is met. It is used in conjunction with rules for text, numeric, and temporal types.
+
+#### **Definition**
+```typescript
+export type TableConditionalStyle<Rule> = {
+    rule: Rule;                              // The rule to trigger this style.
+    apply: TableStyle | TableReference;      // The style to apply if the rule is satisfied.
+};
+```
+
+---
+
+### **9.2 Rules Overview**
+
+Rules (`TableRules`) define how values in a column are validated. Each type (text, numeric, temporal) has its own rule system, but all support custom rules using expressions.
+
+---
+
+#### **9.2.1 TableCustomRule**
+
+A `TableCustomRule` defines advanced validation using expressions.
+
+```typescript
+export type TableCustomRule = {
+    type: "custom";
+    expression: TableExpression;
+};
+```
+---
+
+#### **9.2.2 Text Rules** (`TableTextRule`)
+
+Text rules validate string values. 
+
+```typescript
+export type TableTextRule =
+    | TableMatchRule
+    | TableCustomRule;
+```
+
+##### **Match Rules**
+```typescript
+export type TableMatchRule = {
+    type: "is" | "contains" | "begins" | "ends";
+    value: string;
+};
+```
+
+**Example:**
+```typescript
+const rule: TableTextRule = { type: "contains", value: "Important" };
+```
+
+---
+
+#### **9.2.3 Numeric Rules** (`TableNumericRule`)
+
+Numeric rules validate number values.
+
+```typescript
+export type TableNumericRule =
+    | TableComparisonRule<number>
+    | TableRangeRule<number>
+    | TableCustomRule;
+```
+
+##### **Comparison Rules**
+```typescript
+export type TableComparisonRule<T> = {
+    type: "=" | "<>" | ">" | "<" | ">=" | "<=";
+    value: T;
+};
+```
+
+##### **Range Rules**
+```typescript
+export type TableRangeRule<T> = {
+    type: "between" | "outside";
+    low: T;
+    high: T;
+};
+```
+
+**Examples:**
+```typescript
+const rule1: TableNumericRule = { type: ">", value: 10 };
+const rule2: TableNumericRule = { type: "between", low: 5, high: 20 };
+```
+
+---
+
+#### **9.2.4 Temporal Rules** (`TableTemporalRule`)
+
+Temporal rules validate date and time values.
+
+```typescript
+export type TableTemporalRule =
+    | TableComparisonRule<TableTemporalString>
+    | TableRangeRule<TableTemporalString>
+    | TableCustomRule;
+```
+
+##### **Temporal String**
+Dates and times must follow ISO format (e.g., `YYYY-MM-DD`).
+
+**Example:**
+```typescript
+const rule: TableTemporalRule = {
+  type: "between",
+  low: "2025-01-01",
+  high: "2025-12-31"
+};
+```
+
+---
+
+### **9.3 Text Type** (`TableTextType`)
+
+Represents string-based data.
+
+```typescript
+export type TableTextType = {
+    kind: "text";
+    rule?: TableTextRule;
+    styles?: TableConditionalStyle<TableTextRule>[];
+};
+```
+
+---
+
+### **9.4 Enum Type** (`TableEnumType`)
+
+Represents data with a fixed set of allowed values. Each value is defined as an `EnumItem` with optional styling or color to visually distinguish between them.
+
+#### **Definition**
+
+```typescript
+export type TableEnumType = {
+    kind: "enum";
+    description?: string;          // A description of the enum's purpose or usage.
+    items: TableEnumItem[];        // The list of allowed values (enum items).
+};
+```
+
+##### **Enum Item**
+An `EnumItem` defines an individual value in the enum and supports customizable styles or colors.
+
+```typescript
+export type TableEnumItem = {
+    name: string;                             // The value of the enum item.
+    description?: string;                     // Optional description for the item.
+    style?: TableStyle | TableReference;      // A complete style for this item.
+    color?: TableColor | TableReference;      // A shortcut for setting the foreground color.
+};
+```
+
+---
+
+#### **How `style` and `color` Work**
+
+1. **Only `style` is Declared**:  
+   The declared style is applied as-is.  
+   ```json
+   { "name": "Pending", "style": { "fore": "#FFA500", "bold": true } }
+   ```
+
+2. **Only `color` is Declared**:  
+   The `color` is converted into a style with the `fore` property set to the `color` value.  
+   ```json
+   { "name": "Approved", "color": "#00FF00" }
+   ```
+   This becomes:
+   ```json
+   { "name": "Approved", "style": { "fore": "#00FF00" } }
+   ```
+
+3. **Both `style` and `color` Are Declared**:  
+   The `color` overrides the `fore` property of the `style`.  
+   ```json
+   {
+     "name": "Rejected",
+     "style": { "fore": "#FFA500", "bold": true },
+     "color": "#FF0000"
+   }
+   ```
+   This becomes:
+   ```json
+   {
+     "name": "Rejected",
+     "style": { "fore": "#FF0000", "bold": true }
+   }
+   ```
+
+---
+
+#### **Example**
+
+This example defines an enum with a description and three items, each with unique colors and optional descriptions:
+
+```json
+{
+  "kind": "enum",
+  "description": "Approval status for items in the report.",
+  "items": [
+    { "name": "Approved", "description": "Item was accepted.", "color": "#00FF00" },
+    { "name": "Pending",  "description": "Item is under review.", "color": "#FFFF00" },
+    { "name": "Rejected", "description": "Item was denied.", "style": { "bold": true }, "color": "#FF0000" }
+  ]
+}
+```
+
+---
+
+### **9.5 Lookup Type** (`TableLookupType`)
+
+References valid values from another column.
+
+```typescript
+export type TableLookupType = {
+    kind: "lookup";
+    column: TableColumnSelector;
+};
+```
+
+---
+
+### **9.6 Numeric Type** (`TableNumericType`)
+
+The `TableNumericType` represents numerical data, allowing for precise control over validation, formatting, and conditional styling. It is one of the most customizable column types in `TableBook`.
+
+---
+
+#### **Definition**
+
+```typescript
+export type TableNumericType = {
+    kind: "numeric";
+    rule?: TableNumericRule;                            // Validation rules for numeric values.
+    styles?: TableConditionalStyle<TableNumericRule>[]; // Conditional styling based on rules.
+    format?: TableNumericFormat | TableReference;       // Formatting options for numeric values.
+};
+```
+
+- **`rule`**: Validates numeric values with comparison, range, or custom rules.
+- **`styles`**: Applies conditional styles when a numeric rule is satisfied.
+- **`format`**: Controls how numbers are displayed.
+
+---
+
+#### **9.6.1 TableBaseNumericFormat**
+
+All numeric formats (`number`, `percent`, `currency`) inherit from the `TableBaseNumericFormat`, which defines general options for displaying numbers.
+
+##### **Definition**
+```typescript
+export type TableBaseNumericFormat<Type extends string> = {
+    type: Type;                               // The format type (e.g., "number", "percent").
+    integer?: number | TableDigitPlaceholder; // Formatting for digits before the decimal point, number is shorthand for { fixed: number; }
+    decimal?: number | TableDigitPlaceholder; // Formatting for digits after the decimal point, number is shorthand for { fixed: number; }
+    commas?: boolean;                         // Whether to separate thousands with commas.
+};
+```
+
+---
+
+#### **9.6.2 TableDigitPlaceholder**
+
+`TableDigitPlaceholder` controls how digits are displayed using placeholder characters:
+
+| Placeholder | Behavior                               |
+|-------------|---------------------------------------|
+| `'0'`       | Fixed digit: always shows a digit, even if it's `0`. |
+| `'#'`       | Flexible digit: shows a digit if present, or nothing otherwise. |
+| `'?'`       | Aligning digit: shows a digit if present, or a space for alignment. |
+
+##### **Definition**
+```typescript
+export type TableDigitPlaceholder = {
+    fixed?: number;  // Number of '0' placeholders.
+    flex?: number;   // Number of '#' placeholders.
+    align?: number;  // Number of '?' placeholders.
+};
+```
+
+**Example:**
+```typescript
+const placeholder: TableDigitPlaceholder = { fixed: 2, flex: 3 };
+```
+- Displays two mandatory digits and up to three additional digits if available.
+
+---
+
+#### **9.6.3 Numeric Formats**
+
+There are three specific numeric formats, each inheriting from `TableBaseNumericFormat`:
+
+1. **Number Format**
+    ```typescript
+    export type TableNumberFormat = TableBaseNumericFormat<"number">;
+    ```
+    Displays numbers with three fixed digits before the decimal and up to two digits after the decimal, with thousands separators.
+
+2. **Percent Format**
+    ```typescript
+    export type TablePercentFormat = TableBaseNumericFormat<"percent">;
+    ```
+    Displays percentages with one digit before and one digit after the decimal.
+
+3. **Currency Format**
+    ```typescript
+    export type TableCurrencyFormat = TableBaseNumericFormat<"currency"> & {
+        symbol?: string;                // The currency symbol (e.g., "$"), defaults to '$'
+        position?: "prefix" | "suffix"; // Whether the symbol appears before or after the value, defaults to 'prefix'
+    };
+    ```
+
+    Displays currency values like `$1234.56`, with defaulting to two fixed decimal places.
+
+---
+
+### **9.7 Temporal Type** (`TableTemporalType`)
+
+The `TableTemporalType` represents date and time data, with flexible validation rules and customizable formatting. It simplifies handling ISO-compliant temporal values.
+
+---
+
+#### **Definition**
+
+```typescript
+export type TableTemporalType = {
+    kind: "temporal";
+    rule?: TableTemporalRule;                             // Validation rules for temporal values.
+    styles?: TableConditionalStyle<TableTemporalRule>[];  // Conditional styling based on rules.
+    format?: TableTemporalFormat | TableReference;        // Formatting for temporal values.
+};
+```
+
+---
+
+#### **9.7.1 Temporal Rules**
+
+Temporal rules validate date and time values. They are similar to numeric rules but operate on temporal strings (`YYYY-MM-DD`).
+
+**Example Rules:**
+```typescript
+const comparisonRule: TableTemporalRule = {
+  type: "=",
+  value: "2025-01-01"
+};
+
+const rangeRule: TableTemporalRule = {
+  type: "between",
+  low: "2025-01-01",
+  high: "2025-12-31"
+};
+```
+
+---
+
+#### **9.7.2 TableTemporalUnit**
+
+A `TableTemporalUnit` defines a single element of a temporal format, such as a year, month, day, or time component. Each unit can optionally specify a `length`, which determines whether the unit is displayed in a short or long format.
+
+---
+
+##### **Definition**
+```typescript
+export type TableTemporalUnit = {
+    type: "year"       // The year of the date (e.g., 2025 or 25).
+         | "month"     // Numeric month (e.g., 01 or 1).
+         | "monthname" // Full or abbreviated month name (e.g., January or Jan).
+         | "weekday"   // Full or abbreviated weekday name (e.g., Monday or Mon).
+         | "day"       // Day of the month (e.g., 27 or 7).
+         | "hour"      // Hour in 12-hour or 24-hour format (e.g., 03 or 3).
+         | "minute"    // Minute of the hour (e.g., 45 or 5).
+         | "second"    // Second of the minute (e.g., 30 or 3).
+         | "meridiem"; // AM/PM designator (e.g., AM or a).
+    length?: "short" | "long";  // Determines the format for the unit. See below.
+};
+```
+
+---
+
+##### **Unit Type Details**
+
+| **Type**      | **Description**                          | **Short Example** | **Long Example**   |
+|---------------|------------------------------------------|-------------------|--------------------|
+| **`year`**    | The year of the date.                   | `25` (`yy`)       | `2025` (`yyyy`)    |
+| **`month`**   | The numeric month of the year.          | `1` (`m`)         | `01` (`mm`)        |
+| **`monthname`**| The name of the month.                 | `Jan` (`mmm`)     | `January` (`mmmm`) |
+| **`weekday`** | The name of the day of the week.        | `Mon` (`ddd`)     | `Monday` (`dddd`)  |
+| **`day`**     | The day of the month.                   | `7` (`d`)         | `07` (`dd`)        |
+| **`hour`**    | The hour in 12-hour or 24-hour format.  | `3` (`h`)         | `03` (`hh`)        |
+| **`minute`**  | The minute of the hour.                 | `5` (`m`)         | `05` (`mm`)        |
+| **`second`**  | The second of the minute.               | `3` (`s`)         | `03` (`ss`)        |
+| **`meridiem`**| The AM/PM designator.                   | `a` (`a/p`)       | `AM` (`AM/PM`)     |
+
+---
+
+
+##### **Example Temporal Formats**
+
+Here are some complete examples of `TableTemporalFormat` using `TableTemporalUnit`:
+
+1. **ISO Date Format**
+   ```json
+   [
+     { "type": "year", "length": "long" },
+     "-",
+     { "type": "month", "length": "long" },
+     "-",
+     { "type": "day", "length": "long" }
+   ]
+   ```
+   **Output:** `2025-01-27`
+
+2. **Readable Date Format**
+   ```json
+   [
+     { "type": "monthname", "length": "short" },
+     " ",
+     { "type": "day", "length": "long" },
+     ", ",
+     { "type": "year", "length": "long" }
+   ]
+   ```
+   **Output:** `Jan 27, 2025`
+
+3. **12-Hour Time with Meridiem**
+   ```json
+   [
+     { "type": "hour", "length": "short" },
+     ":",
+     { "type": "minute", "length": "long" },
+     " ",
+     { "type": "meridiem", "length": "long" }
+   ]
+   ```
+   **Output:** `3:05 PM`
+
+---
+---
