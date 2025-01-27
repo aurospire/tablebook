@@ -323,9 +323,11 @@ if (!parseResult.success) {
 ---
 ---
 
-### **3. TableSelector**
+## **3. TableSelector**
 
-The `TableSelector` type enables precise targeting of data within a table. Its primary focus is **column-based selection**: you specify a column and optionally refine the selection to all or a subset of rows.
+`TableSelector` provides a structured way to reference specific columns and rows in a `TableBook`. It ensures clarity and flexibility by using logical references instead of direct cell addresses (e.g., `A1:B5`). These logical references are later translated into A1-style spreadsheet references during generation.
+
+---
 
 ### **Key Concepts**
 1. **Column-Based Selection Only**: Unlike traditional spreadsheets, `TableBook` does not support cell-based or horizontal (multi-column) selection. All data selection is **column-centric**, targeting one column at a time.
@@ -334,7 +336,11 @@ The `TableSelector` type enables precise targeting of data within a table. Its p
    - **Group**: A subgroup within a page that organizes related columns.
    - **Column**: The specific column within a group.
 
-### **Definition**
+### **3.1 TableSelector Types**
+
+A `TableSelector` can reference either the current column and row (`"self"`) or a specific combination of a column and rows.
+
+#### **Type Definitions**
 ```typescript
 export type TableSelector = 
   | TableSelfSelector
@@ -344,114 +350,189 @@ export type TableSelector =
   };
 ```
 
----
-
-### **3.1 TableColumnSelector**
-The `TableColumnSelector` identifies a column by its position in the **Page → Group → Column** hierarchy. 
-
-#### **Hierarchy Explanation**
-1. **Page**: The page containing the column. Defaults to the current page if omitted.
-2. **Group**: The group containing the column. Defaults to the current group if omitted.
-3. **Name**: The name of the column. This is the only required field.
-
-#### **Properties**
-| Field         | Type         | Description                                             |
-|---------------|--------------|---------------------------------------------------------|
-| `page`        | `string` (optional) | The page containing the column. Defaults to the current page. |
-| `group`       | `string` (optional) | The group containing the column. Defaults to the current group. |
-| `name`        | `string`     | The name of the column (required).                      |
-
-#### **Examples**
-1. Fully qualified column selector:
-   ```typescript
-   const columnSelector: TableColumnSelector = {
-     page: "Sales",
-     group: "Revenue",
-     name: "Price"
-   };
-   ```
-2. Current group and page (minimal form):
-   ```typescript
-   const columnSelector: TableColumnSelector = { name: "Sales" };
-   ```
-
----
-
-### **3.2 TableRowSelector**
-The `TableRowSelector` targets rows within the selected column. You can choose:
-- A **specific row** (`$n`).
-- A **subset of rows** (`from` and `to`).
-- **All rows** (`'all'`).
-- The **current row** (`'self'`).
-
-#### **Variants**
-| Selector   | Description                             |
-|------------|-----------------------------------------|
-| `$n`       | Absolute row position (1-based index). |
-| `+n`       | N rows forward from the current row.   |
-| `-n`       | N rows backward from the current row.  |
-| `'self'`   | Current row in scope.                  |
-| `'all'`    | All rows in the column.                |
-
-#### **Examples**
-1. Specific row:
-   ```typescript
-   const rowSelector: TableRowSelector = "$3"; // Row 3
-   ```
-2. Range of rows:
-   ```typescript
-   const rowSelector: TableRowSelector = { from: "$1", to: "$10" }; // Rows 1 to 10, this is inclusive
-   ```
-3. All rows:
-   ```typescript
-   const rowSelector: TableRowSelector = "all";
-   ```
-
----
-
-### **3.3 Self-Referencing Selectors**
-Special cases allow you to reference the **current context**:
-- **Column (`'self'`)**: The current column.
-- **Row (`'self'`)**: The current row.
-
-#### **Examples**
-1. Select the current element:
-   ```typescript
-   const selfSelector: TableSelector = "self";
-   ```
-2. Select all rows in the current column:
-   ```typescript
-   const selector: TableSelector = { column: "self", rows: "all" };
-   ```
-
----
-
-### **3.4 TableSelector in Action**
-Combining all parts of the `TableSelector`:
-
-#### **Example**
-Selecting the first 10 rows from the `Sales` column within the `Revenue` group on the `Summary` page:
+#### **3.1.1 TableSelfSelector**
 ```typescript
-const tableSelector: TableSelector = {
+export type TableSelfSelector = "self";
+```
+- Refers to the **current column** and/or **row** in context.  
+
+#### **3.1.2 TableColumnSelector**
+```typescript
+export type TableColumnSelector = {
+  page?: string;  // Optional page.
+  group?: string; // Optional group, required if page is included.
+  name: string;   // Required column name.
+};
+```
+- Identifies a column by its **page**, **group**, and **name**.  
+- If `page` is included, `group` must also be specified.
+
+##### **Examples**
+| Selector                                              | Meaning                                                             |
+|-------------------------------------------------------|---------------------------------------------------------------------|
+| `{ name: "Sales" }`                                   | References `"Sales"` in the current page and group.                 |
+| `{ group: "Revenue", name: "Sales" }`                 | References `"Sales"` in `"Revenue"` in the current page.            |
+| `{ page: "Summary", group: "Revenue", name: "Sales" }`| Fully qualified reference to `"Sales"` in `"Revenue"` on `"Summary"`.|
+
+#### **3.1.3 TableRowSelector**
+```typescript
+export type TableRowSelector = 
+  | TableUnitSelector
+  | TableRangeSelector
+  | TableAllSelector
+  | TableSelfSelector;
+```
+
+##### **TableUnitSelector**
+```typescript
+export type TableUnitSelector = `$${number}` | `+${number}` | `-${number}`;
+```
+- **`$n`**: Absolute, zero-based row within the data region.  
+- **`+n`**: Row offset forward from the current row.  
+- **`-n`**: Row offset backward from the current row.
+
+##### **TableRangeSelector**
+```typescript
+export type TableRangeSelector = {
+  from: TableUnitSelector;
+  to: TableUnitSelector;
+};
+```
+- Selects a range of rows between two positions (inclusive).
+
+##### **TableAllSelector**
+```typescript
+export type TableAllSelector = "all";
+```
+- Selects all rows in the specified column.
+
+---
+
+### **3.2 Single Group vs. Multiple Groups**
+
+The structure of a table depends on whether it has **one group** or **multiple groups** of columns.
+
+#### **Single Group Example**
+| **Row** | **A**        | **B**      | **C**        |
+|---------|--------------|------------|--------------|
+| **1**   | **Sales**    | **Cost**   | **Profit**   |
+| **2**   | Data Row 1   | Data Row 1 | Data Row 1   |
+| **3**   | Data Row 2   | Data Row 2 | Data Row 2   |
+
+- **Row 1**: Column headers.  
+- **Row 2 onward**: Data rows.
+
+**Key Rule**: The first data row corresponds to **logical `$0`**, which maps to A1 row **2**.
+
+---
+
+#### **Multiple Groups Example**
+| **Row** |       **A**       |      **B**       |       **C**       |       **D**       |      **E**       |
+|---------|--------------------|------------------|--------------------|--------------------|------------------|
+| **1**   | **Revenue Group** | **Revenue Group**| **Revenue Group** | **Expense Group** | **Expense Group** |
+| **2**   | **Sales**         | **Cost**         | **Profit**         | **Labor**         | **Materials**     |
+| **3**   | Data Row 1         | Data Row 1       | Data Row 1         | Data Row 1         | Data Row 1        |
+| **4**   | Data Row 2         | Data Row 2       | Data Row 2         | Data Row 2         | Data Row 2        |
+
+- **Row 1**: Group headers (span multiple columns).  
+- **Row 2**: Column headers.  
+- **Row 3 onward**: Data rows.
+
+**Key Rule**: The first data row corresponds to **logical `$0`**, which maps to A1 row **3**.
+
+---
+
+### **3.3 Translating Selectors to A1 Notation**
+
+#### **Translation Rules**
+1. **Columns**:
+   - Columns are mapped to spreadsheet letters (e.g., `"Sales"` → `A`).
+2. **Rows**:
+   - `$n` corresponds to the **nth data row** in TableBook logic:
+     - Row 2 in A1 for single groups.
+     - Row 3 in A1 for multiple groups.
+
+#### **Examples**
+
+##### **1. Column Selector with All Rows**
+```typescript
+{ column: { name: "Sales" }, rows: "all" }
+```
+- Logical: All rows in `"Sales"`.
+- A1 Translation (If Sales is Column 0):
+  - Single group: `$A2:$A`.
+  - Multiple groups: `$A3:$A`.
+
+---
+
+##### **2. Fully Qualified Selector with Absolute Row**
+```typescript
+{
   column: { page: "Summary", group: "Revenue", name: "Sales" },
-  rows: { from: "$1", to: "$10" }
-};
+  rows: "$0"
+}
 ```
-
-#### **Example: All Rows in a Column**
-```typescript
-const tableSelector: TableSelector = {
-  column: { group: "Revenue", name: "Sales" },
-  rows: "all"
-};
-```
+- Logical: First data row in `"Sales"` on `"Summary"`.
+- A1 Translation: `Summary!$A$2` (single group) or `Summary!$A$3` (multiple groups).
 
 ---
 
-### **Key Takeaways**
-- The `TableSelector` exclusively targets **columns** and operates within the **Page → Group → Column** hierarchy.
-- Row selection is optional and can specify a single row, range, or all rows.
+##### **3. Relative Row Offset**
+```typescript
+{
+  column: { name: "Profit" },
+  rows: "+1"
+}
+```
+- Logical: Row one step below the current row in `"Profit"`.
+- A1 Translation (if current row is `$2`): `$C4`.
 
+---
+
+##### **4. Range of Rows**
+```typescript
+{
+  column: { name: "Sales" },
+  rows: { from: "$0", to: "$4" }
+}
+```
+- Logical: Rows `$0` to `$4` in `"Sales"`.
+- A1 Translation:
+  - Single group: `$A$2:$A$6`.
+  - Multiple groups: `$A$3:$A$7`.
+
+---
+
+##### **5. Self-Selector**
+```typescript
+"self"
+```
+- Logical: Current column and row.
+- A1 Translation: Context-dependent (e.g., `$A2` if in column `"Sales"` and row `$0`).
+
+---
+
+### **3.4 Key Takeaways**
+
+1. **Column Selection**:
+   - `{ name: "Sales" }` → Same group and page.
+   - `{ group: "Revenue", name: "Sales" }` → Same page, specific group.
+   - `{ page: "Summary", group: "Revenue", name: "Sales" }` → Fully qualified.
+
+2. **Row Selection**:
+   - `$n` → Absolute zero-based row.
+   - `+n`/`-n` → Relative offsets.
+   - `"all"` → All rows in the column.
+   - `"self"` → Current column and row.
+
+3. **Table Structure**:
+   - Single Group: Data starts at A1 row 2 (`$0 → A2`).
+   - Multiple Groups: Data starts at A1 row 3 (`$0 → A3`).
+
+4. **Flexibility**:
+   - Logical references decouple the schema from spreadsheet-specific addresses.
+
+---
 ---
 
 ### **4. TableReference**
@@ -873,7 +954,7 @@ const selectorExpression: TableSelectorExpression = {
 };
 ```
 
-This references the `Revenue` column, specifically the 5th row.
+This references the `Revenue` column, specifically the 5th row - or 6 in A1 addressing.
 
 ---
 
@@ -918,7 +999,7 @@ const compoundExpression: TableCompoundExpression = {
   type: "compound",
   with: "+",
   items: [
-    { type: "selector", from: { column: { name: "Revenue" }, rows: "$1" } },
+    { type: "selector", from: { column: { name: "Revenue" }, rows: "$0" } },
     { type: "literal", of: 100 }
   ]
 };
@@ -1043,11 +1124,11 @@ const rawExpression: TableRawExpression = {
 2. **Result During Generation**:
    - The placeholders are replaced based on `TableSelector` translations:
      - `@Revenue` → `$C3:$C` (column `C`, rows starting at `3` due to a group header).
-     - `@Constant` → `$D$2` (column `D`, absolute row `2`).
+     - `@Constant` → `$D$4` (column `D`, absolute row `4`, no group header).
 
 3. **Final Formula**:
    ```plaintext
-   SUM($C3:$C) + $D$2
+   SUM($C3:$C) + $D$4
    ```
 
 ---
