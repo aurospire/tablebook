@@ -520,3 +520,98 @@ const style: TableStyle = {
 
 ---
 ---
+
+### **6. TableHeaderStyle**
+
+The `TableHeaderStyle` type extends `TableStyle` to include border and partition options. It is specifically used for styling table headers, such as group or column headers, to enhance visual structure.
+
+---
+
+### **6.1 Definition**
+
+```typescript
+export type TableHeaderStyle = TableStyle & {
+    beneath?: TableBorder;  // Border beneath the header.
+    between?: TableBorder;  // Border between groups or columns.
+};
+```
+
+---
+
+### **6.2 TableBorder**
+
+The `TableBorder` type defines the appearance of a border.
+
+#### **Definition**
+```typescript
+export type TableBorder = {
+    type: TableBorderType;              // The line style of the border.
+    color: TableColor | TableReference; // The color of the border.
+};
+```
+
+#### **TableBorderType**
+Represents the available styles for border lines:
+```typescript
+export const TableBorderTypes = [
+    "none", 
+    "thin", "medium", "thick",
+    "dotted", "dashed", "double"
+] as const;
+
+export type TableBorderType = typeof TableBorderTypes[number];
+```
+
+---
+
+### **6.3 TablePartition**
+
+The `TablePartition` type groups together border definitions for beneath and between partitions, allowing granular control of the appearance of header styles.
+
+#### **Definition**
+```typescript
+export type TablePartition = {
+    beneath?: TableBorder; // Border beneath the header.
+    between?: TableBorder; // Border between groups or columns.
+};
+```
+
+---
+
+### **6.4 Example**
+
+#### **Text Example**
+```typescript
+const headerStyle: TableHeaderStyle = {
+  fore: "#FFFFFF",
+  back: "#333333",
+  bold: true,
+  beneath: { type: "thick", color: "#0000FF" },
+  between: { type: "dashed", color: "#FF5733" }
+};
+```
+
+#### **JSON Example**
+```json
+{
+  "fore": "#FFFFFF",
+  "back": "#333333",
+  "bold": true,
+  "beneath": {
+    "type": "thick",
+    "color": "#0000FF"
+  },
+  "between": {
+    "type": "dashed",
+    "color": "#FF5733"
+  }
+}
+```
+
+---
+
+### **Key Takeaways**
+- **TableHeaderStyle** extends `TableStyle` with border options for headers.
+- Use **TableBorder** for styling individual lines and **TablePartition** for grouping border styles.
+
+---
