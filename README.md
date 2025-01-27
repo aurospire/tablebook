@@ -130,7 +130,8 @@ async function main() {
 }
 
 ```
-
+---
+---
 ---
 
 ## **API Guide and Reference**
@@ -148,6 +149,7 @@ async function main() {
 10. [TableDefinitions](#tabledefinitions)
 11. [TableBook](#tablebook)
 
+---
 ---
 
 ### **1. Result**
@@ -189,7 +191,7 @@ The `Result` type ensures that all operations explicitly define success or failu
   ```
 
 ---
-
+---
 
 ### **2. TableBookIssue**
 
@@ -318,6 +320,7 @@ if (!parseResult.success) {
 }
 ```
 
+---
 ---
 
 ### **3. TableSelector**
@@ -449,4 +452,71 @@ const tableSelector: TableSelector = {
 - The `TableSelector` exclusively targets **columns** and operates within the **Page → Group → Column** hierarchy.
 - Row selection is optional and can specify a single row, range, or all rows.
 
+---
+
+### **4. TableReference**
+
+The `TableReference` type enables reusable definitions in `TableBook`. It allows you to reference shared elements like colors, styles, or themes, ensuring consistency across your table schema.
+
+#### **Definition**
+```typescript
+export type TableReference = `@${string}`;
+```
+
+#### **Concept**
+- A `TableReference` starts with `@`, followed by the key of the referenced item.
+- These references point to predefined entries in the `definitions` object of the `TableBook`.
+
+---
+---
+
+### **5. TableStyle**
+
+The `TableStyle` type defines visual styling for text and backgrounds. It is a reusable element that can be applied wherever specific styling is required in a `TableBook`.
+
+#### **TableColor**
+A `TableColor` is a 6-digit hexadecimal color code that defines fixed colors.
+
+```typescript
+export type TableColor = `#${string}`;
+```
+
+#### **TableStyle**
+The `TableStyle` type allows customization of text and background appearance.
+
+```typescript
+export type TableStyle = {
+    fore?: TableColor | TableReference; // Text color.
+    back?: TableColor | TableReference; // Background color.
+    bold?: boolean;                     // Whether the text is bold.
+    italic?: boolean;                   // Whether the text is italicized.
+};
+```
+
+---
+
+### **Key Concepts**
+- **Colors**: Use `TableColor` for fixed hexadecimal color codes or `TableReference` to point to reusable color definitions.
+- **Usage**: `TableStyle` is applied directly to specific schema elements where visual customization is needed. It does not cascade or inherit from parent elements.
+
+---
+
+### **Example**
+
+#### **Text Example**
+```typescript
+const style: TableStyle = {
+  fore: "#FFFFFF",
+  back: "#0000FF",
+  bold: true
+};
+```
+
+---
+
+### **Key Takeaways**
+- Use `TableStyle` for direct text and background styling.
+- Combine fixed colors (`TableColor`) with reusable references (`TableReference`) for flexibility.
+
+---
 ---
