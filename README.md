@@ -615,3 +615,195 @@ const headerStyle: TableHeaderStyle = {
 - Use **TableBorder** for styling individual lines and **TablePartition** for grouping border styles.
 
 ---
+---
+
+### **7. TableTheme**
+
+A **TableTheme** defines coordinated styling for multiple areas—tabs, group headers, column headers, and data cells. You can apply a theme at different levels of a `TableBook`, with each level either using or refining the theme from above.
+
+#### **7.1 Definition**
+
+```typescript
+export type TableTheme = {
+  inherits?: TableReference[];  // Other themes to merge into this one
+  tab?: TableColor | TableReference;
+  group?: TableHeaderStyle | TableReference;
+  header?: TableHeaderStyle | TableReference;
+  data?: TableStyle | TableReference;
+};
+```
+
+- **`inherits`**  
+  An ordered array of theme references. Each referenced theme is merged into the current theme one by one, so later themes override matching properties of earlier themes (property-by-property).
+
+- **`tab`**  
+  The color or reference used for the spreadsheet’s tab.
+
+- **`group`**  
+  The style or reference used for group headers (uses `TableHeaderStyle`).
+
+- **`header`**  
+  The style or reference used for column headers (uses `TableHeaderStyle`).
+
+- **`data`**  
+  The style or reference used for data cells (uses `TableStyle`).
+
+---
+
+### **7.2 Flow from Book → Page → Group → Column**
+
+Themes can be defined at any level of the `TableBook`. When a level has no theme, it simply keeps the one from above. If a level **does** define or reference a theme, that new theme merges its properties on top of whatever came before it. For example:
+
+1. **Book Level**  
+   Set a global theme that applies to all pages by default.
+2. **Page Level**  
+   Refine or replace the book theme if needed for that Page.
+3. **Group Level**  
+   Further customize the group’s style.
+4. **Column Level**  
+   Optionally refine the theme again, but only if specific columns require different looks.
+
+---
+
+### **7.3 Built-In Palettes**
+
+`TableBook` includes a set of prebuilt palettes, each with four shades:
+
+- **Darkest** → applies to `group.back`
+- **Dark** → applies to `header.back`
+- **Main** → applies to `tab`
+- **Lightest** → applies to `data.back`
+
+All these palettes use relatively dark shades for group headers and column headers. **You’ll likely want to define bold, white text** (or another contrasting color) for your group/header styles if you want the text to stand out.
+
+Below is a categorized list of built-in palette names (each name is referenced with an `@` symbol in themes, e.g., `"theme": "@red"`):
+
+```
+Reds:
+  - pink
+  - cranberry
+  - red
+
+Oranges & Yellows:
+  - rust
+  - orange
+  - yellow
+
+Greens:
+  - green
+  - moss
+  - sage
+
+Blues:
+  - teal
+  - slate
+  - cyan
+  - blue
+  - azure
+  - skyblue
+
+Purples:
+  - lavender
+  - indigo
+  - purple
+  - plum
+  - mauve
+
+Neutrals:
+  - coral
+  - terracotta
+  - bronze
+  - sand
+  - taupe
+  - gray
+  - charcoal
+```
+
+When you reference one of these palettes in a theme (for example, `"theme": "@blue"`), the background colors for `group`, `header`, `tab`, and `data` will be set automatically. If you want readable text on dark headers/groups, define a lighter or white foreground color in `group` or `header` style.
+Best is define it globally in the Book theme.
+
+
+---
+
+### **7.4 Example: Setting a Book Theme**
+
+Below is an example of a **book-level** theme referencing the built-in **blue** palette. It then explicitly sets white, bold text for `group` and `header`:
+
+```json
+{
+  "name": "MyReport",
+  "theme": {
+    "inherits": ["@blue"],
+    "group": {
+      "fore": "#FFFFFF",
+      "bold": true
+    },
+    "header": {
+      "fore": "#FFFFFF",
+      "bold": true
+    }
+  },
+  "pages": [
+    {
+      "name": "Summary",
+      "groups": [
+        {
+          "name": "Revenue",
+          "columns": [
+            { "name": "Sales" },
+            { "name": "Cost" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+- **`inherits: ["@blue"]`**  
+  Applies the `blue` palette (darkest → `group.back`, dark → `header.back`, main → `tab`, lightest → `data.back`).
+- **`group` and `header`**  
+  Set their text color to `#FFFFFF` (white) and enable `bold`, ensuring high contrast on dark backgrounds.
+- **Pages**, **Groups**, **Columns**  
+  All inherit from this book-level theme unless they specify their own.
+
+---
+
+### **7.5 Default Book Theme**
+
+A good starting theme for your TableBook allows you to use different palettes for each page while ensuring clarity and consistency. The following example sets a clean, bold look for group and header text, with clear dividing lines between groups and columns.
+
+```json
+{
+   "name": "BookName",
+   "theme": {
+      "inherits": ["@gray"],
+      "group": {
+         "fore": "#FFFFFF",
+         "bold": true,
+         "between": { "type": "medium", "color": "#333333" }
+      },
+      "header": {
+         "fore": "#FFFFFF",
+         "bold": true,
+         "between": { "type": "thin", "color": "#333333" }
+      }
+   }   
+}
+```
+
+---
+
+### **7.6 Key Points**
+
+1. **Property-by-Property Merging**  
+   Multiple themes in `inherits` apply one after the other. Each level (book, page, group, column) can refine or leave properties as-is.
+2. **Prebuilt Palettes**  
+   Provide convenient color sets. They automatically fill in `group.back`, `header.back`, `tab`, and `data.back` with coordinated shades.
+3. **Dark Headers**  
+   Because most prebuilt palettes have dark `group` and `header` backgrounds, you may want to specify bold, white text for clarity.
+4. **Flexibility**  
+   If a page or group doesn’t define a theme, it continues to use the parent’s. If it does define a theme, it overrides or merges where specified.
+
+---
+---
