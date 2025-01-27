@@ -807,3 +807,264 @@ A good starting theme for your TableBook allows you to use different palettes fo
 
 ---
 ---
+
+### **8. Expressions**
+
+Expressions in `TableBook` are used to define structured formulas, replacing traditional spreadsheet cell references (e.g., `A1:B5`) with precise column-row relationships via `TableSelectors`. These formulas allow for consistent, column-based computations that translate into spreadsheet formulas during generation.
+
+#### **8.1 Definition**
+
+```typescript
+export type TableExpression =
+  | TableLiteralExpression
+  | TableSelectorExpression
+  | TableCompoundExpression
+  | TableNegatedExpression
+  | TableFunctionExpression
+  | TableRawExpression;
+```
+
+---
+
+### **8.2 TableLiteralExpression**
+
+The simplest type of expression, a `TableLiteralExpression`, represents a fixed value (number, string, or boolean).
+
+#### **Definition**
+```typescript
+export type TableLiteralExpression = {
+    type: "literal";
+    of: string | number | boolean;
+};
+```
+
+#### **Example**
+```typescript
+const literalExpression: TableLiteralExpression = {
+  type: "literal",
+  of: 42
+};
+```
+
+This translates to the literal value `42` in a formula.
+
+---
+
+### **8.3 TableSelectorExpression**
+
+A `TableSelectorExpression` references data in a specific column and row. Instead of traditional spreadsheet ranges, it uses a `TableSelector` to target the data.
+
+#### **Definition**
+```typescript
+export type TableSelectorExpression = {
+    type: "selector";
+    from: TableSelector;
+};
+```
+
+#### **Example**
+```typescript
+const selectorExpression: TableSelectorExpression = {
+  type: "selector",
+  from: {
+    column: { name: "Revenue" },
+    rows: "$5"
+  }
+};
+```
+
+This references the `Revenue` column, specifically the 5th row.
+
+---
+
+### **8.4 TableCompoundExpression**
+
+A `TableCompoundExpression` combines multiple expressions using an operator. It supports both comparison and arithmetic/merge operators.
+
+#### **Definition**
+```typescript
+export type TableCompoundExpression = {
+    type: "compound";
+    with: TableComparisonOperator | TableMergeOperator;
+    items: TableExpression[];
+};
+```
+
+#### **Available Operators**
+
+**Comparison Operators**: Used for logical comparisons.
+| Operator | Description       |
+|----------|-------------------|
+| `=`      | Equal to          |
+| `<>`     | Not equal to      |
+| `>`      | Greater than      |
+| `<`      | Less than         |
+| `>=`     | Greater than or equal to |
+| `<=`     | Less than or equal to    |
+
+**Merge (Arithmetic) Operators**: Used for numerical or string operations.
+| Operator | Description        |
+|----------|--------------------|
+| `+`      | Addition/Concatenation |
+| `-`      | Subtraction        |
+| `*`      | Multiplication     |
+| `/`      | Division           |
+| `^`      | Exponentiation     |
+| `&`      | String concatenation |
+
+#### **Example**
+```typescript
+const compoundExpression: TableCompoundExpression = {
+  type: "compound",
+  with: "+",
+  items: [
+    { type: "selector", from: { column: { name: "Revenue" }, rows: "$1" } },
+    { type: "literal", of: 100 }
+  ]
+};
+```
+
+If `Revenue` was column `C` (with no group header), this translates to `=$C$2 + 100`.
+
+---
+
+### **8.5 TableNegatedExpression**
+
+A `TableNegatedExpression` inverts the result of another expression.
+
+#### **Definition**
+```typescript
+export type TableNegatedExpression = {
+    type: "negated";
+    on: TableExpression;
+};
+```
+
+#### **Example**
+```typescript
+const negatedExpression: TableNegatedExpression = {
+  type: "negated",
+  on: {
+    type: "selector",
+    from: { column: { name: "Profit" }, rows: "self" }
+  }
+};
+```
+
+If `Profit` was column `B` (with no group header), this corresponds to `=-($B2)`
+
+---
+
+### **8.6 TableFunctionExpression**
+
+A `TableFunctionExpression` applies a named function to a list of arguments, which can be other expressions.
+
+#### **Definition**
+```typescript
+export type TableFunctionExpression = {
+    type: "function";
+    name: string;
+    args: TableExpression[];
+};
+```
+
+#### **Example**
+```typescript
+const functionExpression: TableFunctionExpression = {
+  type: "function",
+  name: "SUM",
+  args: [
+    { type: "selector", from: { column: { page: 'Items', group: 'Info', name: "Revenue" }, rows: "all" } },
+    { type: "literal", of: 50 }
+  ]
+};
+```
+
+If `Revenue` was column `D` (with a group header), this translates to `SUM(Items!$D3:$D, 50)`.
+
+---
+
+### **8.7 TableRawExpression**
+
+A `TableRawExpression` represents a custom formula defined as raw text with placeholders (`tags`) that map to specific data selectors. This allows you to write advanced formulas while maintaining the structured column-row relationships of `TableBook`.
+
+---
+
+#### **Definition**
+```typescript
+export type TableRawExpression = {
+    type: "raw";
+    text: string;                         // The formula text with placeholders.
+    refs?: Record<string, TableSelector>; // Placeholders mapped to TableSelectors.
+};
+```
+
+---
+
+#### **How It Works**
+
+1. **Placeholders (`text` field)**:  
+   - The formula is written as a string, with placeholders (e.g., `@Revenue`) representing data points.
+   - During spreadsheet generation, each placeholder is replaced with the corresponding cell or range address derived from its selector.
+
+2. **Selectors (`refs` object)**:  
+   - Each placeholder in the `text` field maps to a `TableSelector`.
+   - The `TableSelector` specifies which column and rows to reference.  
+   - For example:
+     - `{ name: "Revenue", rows: "all" }` translates to `$C3:$C` if `Revenue` corresponds to column `C` with group headers present.
+
+---
+
+#### **Example**
+
+##### **Raw Expression**
+```typescript
+const rawExpression: TableRawExpression = {
+  type: "raw",
+  text: "SUM(@Revenue) + @Constant",
+  refs: {
+    "@Revenue": {
+      column: { name: "Revenue" },
+      rows: "all"
+    },
+    "@Constant": {
+      column: { name: "Constant" },
+      rows: "$2"
+    }
+  }
+};
+```
+
+##### **Explanation**
+1. **Placeholders (`@Revenue`, `@Constant`)**:
+   - `@Revenue` is mapped to all rows in the `Revenue` column.
+   - `@Constant` is mapped to a specific absolute row (`$2`) in the `Constant` column.
+
+2. **Result During Generation**:
+   - The placeholders are replaced based on `TableSelector` translations:
+     - `@Revenue` → `$C3:$C` (column `C`, rows starting at `3` due to a group header).
+     - `@Constant` → `$D$2` (column `D`, absolute row `2`).
+
+3. **Final Formula**:
+   ```plaintext
+   SUM($C3:$C) + $D$2
+   ```
+
+---
+
+##### **Best Practices for Placeholders**
+- Use descriptive and unique tags (e.g., `@Revenue` instead of generic names like `@Data`) to avoid conflicts or misinterpretation.
+- Ensure that placeholders align with your formula's logic and structure.
+
+---
+
+### **8.8 Key Takeaways**
+
+1. **Expressions Are Structured**: They use `TableSelectors` instead of traditional spreadsheet cells/ranges, ensuring clear column-based references.
+2. **Formula Translation**: Each expression type maps directly to a spreadsheet formula during generation.
+3. **Operators**: Support for logical comparisons and arithmetic/merge operations provides flexibility.
+4. **Literal and Selector Expressions**: Use these for simple values or direct column-row references.
+5. **Compound and Function Expressions**: Enable complex calculations by combining or processing data.
+
+---
+---
