@@ -3,13 +3,13 @@ import { TableColor, TableColumnType, TableNumericFormat, TableReference, TableS
 
 export const isReference = (value: unknown): value is TableReference => typeof value === 'string' && value.startsWith('@');
 
-export type ReferenceResolver<T> = (name: string) => Result<T, string>;
+export type TableReferenceResolver<T> = (name: string) => Result<T, string>;
 
-export type ReferenceResolvers = {
-    colors?: ReferenceResolver<TableColor>;
-    styles?: ReferenceResolver<TableStyle>;
-    themes?: ReferenceResolver<TableTheme>;
-    numerics?: ReferenceResolver<TableNumericFormat>;
-    temporals?: ReferenceResolver<TableTemporalFormat>;
-    types?: ReferenceResolver<TableColumnType>;
+export type TableDefinitionResolver = {
+    colors?: TableReferenceResolver<TableColor>;
+    styles?: TableReferenceResolver<TableStyle>;
+    themes?: TableReferenceResolver<TableTheme>;
+    numerics?: TableReferenceResolver<TableNumericFormat>;
+    temporals?: TableReferenceResolver<TableTemporalFormat>;
+    types?: TableReferenceResolver<TableColumnType>;
 };

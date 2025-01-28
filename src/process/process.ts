@@ -1,7 +1,6 @@
 import { TableBookProcessIssue } from "../issues";
-import { StandardPalette, StandardPalettes } from "../palettes";
 import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "../sheets/SheetBook";
-import { ReferenceResolvers } from "../tables/references";
+import { TableDefinitionResolver } from "../tables";
 import { TableBook, TableColumn, TableGroup, TablePage, TableReference, TableTheme } from "../tables/types";
 import { ObjectPath, Result } from "../util";
 import { ReferenceRegistry } from "./ReferenceRegistry";
@@ -11,7 +10,6 @@ import { resolveExpression } from "./resolveExpression";
 import { resolveTheme } from "./resolveTheme";
 
 
-
 export type TableProcessLogger = {
     book?: (book: TableBook) => void;
     page?: (page: TablePage) => void;
@@ -19,8 +17,7 @@ export type TableProcessLogger = {
     column?: (column: TableColumn) => void;
 };
 
-
-export const processTableBook = (book: TableBook, resolvers?: ReferenceResolvers[], logger?: TableProcessLogger): Result<SheetBook, TableBookProcessIssue[]> => {
+export const processTableBook = (book: TableBook, resolvers?: TableDefinitionResolver[], logger?: TableProcessLogger): Result<SheetBook, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
 
     logger?.book?.(book);

@@ -1,5 +1,5 @@
 import { TableTheme } from "./tables";
-import { ReferenceResolvers } from "./tables/references";
+import { TableDefinitionResolver } from "./tables";
 import { ColorHex, Result } from "./util";
 
 /**
@@ -72,9 +72,19 @@ export const StandardPalettes = {
     taupe: palette('#483C32', '#6B5D4F', '#857667', '#E5DBD1'), // Neutral brown-gray
     gray: palette('#3B3B3B', '#656565', '#7E7E7E', '#E8E8E8'), // Neutral gray shades
     charcoal: palette('#2A2A2A', '#4D4D4D', '#676767', '#E2E2E2'), // Deep gray tones
-};
+} as const;
 
-export const StandardPaletteResolvers: ReferenceResolvers = {
+export const StandardPaletteResolver: TableDefinitionResolver = {
+    colors: (name) => {
+        if (name in StandardPalettes) {
+            const palette: StandardPalette = (StandardPalettes as any)[name];
+
+            return Result.success(palette.main);
+        }
+        else {
+            return Result.failure(`Standard color not found.`);
+        }    
+    },
     themes: (name) => {
         if (name in StandardPalettes) {
             const palette: StandardPalette = (StandardPalettes as any)[name];

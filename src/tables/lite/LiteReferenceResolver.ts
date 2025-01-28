@@ -1,5 +1,5 @@
 import { Result } from "../../util";
-import { ReferenceResolvers } from "../references";
+import { TableDefinitionResolver } from "../references";
 import { TableNumericFormat, TableTemporalFormat } from "../types";
 import { LiteLookupTypeStringRegex, LiteNumericTypeStringRegex, LiteTemporalTypeStringRegex } from "./lite";
 
@@ -84,7 +84,7 @@ export const temporalFormats: Record<string, TableTemporalFormat> = {
 };
 
 
-export const LiteReferenceResolver: ReferenceResolvers = {
+export const LiteReferenceResolver: TableDefinitionResolver = {
     types: (name) => {
         let match;
 

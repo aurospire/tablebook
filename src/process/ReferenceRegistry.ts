@@ -1,15 +1,15 @@
 import { TableBookProcessIssue } from "../issues";
-import { isReference, ReferenceResolver } from "../tables/references";
+import { isReference, TableReferenceResolver } from "../tables/references";
 import { TableReference } from "../tables/types";
 import { ObjectPath, Result } from "../util";
 
 export class ReferenceRegistry<T> {
     #refs: Record<string, T | TableReference>;
-    #onMissing: ReferenceResolver<T>[];
+    #onMissing: TableReferenceResolver<T>[];
 
-    constructor(refs: Record<string, T | TableReference> | undefined, onMissing: (ReferenceResolver<T> | undefined)[] = []) {
+    constructor(refs: Record<string, T | TableReference> | undefined, onMissing: (TableReferenceResolver<T> | undefined)[] = []) {
         this.#refs = { ...(refs ?? {}) };
-        this.#onMissing = onMissing.filter((fn): fn is ReferenceResolver<T> => fn !== undefined);
+        this.#onMissing = onMissing.filter((fn): fn is TableReferenceResolver<T> => fn !== undefined);
     }
 
     resolve(ref: TableReference, path: ObjectPath): Result<T, TableBookProcessIssue[]> {
