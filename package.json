@@ -2,7 +2,7 @@
     "name": "tablebook",
     "description": "A library for creating structured, table-based workbooks with support for named columns, groups, styles, and formulas using declarative JSON/YAML.",
     "author": "aurospire",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/aurospire/tablebook.git"
