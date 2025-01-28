@@ -134,46 +134,38 @@ async function main() {
 ```
 ---
 ---
----
 
-## **API Guide and Reference**
+## **Types and Methods Guide and Reference**
 
 ### Table of Contents
 
-1. [1. Result](#1-result)
-2. [2. TableBookIssue](#2-tablebookissue)
-   - [2.1 TableBookParseIssue](#21-tablebookparseissue)
-   - [2.2 TableBookValidateIssue](#22-tablebookvalidateissue)
-   - [2.3 TableBookProcessIssue](#23-tablebookprocessissue)
-   - [2.4 TableBookGenerateIssue](#24-tablebookgenerateissue)
-3. [3. TableSelector](#3-tableselector)
-   - [3.1 Single Group vs. Multiple Groups](#31-single-group-vs-multiple-groups)
-   - [3.2 Translating Selectors to A1 Notation](#32-translating-selectors-to-a1-notation)
-4. [4. TableReference](#4-tablereference)
-5. [5. TableStyle](#5-tablestyle)
-6. [6. TableHeaderStyle](#6-tableheaderstyle)
-7. [7. TableTheme](#7-tabletheme)
-8. [8. Expressions](#8-expressions)
-   - [8.1 TableLiteralExpression](#81-tableliteralexpression)
-   - [8.2 TableSelectorExpression](#82-tableselectorexpression)
-   - [8.3 TableCompoundExpression](#83-tablecompoundexpression)
-   - [8.4 TableNegatedExpression](#84-tablenegatedexpression)
-   - [8.5 TableFunctionExpression](#85-tablefunctionexpression)
-   - [8.6 TableRawExpression](#86-tablerawexpression)
-9. [9. TableColumnType](#9-tablecolumntype)
-   - [9.1 Text Type](#91-text-type)
-   - [9.2 Enum Type](#92-enum-type)
-   - [9.3 Lookup Type](#93-lookup-type)
-   - [9.4 Numeric Type](#94-numeric-type)
-   - [9.5 Temporal Type](#95-temporal-type)
-10. [10. TableUnit and Hierarchical Structure](#10-tableunit-and-hierarchical-structure)
-    - [10.1 TableUnit](#101-tableunit)
-    - [10.2 TableColumn](#102-tablecolumn)
-    - [10.3 TableGroup](#103-tablegroup)
-    - [10.4 TablePage](#104-tablepage)
-    - [10.5 TableBook](#105-tablebook)
-      - [10.5.1 TableDefinitions](#1051-tabledefinitions)
-
+1. [Result](#1-result)
+2. [TableBookIssue](#2-tablebookissue)   
+3. [TableSelector](#3-tableselector)
+4. [TableReference](#4-tablereference)
+5. [TableStyle](#5-tablestyle)
+6. [TableHeaderStyle](#6-tableheaderstyle)
+7. [TableTheme](#7-tabletheme)
+8. [Expressions](#8-expressions)
+   - [TableLiteralExpression](#81-tableliteralexpression)
+   - [TableSelectorExpression](#82-tableselectorexpression)
+   - [TableCompoundExpression](#83-tablecompoundexpression)
+   - [TableNegatedExpression](#84-tablenegatedexpression)
+   - [TableFunctionExpression](#85-tablefunctionexpression)
+   - [TableRawExpression](#86-tablerawexpression)
+9. [TableColumnType](#9-tablecolumntype)
+   - [Text Type](#91-text-type)
+   - [Enum Type](#92-enum-type)
+   - [Lookup Type](#93-lookup-type)
+   - [Numeric Type](#94-numeric-type)
+   - [Temporal Type](#95-temporal-type)
+10. [TableUnit and Hierarchical Structure](#10-tableunit-and-hierarchical-structure)
+    - [TableUnit](#101-tableunit)
+    - [TableColumn](#102-tablecolumn)
+    - [TableGroup](#103-tablegroup)
+    - [TablePage](#104-tablepage)
+    - [TableBook](#105-tablebook)
+11. [tablebook Functions](#11-tablebook-functions)
 ---
 ---
 
@@ -1593,10 +1585,6 @@ Here are some complete examples of `TableTemporalFormat` using `TableTemporalUni
 ---
 ---
 
-Got it! Let’s take a **bottom-up approach**, fully integrating **TableDefinitions** into the `TableBook` section for a cleaner explanation. Here’s the revised structure:
-
----
-
 ### **10. TableUnit and Hierarchical Structure**
 
 The `TableUnit` type provides the foundation for defining the `TableBook` hierarchy. This section builds from the smallest element (**TableColumn**) up to the entire workbook (**TableBook**), including reusable elements from `TableDefinitions`.
@@ -1780,3 +1768,219 @@ export type TableDefinitions = {
 }
 ```
 ---
+---
+
+### **11. TableBook Functions**
+
+The `tablebook` object includes utilities for parsing, validating, processing, and generating `TableBook` objects. Here's a breakdown:
+
+---
+
+#### **11.1 tablebook.parse**
+
+Parses a `TableBook` from a JSON or YAML string.
+
+##### **Definition**
+```typescript
+tablebook.parse(format: 'json' | 'yaml', data: string): TableBookParseResult;
+```
+
+##### **Example**
+```typescript
+const result = tablebook.parse('json', '{"name": "Report", "pages": []}');
+
+if (result.success)
+    console.log('Parsed successfully:', result.value);
+else
+    console.error('Parse issues:', result.info);
+```
+
+---
+
+#### **11.2 tablebook.validate**
+
+Validates a `TableBook` against its schema.
+
+##### **Definition**
+```typescript
+tablebook.validate(data: any): TableBookValidateResult<TableBook>;
+```
+
+##### **Example**
+```typescript
+const validationResult = tablebook.validate(parsedTableBook);
+
+if (validationResult.success)
+    console.log('Validation passed.');
+else
+    console.error('Validation issues:', validationResult.info);
+```
+
+---
+
+#### **11.3 tablebook.process**
+
+Processes a `TableBook` to resolve references and prepare it for generation. This step converts the declarative `TableBook` schema into a `SheetBook`, which is an intermediate representation (IR) closer to the final spreadsheet output.
+
+##### **What is a `SheetBook`?**
+
+A `SheetBook` mimics the hierarchical structure of a `TableBook` (with pages, groups, and columns) but resolves all references and removes the `TableBook` paradigm, such as constrained types and relationships. Instead, it uses:
+- **Concrete Numeric Addresses**: Columns and rows are mapped to absolute numbers (like `type SheetPosition = { col: number; row: number; }`)
+- **No Set Types**: Unlike `TableBook`, `SheetBook` imposes no constraints on the types or formats of data.
+- **Flexible Validation and Styles**: Therefore, any kind of validation, conditional styling, or formatting can be applied to any column.
+
+Think of the `SheetBook` as an IR (Intermediate Representation) that abstracts away the declarative `TableBook` model for practical use in spreadsheet generation.
+
+##### **Definition**
+```typescript
+tablebook.process(
+  data: TableBook,
+  onMissing?: MissingReferenceResolvers,
+  logger?: TableProcessLogger
+): TableBookProcessResult<SheetBook>;
+```
+
+##### **11.3.1 MissingReferenceResolvers**
+
+Handles missing references for colors, styles, themes, formats, and types during processing. 
+Each resolver mirrors the structure of `TableDefinitions` and returns a `Result`. 
+This enables support for prebuilt definitions (e.g., palettes) or custom type definitions like `@number:2` to represent a 2-decimal number—offering flexibility limited only by your imagination.
+
+##### **Definition**
+```typescript
+export type MissingReferenceResolver<T> = (name: string, path: ObjectPath) => Result<T, TableBookProcessIssue[]>;
+
+export type MissingReferenceResolvers = {
+    colors?: MissingReferenceResolver<TableColor>;
+    styles?: MissingReferenceResolver<TableStyle>;
+    themes?: MissingReferenceResolver<TableTheme>;
+    format?: {
+        numerics?: MissingReferenceResolver<TableNumericFormat>;
+        temporal?: MissingReferenceResolver<TableTemporalFormat>;
+    };
+    types?: MissingReferenceResolver<TableColumnType>;
+};
+```
+
+##### **Example Resolver**
+```typescript
+const resolvers: MissingReferenceResolvers = {
+    colors: (name, path) => {
+        if (name === 'black')
+          return Result.success('#000000'),
+        else
+          return Result.failure([{ type: 'processing', message: `Color not found: ${name}`, path }]);
+    },
+    format: {
+        numerics: () => Result.success({ type: 'number', integer: { fixed: 2 }, decimal: { fixed: 2 } })
+    }
+};
+```
+
+##### **11.3.2 TableProcessLogger**
+
+Tracks processing progress at each level of the hierarchy.
+
+##### **Definition**
+```typescript
+export type TableProcessLogger = {
+    book?: (book: TableBook) => void;
+    page?: (page: TablePage) => void;
+    group?: (group: TableGroup) => void;
+    column?: (column: TableColumn) => void;
+};
+```
+
+##### **Example Logger**
+```typescript
+const logger: TableProcessLogger = {
+    page: page => console.log(`Processing page: ${page.name}`),
+    column: column => console.log(`Processing column: ${column.name}`)
+};
+```
+
+##### **Example Usage**
+```typescript
+const processResult = tablebook.process(tableBook, resolvers, logger);
+if (processResult.success)
+    console.log('Processed SheetBook:', processResult.value);
+else
+    console.error('Processing issues:', processResult.info);
+```
+
+---
+
+#### **11.4 tablebook.generate**
+
+Generates output from a processed `SheetBook`.
+
+##### **Definition**
+```typescript
+tablebook.generate(
+  data: SheetBook,
+  generator: SheetGenerator
+): Promise<TableBookGenerateResult>;
+```
+
+##### **Example**
+```typescript
+const googleGenerator = await tablebook.generators.google(email, apiKey, sheetId, reset);
+const generateResult = await tablebook.generate(sheetBook, googleGenerator);
+
+if (generateResult.success)
+    console.log('Generation successful.');
+else
+    console.error('Generation issues:', generateResult.info);
+```
+---
+
+#### **11.5 tablebook.generators**
+
+The `generators` object provides methods to create output generators for converting a processed `SheetBook` into a spreadsheet. It simplifies the integration with external systems by abstracting the complexity of connecting to APIs or managing file formats.
+
+---
+
+#### **11.5.1 tablebook.generators.google**
+
+Creates a Google Sheets generator for exporting to a specified sheet.
+
+##### **Definition**
+```typescript
+tablebook.generators.google(
+  email: string,        // Service account email for Google Sheets API.
+  key: string,          // API key for authenticating the service account.
+  sheetId: string,      // ID of the target Google Sheet.
+  reset: boolean        // Whether to clear existing sheet content before writing.
+): Promise<SheetGenerator>;
+```
+
+##### **Parameters**
+- **`email`**: The service account email used to authenticate with the Google Sheets API.
+- **`key`**: The API key or private key associated with the service account.
+- **`sheetId`**: The unique identifier of the target Google Sheet.
+- **`reset`**: If `true`, clears all existing content in the sheet before writing new data.
+
+---
+
+##### **Example**
+```typescript
+const generator = await tablebook.generators.google(
+    'api-user@example.com',
+    'API_KEY',
+    'SHEET_ID',
+    true
+);
+
+const generateResult = await tablebook.generate(sheetBook, generator);
+
+if (generateResult.success)
+    console.log('Sheet successfully generated!');
+else
+    console.error('Generation issues:', generateResult.info);
+```
+
+---
+
+#### **Future Goals**
+- **Support for OAuth Authentication**: Extend `.google` to support OAuth flows, enabling end-user authentication in addition to service accounts.
+- **Excel Support**: Add a generator method (e.g., `.excel`) for exporting `SheetBook` objects directly to `.xlsx` files, ensuring compatibility with non-Google spreadsheet systems.
