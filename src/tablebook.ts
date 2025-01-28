@@ -1,14 +1,13 @@
 import { parse, ParseError, printParseErrorCode } from 'jsonc-parser';
 import { LineCounter, parseDocument } from 'yaml';
 import { ZodIssue } from 'zod';
-import { FlatBook, FlatBookValidator, NameMaker, processFlatBook } from './flat';
+import { GoogleGenerator, GoogleSheet } from './google';
 import { TableBookGenerateIssue, TableBookParseIssue, TableBookProcessIssue, TableBookValidateIssue } from './issues';
-import { processTableBook } from './process';
+import { MissingReferenceResolvers, processTableBook, TableProcessLogger } from './process';
 import { SheetBook, SheetGenerator } from './sheets';
 import { TableBook } from './tables/types';
 import { TableBookValidator } from './tables/validate';
 import { ObjectPath, Result, TextLocation } from './util';
-import { GoogleGenerator, GoogleSheet } from './google';
 
 /** The result of parsing a TableBook, either successful or containing parse issues. */
 export type TableBookParseResult = Result<any, TableBookParseIssue[]>;
@@ -104,38 +103,13 @@ const mapValidatorIssue = (issue: ZodIssue, data: any): TableBookValidateIssue =
 
 /** Utility object for working with TableBook objects. */
 export const tablebook = Object.freeze({
-    /** Utilities for working with FlatBooks. */
-    flat: Object.freeze({
-        /**
-         * Validates a FlatBook object.
-         * @param data - The FlatBook data to validate.
-         * @returns A `TableBookValidateResult` with the validated data or validation issues.
-         */
-        validate: (data: any): TableBookValidateResult<FlatBook> => {
-            const result = FlatBookValidator.safeParse(data);
-            return result.success
-                ? Result.success(result.data)
-                : Result.failure(result.error.issues.map(issue => mapValidatorIssue(issue, data)));
-        },
-
-        /**
-         * Converts a FlatBook into a TableBook.
-         * @param data - The FlatBook data to convert.
-         * @param makeName - Optional name generation utility.
-         * @returns A `TableBookProcessResult` with the converted data or processing issues.
-         */
-        convert(data: FlatBook, makeName?: NameMaker): TableBookProcessResult<TableBook> {
-            return processFlatBook(data, makeName);
-        }
-    }),
-
     /**
      * Parses an object from JSON or YAML format.
-     * @param format - The format of the data (`json` or `yaml`).
      * @param data - The data to parse.
+     * @param format - The format of the data (`json` or `yaml`).
      * @returns A `TableBookParseResult` with the parsed data or parsing issues.
      */
-    parse(format: 'json' | 'yaml', data: string): TableBookParseResult {
+    parse(data: string, format: 'json' | 'yaml' ): TableBookParseResult {
         return format === 'json' ? parseJson(data) : parseYaml(data);
     },
 
@@ -154,10 +128,12 @@ export const tablebook = Object.freeze({
     /**
      * Converts a TableBook into a SheetBook.
      * @param data - The TableBook to convert.
+     * @param onMissing - Optional resolvers for missing references.
+     * @param logger - Optional logger for processing messages.
      * @returns A `TableBookProcessResult` with the converted data or processing issues.
      */
-    convert(data: TableBook): TableBookProcessResult<SheetBook> {
-        return processTableBook(data);
+    process(data: TableBook, onMissing?: MissingReferenceResolvers[], logger?: TableProcessLogger): TableBookProcessResult<SheetBook> {
+        return processTableBook(data, onMissing, logger);
     },
 
     /**

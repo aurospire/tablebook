@@ -1,5 +1,5 @@
 import { SheetBorder } from "../sheets/SheetStyle";
-import { BorderType } from "../tables/types";
+import { TableBorderType } from "../tables/types";
 import { ColorObject, Colors } from "../util/Color";
 import { GoogleBorder, GoogleColorStyle } from "./GoogleTypes";
 
@@ -12,7 +12,7 @@ export const GoogleBorderMap = {
     dotted: 'DOTTED',
     dashed: 'DASHED',
     double: 'DOUBLE',
-} as const satisfies Record<BorderType, string>;
+} as const satisfies Record<TableBorderType, string>;
 
 
 export const toSheetsBorder = (border: SheetBorder | undefined): GoogleBorder | undefined => {

@@ -4,7 +4,7 @@
  * @typeParam T - The type of the value returned when the operation is successful.
  * @typeParam I - The type of the additional information provided when the operation fails.
  */
-export type Result<T, I> = 
+export type Result<T, I> =
     | { success: true; value: T; }  // Successful result
     | { success: false; info: I; value?: T; };  // Failed result with optional value
 
@@ -31,4 +31,15 @@ export const Result = Object.freeze({
      * @returns A `Result` object representing a failed operation.
      */
     failure: <I, T = any>(info: I, value?: T): Result<T, I> => ({ success: false, info, value }),
+
+
+    /**
+     * Checks if a value is a `Result` object.
+     * 
+     * @param value - The value to check.
+     * @returns `true` if the value is a `Result` object, `false` otherwise.
+     */
+    isResult: (value: any): value is Result<any, any> => {
+        return typeof value === 'object' && value !== null && 'success' in value;
+    }
 });

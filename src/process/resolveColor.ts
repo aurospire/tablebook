@@ -1,21 +1,21 @@
 import { TableBookProcessIssue } from "../issues";
-import { Color, Reference } from "../tables/types";
+import { TableColor, TableReference } from "../tables/types";
 import { ColorObject, Colors, ObjectPath, Result } from "../util";
-import { isReference, resolveReference } from "./resolveReference";
+import { isReference, ReferenceResolver } from "./resolveReference";
 
 export const resolveColor = (
-    color: Color | Reference,
-    colors: Record<string, Color | Reference>,
+    color: TableColor | TableReference,
+    colors: ReferenceResolver<TableColor>,
     path: ObjectPath
 ): Result<ColorObject, TableBookProcessIssue[]> => {
 
     if (color.startsWith('#')) {
-        return Result.success(Colors.toObject(color as Color));
+        return Result.success(Colors.toObject(color as TableColor));
     }
     else if (isReference(color)) {
-        const result = resolveReference(color, colors, v => typeof v === 'string' && v.startsWith('#'), path);
+        const result = colors.resolve(color, path);
         if (result.success)
-            return Result.success(Colors.toObject(result.value as Color));
+            return Result.success(Colors.toObject(result.value as TableColor));
         else
             return Result.failure(result.info);
     }

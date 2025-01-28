@@ -1,4 +1,4 @@
-import { FlatPalette } from "./flat/types";
+import { TablePalettes } from "./tables";
 import { ColorHex } from "./util";
 
 /**
@@ -9,12 +9,19 @@ import { ColorHex } from "./util";
  * @param lightest - The lightest shade, used for `data.back`.
  * @returns A palette object containing the four shades.
  */
-export const palette = (
+const palette = (
     darkest: ColorHex,
     dark: ColorHex,
     main: ColorHex,
     lightest: ColorHex
-) => ({ darkest, dark, main, lightest });
+): StandardPalette => ({ darkest, dark, main, lightest });
+
+export type StandardPalette = {
+    darkest: ColorHex;
+    dark: ColorHex;
+    main: ColorHex;
+    lightest: ColorHex;
+};
 
 /**
  * Predefined color palettes for use in themes and references.
@@ -64,4 +71,4 @@ export const StandardPalettes = {
     taupe: palette('#483C32', '#6B5D4F', '#857667', '#E5DBD1'), // Neutral brown-gray
     gray: palette('#3B3B3B', '#656565', '#7E7E7E', '#E8E8E8'), // Neutral gray shades
     charcoal: palette('#2A2A2A', '#4D4D4D', '#676767', '#E2E2E2'), // Deep gray tones
-} satisfies Record<FlatPalette, ReturnType<typeof palette>>;
+} satisfies Record<typeof TablePalettes[number], StandardPalette>;

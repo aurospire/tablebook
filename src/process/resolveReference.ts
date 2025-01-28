@@ -1,35 +1,53 @@
 import { TableBookProcessIssue } from "../issues";
-import { Reference } from "../tables/types";
+import { TableReference } from "../tables/types";
 import { ObjectPath, Result } from "../util";
 
-export const isReference = (value: unknown): value is Reference => typeof value === 'string' && value.startsWith('@');
+export const isReference = (value: unknown): value is TableReference => typeof value === 'string' && value.startsWith('@');
 
-export const resolveReference = <T>(
-    ref: Reference,
-    map: Record<string, T | Reference>,
-    is: (value: unknown) => boolean,
-    path: ObjectPath
-): Result<T, TableBookProcessIssue[]> => {
-    const visited = [ref];
+export type MissingReferenceResolver<T> = (name: string, path: ObjectPath) => Result<T, TableBookProcessIssue[]>;
 
-    const checker = is as (value: unknown) => value is T;
+export class ReferenceResolver<T> {
+    #refs: Record<string, T | TableReference>;
+    #onMissing: MissingReferenceResolver<T>[];
 
-    while (true) {
-        const result = map[ref.substring(1)];
-
-        if (result === undefined)
-            return Result.failure([{ type: 'processing', message: 'Missing reference', path, data: ref }]);
-        else if (checker(result))
-            return Result.success(result as T);
-        else if (isReference(result)) {
-            if (visited.includes(result))
-                return Result.failure([{ type: 'processing', message: `Circular reference`, path, data: visited }]);
-
-            visited.push(result);
-
-            ref = result;
-        }
-        else
-            return Result.failure([{ type: 'processing', message: 'Invalid reference', path, data: ref }]);
+    constructor(refs: Record<string, T | TableReference> | undefined, onMissing: (MissingReferenceResolver<T> | undefined)[] = []) {
+        this.#refs = { ...(refs ?? {}) };
+        this.#onMissing = onMissing.filter((fn): fn is MissingReferenceResolver<T> => fn !== undefined);
     }
-};
+
+    resolve(ref: TableReference, path: ObjectPath): Result<T, TableBookProcessIssue[]> {
+        const visited = [ref];
+
+        while (true) {
+            const name = ref.substring(1);
+            const result = this.#refs[name];
+
+            if (result === undefined) {
+                const issues: TableBookProcessIssue[] = [];
+
+                for (const missing of this.#onMissing) {
+                    const result = missing(name, path);
+
+                    if (result.success) {
+                        this.#refs[name] = result.value;
+                        return result;
+                    } else
+                        issues.push(...result.info);
+                }
+
+                return Result.failure(issues.length ? issues : [{ type: 'processing', message: 'Missing reference', path, data: ref }]);
+
+            }
+            else if (isReference(result)) {
+                if (visited.includes(result))
+                    return Result.failure([{ type: 'processing', message: `Circular reference`, path, data: visited }]);
+
+                visited.push(result);
+
+                ref = result;
+            }
+            else
+                return Result.failure([{ type: 'processing', message: 'Invalid reference', path, data: ref }]);
+        }
+    }
+}

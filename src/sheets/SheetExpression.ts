@@ -1,8 +1,8 @@
-import { Expression } from "../tables/types";
+import { TableExpression } from "../tables/types";
 import { SheetPosition } from "./SheetPosition";
 import { SheetSelector } from "./SheetSelector";
 
-export type SheetExpression = Expression<SheetSelector>;
+export type SheetExpression = TableExpression<SheetSelector>;
 
 const chars: Record<string, string> = {
     '\t': 'CHAR(9)',
