@@ -5,11 +5,11 @@ import { ObjectPath, Result } from "../util";
 
 export class ReferenceRegistry<T> {
     #refs: Record<string, T | TableReference>;
-    #onMissing: TableReferenceResolver<T>[];
+    #resolvers: TableReferenceResolver<T>[];
 
-    constructor(refs: Record<string, T | TableReference> | undefined, onMissing: (TableReferenceResolver<T> | undefined)[] = []) {
+    constructor(refs: Record<string, T | TableReference> | undefined, resolvers: (TableReferenceResolver<T> | undefined)[] = []) {
         this.#refs = { ...(refs ?? {}) };
-        this.#onMissing = onMissing.filter((fn): fn is TableReferenceResolver<T> => fn !== undefined);
+        this.#resolvers = resolvers.filter((fn): fn is TableReferenceResolver<T> => fn !== undefined);
     }
 
     resolve(ref: TableReference, path: ObjectPath): Result<T, TableBookProcessIssue[]> {
@@ -17,16 +17,18 @@ export class ReferenceRegistry<T> {
 
         while (true) {
             const name = ref.substring(1);
+
             const result = this.#refs[name];
 
             if (result === undefined) {
                 const issues: TableBookProcessIssue[] = [];
 
-                for (const missing of this.#onMissing) {
-                    const result = missing(name);
+                for (const resolver of this.#resolvers) {
+                    const result = resolver(name);
 
                     if (result.success) {
                         this.#refs[name] = result.value;
+
                         return result;
                     } else
                         issues.push({ type: 'processing', message: result.info, path, data: ref });
@@ -44,7 +46,7 @@ export class ReferenceRegistry<T> {
                 ref = result;
             }
             else
-                return Result.failure([{ type: 'processing', message: 'Invalid reference', path, data: ref }]);
+                return Result.success(result);
         }
     }
 }
