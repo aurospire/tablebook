@@ -15,7 +15,7 @@ export type MissingReferenceResolvers = {
     styles?: MissingReferenceResolver<TableStyle>;
     themes?: MissingReferenceResolver<TableTheme>;
     format?: {
-        numerics?: MissingReferenceResolver<TableNumericFormat>;
+        numeric?: MissingReferenceResolver<TableNumericFormat>;
         temporal?: MissingReferenceResolver<TableTemporalFormat>;
     };
     types?: MissingReferenceResolver<TableColumnType>;
@@ -69,7 +69,7 @@ export const processTableBook = (book: TableBook, onMissing?: MissingReferenceRe
     const colors = new ReferenceResolver(book.definitions?.colors, onMissing?.map(item => item.colors));
     const styles = new ReferenceResolver(book.definitions?.styles, onMissing?.map(item => item.styles));
     const themes = new ReferenceResolver(book.definitions?.themes, [standardThemeResolver, ...(onMissing?.map(item => item.themes) ?? [])]);
-    const numeric = new ReferenceResolver(book.definitions?.formats?.numeric, onMissing?.map(item => item.format?.numerics));
+    const numeric = new ReferenceResolver(book.definitions?.formats?.numeric, onMissing?.map(item => item.format?.numeric));
     const temporal = new ReferenceResolver(book.definitions?.formats?.temporal, onMissing?.map(item => item.format?.temporal));
     const types = new ReferenceResolver(book.definitions?.types, onMissing?.map(item => item.types));
 
