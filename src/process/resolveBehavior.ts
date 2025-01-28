@@ -6,9 +6,10 @@ import { ObjectPath, Result } from "../util";
 import { resolveColor } from "./resolveColor";
 import { ResolvedColumn } from "./resolveColumns";
 import { resolveExpression } from "./resolveExpression";
-import { isReference, ReferenceRegistry } from "./ReferenceRegistry";
+import { ReferenceRegistry } from "./ReferenceRegistry";
 import { resolveSelector } from "./resolveSelector";
 import { resolveStyle } from "./resolveStyle";
+import { isReference } from "../tables";
 
 const resolveNumericRule = (
     rule: TableNumericType['rule'] & {},

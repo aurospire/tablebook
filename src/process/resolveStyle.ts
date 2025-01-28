@@ -1,9 +1,10 @@
 import { TableBookProcessIssue } from "../issues";
 import { SheetBorder, SheetTitleStyle } from "../sheets";
+import { isReference } from "../tables";
 import { TableColor, TableHeaderStyle, TableReference, TableStyle } from "../tables/types";
 import { ColorObject, ObjectPath, Result } from "../util";
+import { ReferenceRegistry } from "./ReferenceRegistry";
 import { resolveColor } from "./resolveColor";
-import { isReference, ReferenceRegistry } from "./ReferenceRegistry";
 
 export const resolveStyle = (
     style: TableHeaderStyle | TableReference,

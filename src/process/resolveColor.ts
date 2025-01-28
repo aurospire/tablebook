@@ -1,7 +1,8 @@
 import { TableBookProcessIssue } from "../issues";
+import { isReference } from "../tables";
 import { TableColor, TableReference } from "../tables/types";
 import { ColorObject, Colors, ObjectPath, Result } from "../util";
-import { isReference, ReferenceRegistry } from "./ReferenceRegistry";
+import { ReferenceRegistry } from "./ReferenceRegistry";
 
 export const resolveColor = (
     color: TableColor | TableReference,

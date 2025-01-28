@@ -1,9 +1,10 @@
 import { TableBookProcessIssue } from "../issues";
-import { SheetTitleStyle, SheetStyle } from "../sheets";
-import { TableTheme, TableReference, TableColor, TableStyle } from "../tables/types";
+import { SheetStyle, SheetTitleStyle } from "../sheets";
+import { isReference } from "../tables";
+import { TableColor, TableReference, TableStyle, TableTheme } from "../tables/types";
 import { ColorObject, ObjectPath, Result } from "../util";
+import { ReferenceRegistry } from "./ReferenceRegistry";
 import { resolveColor } from "./resolveColor";
-import { isReference, ReferenceRegistry } from "./ReferenceRegistry";
 import { resolveStyle } from "./resolveStyle";
 
 export type SheetTheme = {
