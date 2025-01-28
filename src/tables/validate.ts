@@ -166,7 +166,7 @@ const TableSelectorExpression: z.ZodType<TableSelectorExpression<TableSelector>>
 const TableRawExpression: z.ZodType<TableRawExpression<TableSelector>> = z.object({
     type: z.literal(TableRawExpressionType),
     text: z.string(),
-    refs: z.record(z.string(), TableDataSelector)
+    tags: z.record(z.string(), TableDataSelector).optional()
 });
 
 const TableExpression: z.ZodType<TableExpression<TableSelector>> = z.union([

@@ -40,8 +40,8 @@ export const toFormula = (exp: SheetExpression, position: SheetPosition): string
             return SheetSelector().toAddress(exp.from, position);
         case 'raw': {
             let result = exp.text;
-            if (exp.refs) {
-                for (const [key, value] of Object.entries(exp.refs)) {
+            if (exp.tags) {
+                for (const [key, value] of Object.entries(exp.tags)) {
                     const selector = SheetSelector().toAddress(value, position);
                     result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), selector);
                 }

@@ -97,7 +97,7 @@
  * - Require full DataSelectors - not simply ColumnSelectors.
  * - Can be compound, negated, function, selector, or raw.
  * - Raw expressions can be used for custom expressions with references to DataSelectors.
- *   - Examples: { type: "raw", text: "SUM(@Revenue) + 10", refs: { "@Revenue": { column: { group: "Revenue", name: "Price" }, row: "all" } } }
+ *   - Examples: { type: "raw", text: "SUM(@Revenue) + 10", tags: { "@Revenue": { column: { group: "Revenue", name: "Price" }, row: "all" } } }
  * 
  * Types are documented with JSON Schema patterns:
  * {
@@ -319,8 +319,8 @@ export type TableLiteralExpression = { type: typeof TableLiteralExpressionType, 
 
 /** Type identifier for flat expressions */
 export const TableRawExpressionType = 'raw';
-/* Flattened Expression, refs are replaced in the expression text */
-export type TableRawExpression<Selector> = { type: typeof TableRawExpressionType, text: string, refs?: Record<string, Selector>; };
+/* Flattened Expression, tags are replaced in the expression text */
+export type TableRawExpression<Selector> = { type: typeof TableRawExpressionType, text: string, tags?: Record<string, Selector>; };
 
 /** All possible expression types for data computation and validation */
 export type TableExpression<Selector> =

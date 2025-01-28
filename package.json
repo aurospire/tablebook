@@ -26,6 +26,7 @@
         "start": "node ./dist/index.js",
         "watch": "nodemon -e ts,js,tsx,jsx,json --watch src --watch 'package*.json' --exec 'tsc -p . && node ./dist/index.js || exit 1'",
         "build": "tsc -p .",
+        "prepublish": "tsc --build --clean && tsc --build",
         "test": "jest --config test/jest.config.ts",
         "vigil": "nodemon -e ts,js,tsx,jsx,json --watch src --watch 'package*.json' --watch test --exec 'tsc -p . && jest --config test/jest.config.ts || exit 1'"
     },

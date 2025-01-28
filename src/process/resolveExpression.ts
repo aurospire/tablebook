@@ -76,8 +76,8 @@ export const resolveExpression = (
         case 'raw': {
             let result = expression.text;
 
-            if (expression.refs) {
-                for (const [tag, selector] of Object.entries(expression.refs)) {
+            if (expression.tags) {
+                for (const [tag, selector] of Object.entries(expression.tags)) {
                     const selectorResult = resolveSelector(selector, columns, page, group, name, path);
 
                     if (selectorResult.success) {
