@@ -1855,7 +1855,7 @@ export type MissingReferenceResolvers = {
     styles?: MissingReferenceResolver<TableStyle>;
     themes?: MissingReferenceResolver<TableTheme>;
     format?: {
-        numerics?: MissingReferenceResolver<TableNumericFormat>;
+        numeric?: MissingReferenceResolver<TableNumericFormat>;
         temporal?: MissingReferenceResolver<TableTemporalFormat>;
     };
     types?: MissingReferenceResolver<TableColumnType>;

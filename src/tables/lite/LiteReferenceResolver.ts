@@ -113,7 +113,7 @@ export const LiteReferenceResolver: MissingReferenceResolvers = {
             return Result.failure([{ type: 'processing', message: `Type not found.`, path, data: name }]);
     },
     format: {
-        numerics: (name, path) => {
+        numeric: (name, path) => {
             const [match, type, decimals] = name.match(LiteNumericTypeStringRegex) ?? [];
 
             if (match)
