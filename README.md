@@ -1835,12 +1835,12 @@ Think of the `SheetBook` as an IR (Intermediate Representation) that abstracts a
 ```typescript
 tablebook.process(
   data: TableBook,
-  resolvers?: ReferenceResolver[],
+  resolvers?: TableDefinitionResolver[],
   logger?: TableProcessLogger
 ): TableBookProcessResult<SheetBook>;
 ```
 
-##### **11.3.1 ReferenceResolver**
+##### **11.3.1 TableDefinitionResolver**
 
 Handles missing references for colors, styles, themes, formats, and types during processing. 
 Each resolver mirrors the structure of `TableDefinitions` and returns a `Result`. 
@@ -1848,28 +1848,28 @@ This enables support for prebuilt definitions (e.g., palettes) or custom type de
 
 ##### **Definition**
 ```typescript
-export type ResolveReference<T> = (name: string, path: ObjectPath) => Result<T, TableBookProcessIssue[]>;
+export type TableResolveReference<T> = (name: string) => Result<T, string>;
 
-export type ReferenceResolver = {
-    colors?: ResolveReference<TableColor>;
-    styles?: ResolveReference<TableStyle>;
-    themes?: ResolveReference<TableTheme>;
+export type TableDefinitionResolver = {
+    colors?: TableResolveReference<TableColor>;
+    styles?: TableResolveReference<TableStyle>;
+    themes?: TableResolveReference<TableTheme>;
     format?: {
-        numeric?: ResolveReference<TableNumericFormat>;
-        temporal?: ResolveReference<TableTemporalFormat>;
+        numeric?: TableResolveReference<TableNumericFormat>;
+        temporal?: TableResolveReference<TableTemporalFormat>;
     };
-    types?: ResolveReference<TableColumnType>;
+    types?: TableResolveReference<TableColumnType>;
 };
 ```
 
 ##### **Example Resolver**
 ```typescript
-const resolvers: ReferenceResolver = {
+const resolvers: TableDefinitionResolver = {
     colors: (name, path) => {
         if (name === 'black')
           return Result.success('#000000'),
         else
-          return Result.failure([{ type: 'processing', message: `Color not found: ${name}`, path }]);
+          return Result.failure(message: `Color not found.`);
     },
     format: {
         numerics: () => Result.success({ type: 'number', integer: { fixed: 2 }, decimal: { fixed: 2 } })
