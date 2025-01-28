@@ -1,3 +1,5 @@
+# TableBook
+
 ## **Project Overview**
 
 ### **What is TableBook?**
@@ -354,7 +356,7 @@ if (!parseResult.success) {
 
 ### **Key Concepts**
 1. **Column-Based Selection Only**: Unlike traditional spreadsheets, `TableBook` does not support cell-based or horizontal (multi-column) selection. All data selection is **column-centric**, targeting one column at a time.
-2. **Page → Group → Column Paradigm**: Columns are identified within a hierarchy:
+2. **Page → Group → Column** oaradigm: Columns are identified within a hierarchy:
    - **Page**: Synonymous with a `Table`, representing a single table within the spreadsheet. Each `Page` in the `TableBook` corresponds to one logical table, forming the core unit of the "book of tables."
    - **Group**: A subgroup within a page that organizes related columns.
    - **Column**: The specific column within a group.
@@ -657,15 +659,12 @@ export type TableBorder = {
 #### **TableBorderType**
 Represents the available styles for border lines:
 ```typescript
-export const TableBorderTypes = [
-    "none", 
-    "thin", "medium", "thick",
-    "dotted", "dashed", "double"
-] as const;
-
-export type TableBorderType = typeof TableBorderTypes[number];
+export type TableBorderType =
+    "none"  | 
+    "thin"  | "medium" | "thick",  // single line style of different thickness
+    "dotted"| "dashed" | "double"  // alternative lines styles
+    ;
 ```
-
 ---
 
 ### **6.3 TablePartition**
@@ -681,55 +680,18 @@ export type TablePartition = {
 ```
 
 ---
-
-### **6.4 Example**
-
-#### **Text Example**
-```typescript
-const headerStyle: TableHeaderStyle = {
-  fore: "#FFFFFF",
-  back: "#333333",
-  bold: true,
-  beneath: { type: "thick", color: "#0000FF" },
-  between: { type: "dashed", color: "#FF5733" }
-};
-```
-
-#### **JSON Example**
-```json
-{
-  "fore": "#FFFFFF",
-  "back": "#333333",
-  "bold": true,
-  "beneath": {
-    "type": "thick",
-    "color": "#0000FF"
-  },
-  "between": {
-    "type": "dashed",
-    "color": "#FF5733"
-  }
-}
-```
-
----
-
-### **Key Takeaways**
-- **TableHeaderStyle** extends `TableStyle` with border options for headers.
-- Use **TableBorder** for styling individual lines and **TablePartition** for grouping border styles.
-
----
 ---
 
 ### **7. TableTheme**
 
-A **TableTheme** defines coordinated styling for multiple areas—tabs, group headers, column headers, and data cells. You can apply a theme at different levels of a `TableBook`, with each level either using or refining the theme from above.
+A **TableTheme** defines coordinated styling for multiple areas - tabs, group headers, column headers, and data cells.
+You can apply a theme at different levels of a `TableBook` (book → page → group → column), with each level either using or refining the theme from above.
 
 #### **7.1 Definition**
 
 ```typescript
 export type TableTheme = {
-  inherits?: TableReference[];  // Other themes to merge into this one
+  inherits?: TableReference[];
   tab?: TableColor | TableReference;
   group?: TableHeaderStyle | TableReference;
   header?: TableHeaderStyle | TableReference;
@@ -824,7 +786,7 @@ Neutrals:
 ```
 
 When you reference one of these palettes in a theme (for example, `"theme": "@blue"`), the background colors for `group`, `header`, `tab`, and `data` will be set automatically. If you want readable text on dark headers/groups, define a lighter or white foreground color in `group` or `header` style.
-Best is define it globally in the Book theme.
+Best is to define it globally in the Book theme.
 
 
 ---
@@ -925,7 +887,8 @@ export type TableExpression =
   | TableCompoundExpression
   | TableNegatedExpression
   | TableFunctionExpression
-  | TableRawExpression;
+  | TableRawExpression
+  ;
 ```
 
 ---
@@ -1099,7 +1062,7 @@ A `TableRawExpression` represents a custom formula defined as raw text with plac
 export type TableRawExpression = {
     type: "raw";
     text: string;                         // The formula text with placeholders.
-    refs?: Record<string, TableSelector>; // Placeholders mapped to TableSelectors.
+    tags?: Record<string, TableSelector>; // Placeholders mapped to TableSelectors.
 };
 ```
 
@@ -1111,7 +1074,7 @@ export type TableRawExpression = {
    - The formula is written as a string, with placeholders (e.g., `@Revenue`) representing data points.
    - During spreadsheet generation, each placeholder is replaced with the corresponding cell or range address derived from its selector.
 
-2. **Selectors (`refs` object)**:  
+2. **Selectors (`tags` object)**:  
    - Each placeholder in the `text` field maps to a `TableSelector`.
    - The `TableSelector` specifies which column and rows to reference.  
    - For example:
@@ -1126,7 +1089,7 @@ export type TableRawExpression = {
 const rawExpression: TableRawExpression = {
   type: "raw",
   text: "SUM(@Revenue) + @Constant",
-  refs: {
+  tags: {
     "@Revenue": {
       column: { name: "Revenue" },
       rows: "all"
