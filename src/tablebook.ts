@@ -148,7 +148,7 @@ export const tablebook = Object.freeze({
      * @param logger - Optional logger for processing messages.
      * @returns A `TableBookProcessResult` with the converted data or processing issues.
      */
-    process(data: TableBook, options: TableBookProcessOptions): TableBookProcessResult<SheetBook> {
+    process(data: TableBook, options: TableBookProcessOptions = {}): TableBookProcessResult<SheetBook> {
         let { resolvers, omitStandardPalette, logger } = options;
 
         resolvers = omitStandardPalette ? resolvers : [StandardPaletteResolver(), ...(resolvers ?? [])];
