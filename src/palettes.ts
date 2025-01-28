@@ -1,5 +1,6 @@
-import { TablePalettes } from "./tables";
-import { ColorHex } from "./util";
+import { TableTheme } from "./tables";
+import { ReferenceResolvers } from "./tables/references";
+import { ColorHex, Result } from "./util";
 
 /**
  * Creates a four-shade color palette.
@@ -71,4 +72,24 @@ export const StandardPalettes = {
     taupe: palette('#483C32', '#6B5D4F', '#857667', '#E5DBD1'), // Neutral brown-gray
     gray: palette('#3B3B3B', '#656565', '#7E7E7E', '#E8E8E8'), // Neutral gray shades
     charcoal: palette('#2A2A2A', '#4D4D4D', '#676767', '#E2E2E2'), // Deep gray tones
-} satisfies Record<typeof TablePalettes[number], StandardPalette>;
+};
+
+export const StandardPaletteResolvers: ReferenceResolvers = {
+    themes: (name) => {
+        if (name in StandardPalettes) {
+            const palette: StandardPalette = (StandardPalettes as any)[name];
+
+            const theme: TableTheme = {
+                tab: palette.main,
+                group: { back: palette.darkest },
+                header: { back: palette.dark },
+                data: { back: palette.lightest },
+            };
+
+            return Result.success(theme);
+        }
+        else {
+            return Result.failure(`Standard theme not found.`);
+        }
+    }
+};

@@ -3,7 +3,7 @@ import { LineCounter, parseDocument } from 'yaml';
 import { ZodIssue } from 'zod';
 import { GoogleGenerator, GoogleSheet } from './google';
 import { TableBookGenerateIssue, TableBookParseIssue, TableBookProcessIssue, TableBookValidateIssue } from './issues';
-import { ReferenceResolvers, processTableBook, TableProcessLogger } from './process';
+import { ReferenceResolverSet, processTableBook, TableProcessLogger } from './process';
 import { SheetBook, SheetGenerator } from './sheets';
 import { TableBook } from './tables/types';
 import { TableBookValidator } from './tables/validate';
@@ -132,7 +132,7 @@ export const tablebook = Object.freeze({
      * @param logger - Optional logger for processing messages.
      * @returns A `TableBookProcessResult` with the converted data or processing issues.
      */
-    process(data: TableBook, onMissing?: ReferenceResolvers[], logger?: TableProcessLogger): TableBookProcessResult<SheetBook> {
+    process(data: TableBook, onMissing?: ReferenceResolverSet[], logger?: TableProcessLogger): TableBookProcessResult<SheetBook> {
         return processTableBook(data, onMissing, logger);
     },
 

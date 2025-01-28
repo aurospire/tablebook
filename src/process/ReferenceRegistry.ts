@@ -1,13 +1,9 @@
 import { TableBookProcessIssue } from "../issues";
+import { isReference, ReferenceResolver } from "../tables/references";
 import { TableReference } from "../tables/types";
 import { ObjectPath, Result } from "../util";
 
-export const isReference = (value: unknown): value is TableReference => typeof value === 'string' && value.startsWith('@');
-
-export type ReferenceResolver<T> = (name: string, path: ObjectPath) => Result<T, string>;
-
-
-export class TableReferenceRegistry<T> {
+export class ReferenceRegistry<T> {
     #refs: Record<string, T | TableReference>;
     #onMissing: ReferenceResolver<T>[];
 
@@ -27,7 +23,7 @@ export class TableReferenceRegistry<T> {
                 const issues: TableBookProcessIssue[] = [];
 
                 for (const missing of this.#onMissing) {
-                    const result = missing(name, path);
+                    const result = missing(name);
 
                     if (result.success) {
                         this.#refs[name] = result.value;

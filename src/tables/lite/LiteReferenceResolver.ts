@@ -1,5 +1,5 @@
-import { ReferenceResolvers } from "../../process";
 import { Result } from "../../util";
+import { ReferenceResolvers } from "../references";
 import { TableNumericFormat, TableTemporalFormat } from "../types";
 import { LiteLookupTypeStringRegex, LiteNumericTypeStringRegex, LiteTemporalTypeStringRegex } from "./lite";
 

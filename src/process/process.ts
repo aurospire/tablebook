@@ -1,23 +1,15 @@
 import { TableBookProcessIssue } from "../issues";
 import { StandardPalette, StandardPalettes } from "../palettes";
 import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "../sheets/SheetBook";
-import { TableBook, TableColor, TableColumn, TableColumnType, TableGroup, TableNumericFormat, TablePage, TableReference, TableStyle, TableTemporalFormat, TableTheme } from "../tables/types";
+import { ReferenceResolvers } from "../tables/references";
+import { TableBook, TableColumn, TableGroup, TablePage, TableReference, TableTheme } from "../tables/types";
 import { ObjectPath, Result } from "../util";
+import { ReferenceRegistry } from "./ReferenceRegistry";
 import { resolveBehavior } from "./resolveBehavior";
 import { resolveColumns } from "./resolveColumns";
 import { resolveExpression } from "./resolveExpression";
-import { ReferenceResolver, TableReferenceRegistry } from "./ReferenceRegistry";
 import { resolveTheme } from "./resolveTheme";
 
-
-export type ReferenceResolvers = {
-    colors?: ReferenceResolver<TableColor>;
-    styles?: ReferenceResolver<TableStyle>;
-    themes?: ReferenceResolver<TableTheme>;
-    numerics?: ReferenceResolver<TableNumericFormat>;
-    temporals?: ReferenceResolver<TableTemporalFormat>;
-    types?: ReferenceResolver<TableColumnType>;
-};
 
 
 export type TableProcessLogger = {
@@ -27,24 +19,6 @@ export type TableProcessLogger = {
     column?: (column: TableColumn) => void;
 };
 
-
-const standardThemeResolver: ReferenceResolver<TableTheme> = (name, path) => {
-    if (name in StandardPalettes) {
-        const palette: StandardPalette = (StandardPalettes as any)[name];
-
-        const theme: TableTheme = {
-            tab: palette.main,
-            group: { back: palette.darkest },
-            header: { back: palette.dark },
-            data: { back: palette.lightest },
-        };
-
-        return Result.success(theme);
-    }
-    else {
-        return Result.failure({ message: `Standard theme not found.`, path, data: name });
-    }
-};
 
 export const processTableBook = (book: TableBook, resolvers?: ReferenceResolvers[], logger?: TableProcessLogger): Result<SheetBook, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
@@ -64,12 +38,12 @@ export const processTableBook = (book: TableBook, resolvers?: ReferenceResolvers
     const columns = columnsResult.value!;
 
     // Reify definitions
-    const colors = new TableReferenceRegistry(book.definitions?.colors, resolvers?.map(item => item.colors));
-    const styles = new TableReferenceRegistry(book.definitions?.styles, resolvers?.map(item => item.styles));
-    const themes = new TableReferenceRegistry(book.definitions?.themes, resolvers?.map(item => item.themes));
-    const numerics = new TableReferenceRegistry(book.definitions?.numerics, resolvers?.map(item => item.numerics));
-    const temporals = new TableReferenceRegistry(book.definitions?.temporals, resolvers?.map(item => item.temporals));
-    const types = new TableReferenceRegistry(book.definitions?.types, resolvers?.map(item => item.types));
+    const colors = new ReferenceRegistry(book.definitions?.colors, resolvers?.map(item => item.colors));
+    const styles = new ReferenceRegistry(book.definitions?.styles, resolvers?.map(item => item.styles));
+    const themes = new ReferenceRegistry(book.definitions?.themes, resolvers?.map(item => item.themes));
+    const numerics = new ReferenceRegistry(book.definitions?.numerics, resolvers?.map(item => item.numerics));
+    const temporals = new ReferenceRegistry(book.definitions?.temporals, resolvers?.map(item => item.temporals));
+    const types = new ReferenceRegistry(book.definitions?.types, resolvers?.map(item => item.types));
 
 
     for (let p = 0; p < book.pages.length; p++) {
