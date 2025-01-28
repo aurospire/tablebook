@@ -6,7 +6,7 @@ import { ObjectPath, Result } from "../util";
 import { resolveColor } from "./resolveColor";
 import { ResolvedColumn } from "./resolveColumns";
 import { resolveExpression } from "./resolveExpression";
-import { isReference, ReferenceResolver } from "./resolveReference";
+import { isReference, TableReferenceRegistry } from "./ReferenceRegistry";
 import { resolveSelector } from "./resolveSelector";
 import { resolveStyle } from "./resolveStyle";
 
@@ -88,8 +88,8 @@ const resolveTextBehavior = (
     resolved: TableTextType,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
-    colors: ReferenceResolver<TableColor>,
-    styles: ReferenceResolver<TableStyle>,
+    colors: TableReferenceRegistry<TableColor>,
+    styles: TableReferenceRegistry<TableStyle>,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
 
@@ -169,8 +169,8 @@ const resolveTextBehavior = (
 
 export const resolveEnumBehavior = (
     type: TableEnumType,
-    colors: ReferenceResolver<TableColor>,
-    styles: ReferenceResolver<TableStyle>,
+    colors: TableReferenceRegistry<TableColor>,
+    styles: TableReferenceRegistry<TableStyle>,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
@@ -242,9 +242,9 @@ const resolveNumericBehavior = (
     type: TableNumericType,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
-    colors: ReferenceResolver<TableColor>,
-    styles: ReferenceResolver<TableStyle>,
-    numerics: ReferenceResolver<TableNumericFormat>,
+    colors: TableReferenceRegistry<TableColor>,
+    styles: TableReferenceRegistry<TableStyle>,
+    numerics: TableReferenceRegistry<TableNumericFormat>,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
@@ -315,9 +315,9 @@ const resolveTemporalBehavior = (
     type: TableTemporalType,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
-    colors: ReferenceResolver<TableColor>,
-    styles: ReferenceResolver<TableStyle>,
-    temporals: ReferenceResolver<TableTemporalFormat>,
+    colors: TableReferenceRegistry<TableColor>,
+    styles: TableReferenceRegistry<TableStyle>,
+    temporals: TableReferenceRegistry<TableTemporalFormat>,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
@@ -387,11 +387,11 @@ export const resolveBehavior = (
     type: TableColumnType | TableReference,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
-    types: ReferenceResolver<TableColumnType>,
-    colors: ReferenceResolver<TableColor>,
-    styles: ReferenceResolver<TableStyle>,
-    numerics: ReferenceResolver<TableNumericFormat>,
-    temporals: ReferenceResolver<TableTemporalFormat>,
+    types: TableReferenceRegistry<TableColumnType>,
+    colors: TableReferenceRegistry<TableColor>,
+    styles: TableReferenceRegistry<TableStyle>,
+    numerics: TableReferenceRegistry<TableNumericFormat>,
+    temporals: TableReferenceRegistry<TableTemporalFormat>,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     let resolved: TableColumnType;

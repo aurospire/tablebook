@@ -1835,12 +1835,12 @@ Think of the `SheetBook` as an IR (Intermediate Representation) that abstracts a
 ```typescript
 tablebook.process(
   data: TableBook,
-  onMissing?: MissingReferenceResolvers,
+  resolvers?: ReferenceResolver[],
   logger?: TableProcessLogger
 ): TableBookProcessResult<SheetBook>;
 ```
 
-##### **11.3.1 MissingReferenceResolvers**
+##### **11.3.1 ReferenceResolver**
 
 Handles missing references for colors, styles, themes, formats, and types during processing. 
 Each resolver mirrors the structure of `TableDefinitions` and returns a `Result`. 
@@ -1848,23 +1848,23 @@ This enables support for prebuilt definitions (e.g., palettes) or custom type de
 
 ##### **Definition**
 ```typescript
-export type MissingReferenceResolver<T> = (name: string, path: ObjectPath) => Result<T, TableBookProcessIssue[]>;
+export type ResolveReference<T> = (name: string, path: ObjectPath) => Result<T, TableBookProcessIssue[]>;
 
-export type MissingReferenceResolvers = {
-    colors?: MissingReferenceResolver<TableColor>;
-    styles?: MissingReferenceResolver<TableStyle>;
-    themes?: MissingReferenceResolver<TableTheme>;
+export type ReferenceResolver = {
+    colors?: ResolveReference<TableColor>;
+    styles?: ResolveReference<TableStyle>;
+    themes?: ResolveReference<TableTheme>;
     format?: {
-        numeric?: MissingReferenceResolver<TableNumericFormat>;
-        temporal?: MissingReferenceResolver<TableTemporalFormat>;
+        numeric?: ResolveReference<TableNumericFormat>;
+        temporal?: ResolveReference<TableTemporalFormat>;
     };
-    types?: MissingReferenceResolver<TableColumnType>;
+    types?: ResolveReference<TableColumnType>;
 };
 ```
 
 ##### **Example Resolver**
 ```typescript
-const resolvers: MissingReferenceResolvers = {
+const resolvers: ReferenceResolver = {
     colors: (name, path) => {
         if (name === 'black')
           return Result.success('#000000'),

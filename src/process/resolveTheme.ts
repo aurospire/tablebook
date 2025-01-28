@@ -3,7 +3,7 @@ import { SheetTitleStyle, SheetStyle } from "../sheets";
 import { TableTheme, TableReference, TableColor, TableStyle } from "../tables/types";
 import { ColorObject, ObjectPath, Result } from "../util";
 import { resolveColor } from "./resolveColor";
-import { isReference, ReferenceResolver } from "./resolveReference";
+import { isReference, TableReferenceRegistry } from "./ReferenceRegistry";
 import { resolveStyle } from "./resolveStyle";
 
 export type SheetTheme = {
@@ -43,9 +43,9 @@ export const mergeThemes = (base: SheetTheme, override: SheetTheme): SheetTheme 
 
 export const resolveTheme = (
     theme: TableTheme | TableReference,
-    colors: ReferenceResolver<TableColor>,
-    styles: ReferenceResolver<TableStyle>,
-    themes: ReferenceResolver<TableTheme>,
+    colors: TableReferenceRegistry<TableColor>,
+    styles: TableReferenceRegistry<TableStyle>,
+    themes: TableReferenceRegistry<TableTheme>,
     parents: (TableTheme | TableReference)[],
     chain: TableTheme[],
     path: ObjectPath
@@ -66,7 +66,7 @@ export const resolveTheme = (
     }
 
     if (chain.includes(resolved))
-        throw new Error('Circular theme reference for ' + name + JSON.stringify({ chain, theme }, null, 2));
+        throw new Error('Circular theme reference for ' + JSON.stringify({ chain, theme }, null, 2));
 
     let result: SheetTheme = {
         tab: undefined,

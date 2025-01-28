@@ -6,19 +6,17 @@ import { ObjectPath, Result } from "../util";
 import { resolveBehavior } from "./resolveBehavior";
 import { resolveColumns } from "./resolveColumns";
 import { resolveExpression } from "./resolveExpression";
-import { MissingReferenceResolver, ReferenceResolver } from "./resolveReference";
+import { ReferenceResolver, TableReferenceRegistry } from "./ReferenceRegistry";
 import { resolveTheme } from "./resolveTheme";
 
 
-export type MissingReferenceResolvers = {
-    colors?: MissingReferenceResolver<TableColor>;
-    styles?: MissingReferenceResolver<TableStyle>;
-    themes?: MissingReferenceResolver<TableTheme>;
-    format?: {
-        numeric?: MissingReferenceResolver<TableNumericFormat>;
-        temporal?: MissingReferenceResolver<TableTemporalFormat>;
-    };
-    types?: MissingReferenceResolver<TableColumnType>;
+export type ReferenceResolvers = {
+    colors?: ReferenceResolver<TableColor>;
+    styles?: ReferenceResolver<TableStyle>;
+    themes?: ReferenceResolver<TableTheme>;
+    numerics?: ReferenceResolver<TableNumericFormat>;
+    temporals?: ReferenceResolver<TableTemporalFormat>;
+    types?: ReferenceResolver<TableColumnType>;
 };
 
 
@@ -30,7 +28,7 @@ export type TableProcessLogger = {
 };
 
 
-const standardThemeResolver: MissingReferenceResolver<TableTheme> = (name, path) => {
+const standardThemeResolver: ReferenceResolver<TableTheme> = (name, path) => {
     if (name in StandardPalettes) {
         const palette: StandardPalette = (StandardPalettes as any)[name];
 
@@ -48,7 +46,7 @@ const standardThemeResolver: MissingReferenceResolver<TableTheme> = (name, path)
     }
 };
 
-export const processTableBook = (book: TableBook, onMissing?: MissingReferenceResolvers[], logger?: TableProcessLogger): Result<SheetBook, TableBookProcessIssue[]> => {
+export const processTableBook = (book: TableBook, resolvers?: ReferenceResolvers[], logger?: TableProcessLogger): Result<SheetBook, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
 
     logger?.book?.(book);
@@ -66,12 +64,12 @@ export const processTableBook = (book: TableBook, onMissing?: MissingReferenceRe
     const columns = columnsResult.value!;
 
     // Reify definitions
-    const colors = new ReferenceResolver(book.definitions?.colors, onMissing?.map(item => item.colors));
-    const styles = new ReferenceResolver(book.definitions?.styles, onMissing?.map(item => item.styles));
-    const themes = new ReferenceResolver(book.definitions?.themes, [standardThemeResolver, ...(onMissing?.map(item => item.themes) ?? [])]);
-    const numeric = new ReferenceResolver(book.definitions?.formats?.numeric, onMissing?.map(item => item.format?.numeric));
-    const temporal = new ReferenceResolver(book.definitions?.formats?.temporal, onMissing?.map(item => item.format?.temporal));
-    const types = new ReferenceResolver(book.definitions?.types, onMissing?.map(item => item.types));
+    const colors = new TableReferenceRegistry(book.definitions?.colors, resolvers?.map(item => item.colors));
+    const styles = new TableReferenceRegistry(book.definitions?.styles, resolvers?.map(item => item.styles));
+    const themes = new TableReferenceRegistry(book.definitions?.themes, resolvers?.map(item => item.themes));
+    const numerics = new TableReferenceRegistry(book.definitions?.numerics, resolvers?.map(item => item.numerics));
+    const temporals = new TableReferenceRegistry(book.definitions?.temporals, resolvers?.map(item => item.temporals));
+    const types = new TableReferenceRegistry(book.definitions?.types, resolvers?.map(item => item.types));
 
 
     for (let p = 0; p < book.pages.length; p++) {
@@ -138,7 +136,7 @@ export const processTableBook = (book: TableBook, onMissing?: MissingReferenceRe
 
                 let behavior;
                 if (column.type !== undefined) {
-                    const result = resolveBehavior(column.type, page.name, group.name, column.name, columns, types, colors, styles, numeric, temporal, columnPath);
+                    const result = resolveBehavior(column.type, page.name, group.name, column.name, columns, types, colors, styles, numerics, temporals, columnPath);
 
                     if (!result.success)
                         issues.push(...result.info);

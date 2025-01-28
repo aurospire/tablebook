@@ -4,15 +4,16 @@ import { ObjectPath, Result } from "../util";
 
 export const isReference = (value: unknown): value is TableReference => typeof value === 'string' && value.startsWith('@');
 
-export type MissingReferenceResolver<T> = (name: string, path: ObjectPath) => Result<T, TableBookProcessIssue[]>;
+export type ReferenceResolver<T> = (name: string, path: ObjectPath) => Result<T, string>;
 
-export class ReferenceResolver<T> {
+
+export class TableReferenceRegistry<T> {
     #refs: Record<string, T | TableReference>;
-    #onMissing: MissingReferenceResolver<T>[];
+    #onMissing: ReferenceResolver<T>[];
 
-    constructor(refs: Record<string, T | TableReference> | undefined, onMissing: (MissingReferenceResolver<T> | undefined)[] = []) {
+    constructor(refs: Record<string, T | TableReference> | undefined, onMissing: (ReferenceResolver<T> | undefined)[] = []) {
         this.#refs = { ...(refs ?? {}) };
-        this.#onMissing = onMissing.filter((fn): fn is MissingReferenceResolver<T> => fn !== undefined);
+        this.#onMissing = onMissing.filter((fn): fn is ReferenceResolver<T> => fn !== undefined);
     }
 
     resolve(ref: TableReference, path: ObjectPath): Result<T, TableBookProcessIssue[]> {
@@ -32,7 +33,7 @@ export class ReferenceResolver<T> {
                         this.#refs[name] = result.value;
                         return result;
                     } else
-                        issues.push(...result.info);
+                        issues.push({ type: 'processing', message: result.info, path, data: ref });
                 }
 
                 return Result.failure(issues.length ? issues : [{ type: 'processing', message: 'Missing reference', path, data: ref }]);

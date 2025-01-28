@@ -1,4 +1,4 @@
-import { MissingReferenceResolvers } from "../../process";
+import { ReferenceResolvers } from "../../process";
 import { Result } from "../../util";
 import { TableNumericFormat, TableTemporalFormat } from "../types";
 import { LiteLookupTypeStringRegex, LiteNumericTypeStringRegex, LiteTemporalTypeStringRegex } from "./lite";
@@ -84,8 +84,8 @@ export const temporalFormats: Record<string, TableTemporalFormat> = {
 };
 
 
-export const LiteReferenceResolver: MissingReferenceResolvers = {
-    types: (name, path) => {
+export const LiteReferenceResolver: ReferenceResolvers = {
+    types: (name) => {
         let match;
 
         if (name === 'text')
@@ -110,26 +110,24 @@ export const LiteReferenceResolver: MissingReferenceResolvers = {
         }
 
         else
-            return Result.failure([{ type: 'processing', message: `Type not found.`, path, data: name }]);
+            return Result.failure(`Type not found.`);
     },
-    format: {
-        numeric: (name, path) => {
-            const [match, type, decimals] = name.match(LiteNumericTypeStringRegex) ?? [];
+    numerics: (name) => {
+        const [match, type, decimals] = name.match(LiteNumericTypeStringRegex) ?? [];
 
-            if (match)
-                return Result.success({ type: type as any, decimal: decimals ? parseInt(decimals) : undefined });
+        if (match)
+            return Result.success({ type: type as any, decimal: decimals ? parseInt(decimals) : undefined });
 
-            else
-                return Result.failure([{ type: 'processing', message: `Numeric format not found.`, path, data: name }]);
-        },
-        temporal: (name, path) => {
-            const format = temporalFormats[name];
-
-            if (format)
-                return Result.success(temporalFormats[name]);
-
-            else
-                return Result.failure([{ type: 'processing', message: `Temporal format not found.`, path, data: name }]);
-        }
+        else
+            return Result.failure(`Numeric format not found.`);
     },
+    temporals: (name) => {
+        const format = temporalFormats[name];
+
+        if (format)
+            return Result.success(temporalFormats[name]);
+
+        else
+            return Result.failure(`Temporal format not found.`);
+    }
 };

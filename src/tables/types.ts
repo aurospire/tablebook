@@ -3,7 +3,6 @@
 // Each "page" has one table with at least one column group.
 // TableBook implements a powerful table paradigm - a strict subset of spreadsheets with only vertical relationships.
 // Data relationships and computations are column-based - no cell addresses or horizontal references.
-// Standard components when they exist (ie: palettes) should be preferred over definitions, and definitions over inline.
 // Ideally every Table theme should use its own palette.
 // LLMs or UIs can create in JSON or YAML to be parsed into TableBook for processing.
 /**
@@ -24,7 +23,7 @@
  * 
  * References:
  * - References are identified by their context and must **always begin with `@`** to denote a link 
- *   to the definitions object in the root TableBook object (e.g., palettes, styles, themes, formats).
+ *   to the definitions object in the root TableBook object (e.g., styles, themes, formats).
  * 
  * Contextual Examples:
  * - **Themes**:
@@ -38,17 +37,6 @@
  *   - `"type": "@currency"` references a format in `definitions.types`. (we see that each type has its own namespace)
  * - **Formats**:
  *   - `"format": "@currency"` references a format in `definitions.formats.numeric`. (if the parent type is numeric)
- * 
- * 
- * Predefined Palettes:
- * Palettes provide consistent color schemes
- * When used in themes, the palette is expanded to its individual colors 
- * - Darkest -> header.back
- * - Dark -> group.back
- * - Main -> tab
- * - Lightest -> data.back
- * 
- * Palettes are simple predefined definitons in the .themes objects, and are treated exactly like other definitions.
  * 
  * Theme Inheritance:
  * - Themes cascade down through the structure (TableBook -> TablePage -> TableGroup -> TableColumn)
@@ -251,19 +239,6 @@ export type TableTheme = {
     /** Data cell styling */
     data?: TableStyle | TableReference;
 };
-
-
-/* Palettes */
-/** Predefined color palettes for use in themes and references */
-export const TablePalettes = [
-    'pink', 'cranberry', 'red', 'rust', 'orange', 'yellow',
-    'green', 'moss', 'sage', 'teal', 'slate', 'cyan', 'blue', 'azure', 'skyblue',
-    'lavender', 'indigo', 'purple', 'plum', 'mauve', 'coral', 'terracotta', 'bronze',
-    'sand', 'taupe', 'gray', 'charcoal'
-] as const;
-
-/** Predefined color palettes for use in themes and references */
-export type TablePaletteReference = TableReference<typeof TablePalettes[number]>;
 
 
 /* Operators */
@@ -563,7 +538,7 @@ export type TableUnit = {
     /** Unique identifier following TableUnitNameRegex pattern */
     name: string;
     /** Optional theme override for this unit */
-    theme?: TableTheme | TablePaletteReference | TableReference;
+    theme?: TableTheme | TableReference;
     /** Optional description of the unit's purpose */
     description?: string;
 };
@@ -611,14 +586,11 @@ export type TableDefinitions = {
     /** Reusable style definitions */
     styles?: Record<string, TableHeaderStyle | TableReference>;
     /** Custom theme definitions. Includes prebuilt Themes build from StandardPalettes */
-    themes?: Record<string, TableTheme | TablePaletteReference | TableReference>;
-    /** Format definitions for numbers and dates */
-    formats?: {
-        /** Custom numeric format definitions */
-        numeric?: Record<string, TableNumericFormat | TableReference>;
-        /** Custom temporal format definitions */
-        temporal?: Record<string, TableTemporalFormat | TableReference>;
-    };
+    themes?: Record<string, TableTheme | TableReference>;
+    /** Custom numeric format definitions */
+    numerics?: Record<string, TableNumericFormat | TableReference>;
+    /** Custom temporal format definitions */
+    temporals?: Record<string, TableTemporalFormat | TableReference>;
     /** Reusable type definitions */
     types?: Record<string, TableColumnType | TableReference>;
 };
