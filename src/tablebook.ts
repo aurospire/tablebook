@@ -53,6 +53,20 @@ export const parseJson = (data: string): TableBookParseResult => {
         })));
 };
 
+
+/**
+ * Options for processing a TableBook into a SheetBook.
+ */
+export type TableBookProcessOptions = {
+    /** Custom resolvers for missing references like themes, colors, or types. */
+    resolvers?: TableDefinitionResolver[];
+    /** Excludes the StandardPaletteResolver if true. Default is false. */
+    omitStandardPalette?: boolean;
+    /** Logger for tracking processing progress. */
+    logger?: TableProcessLogger;
+};
+
+
 /**
  * Parses a YAML string into a TableBook object.
  * @param data - The YAML string to parse.
@@ -130,12 +144,16 @@ export const tablebook = Object.freeze({
     /**
      * Converts a TableBook into a SheetBook.
      * @param data - The TableBook to convert.
-     * @param resolvers - Optional resolvers for missing references.
+     * @param resolvers - Optional resolvers for missing references. The StandardPaletteResolver is automatically included
      * @param logger - Optional logger for processing messages.
      * @returns A `TableBookProcessResult` with the converted data or processing issues.
      */
-    process(data: TableBook, resolvers?: TableDefinitionResolver[], logger?: TableProcessLogger): TableBookProcessResult<SheetBook> {
-        return processTableBook(data, [StandardPaletteResolver, ...(resolvers ?? [])], logger);
+    process(data: TableBook, options: TableBookProcessOptions): TableBookProcessResult<SheetBook> {
+        let { resolvers, omitStandardPalette, logger } = options;
+
+        resolvers = omitStandardPalette ? resolvers : [StandardPaletteResolver(), ...(resolvers ?? [])];
+
+        return processTableBook(data, resolvers, logger);
     },
 
     /**
