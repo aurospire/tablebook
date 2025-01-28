@@ -2,7 +2,7 @@
 
 ### **What is TableBook?**
 
-`TableBook` is a declarative TypeScript library designed to streamline the creation of spreadsheet-like structures. With a focus on vertical relationships and column-based computations, `TableBook` avoids traditional spreadsheet complexities like cell addresses or horizontal dependencies. This makes it ideal for generating consistent, maintainable table structures programmatically.
+`TableBook` is a TypeScript library for generating spreadsheets programmatically from a declarative schema. It focuses on structured, column-based tables with one table per page, using a typing system to ensure consistent data. Instead of referencing individual cells, `TableBook` operates on individual columns with optional row selections, avoiding the complexities of traditional spreadsheets. This design ensures simplicity, consistency, and maintainability.
 
 ### **Key Features**
 
