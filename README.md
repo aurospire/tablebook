@@ -1,3 +1,5 @@
+# TableBook
+
 ## **Project Overview**
 
 ### **What is TableBook?**
@@ -354,7 +356,7 @@ if (!parseResult.success) {
 
 ### **Key Concepts**
 1. **Column-Based Selection Only**: Unlike traditional spreadsheets, `TableBook` does not support cell-based or horizontal (multi-column) selection. All data selection is **column-centric**, targeting one column at a time.
-2. **Page → Group → Column Paradigm**: Columns are identified within a hierarchy:
+2. **Page → Group → Column** oaradigm: Columns are identified within a hierarchy:
    - **Page**: Synonymous with a `Table`, representing a single table within the spreadsheet. Each `Page` in the `TableBook` corresponds to one logical table, forming the core unit of the "book of tables."
    - **Group**: A subgroup within a page that organizes related columns.
    - **Column**: The specific column within a group.
