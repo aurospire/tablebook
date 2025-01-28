@@ -17,10 +17,17 @@ const palette = (
     lightest: ColorHex
 ): StandardPalette => ({ darkest, dark, main, lightest });
 
+/**
+ * Represents a four-shade color palette used for theming.
+ */
 export type StandardPalette = {
+    /** The darkest shade, typically used for `group.back`. */
     darkest: ColorHex;
+    /** A dark shade, typically used for `header.back`. */
     dark: ColorHex;
+    /** The main shade, typically used for `tab` and `color`. */
     main: ColorHex;
+    /** The lightest shade, typically used for `data.back`. */
     lightest: ColorHex;
 };
 
@@ -74,17 +81,18 @@ export const StandardPalettes = {
     charcoal: palette('#2A2A2A', '#4D4D4D', '#676767', '#E2E2E2'), // Deep gray tones
 } as const;
 
-export const StandardPaletteResolver: TableDefinitionResolver = {
-    colors: (name) => {
-        if (name in StandardPalettes) {
-            const palette: StandardPalette = (StandardPalettes as any)[name];
-
-            return Result.success(palette.main);
-        }
-        else {
-            return Result.failure(`Standard color not found.`);
-        }    
-    },
+/**
+ * Creates a resolver for standard palettes, providing built-in themes based on palette names.
+ * @returns A `TableDefinitionResolver` that resolves themes using standard palettes.
+ * 
+ * Resolves themes like `@blue`, `@red`, etc., by mapping to a predefined `StandardPalette`.
+ * Each resolved theme includes the following mappings:
+ * - `tab`: Uses the palette's `main` shade.
+ * - `group.back`: Uses the palette's `darkest` shade.
+ * - `header.back`: Uses the palette's `dark` shade.
+ * - `data.back`: Uses the palette's `lightest` shade.
+ */
+export const StandardPaletteResolver = (): TableDefinitionResolver => ({
     themes: (name) => {
         if (name in StandardPalettes) {
             const palette: StandardPalette = (StandardPalettes as any)[name];
@@ -97,9 +105,8 @@ export const StandardPaletteResolver: TableDefinitionResolver = {
             };
 
             return Result.success(theme);
-        }
-        else {
+        } else {
             return Result.failure(`Standard theme not found.`);
         }
     }
-};
+});

@@ -1598,9 +1598,9 @@ The `TableUnit` is a base type for all elements in the hierarchy, providing shar
 ##### **Definition**
 ```typescript
 export type TableUnit = {
-    name: string;                                                // Unique identifier for the unit.
-    theme?: TableTheme | TablePaletteReference | TableReference; // Optional visual theme.
-    description?: string;                                        // Optional explanation of the unit's purpose.
+    name: string;                        // Unique identifier for the unit.
+    theme?: TableTheme | TableReference; // Optional visual theme.
+    description?: string;                // Optional explanation of the unit's purpose.
 };
 ```
 
@@ -1722,14 +1722,12 @@ The `definitions` object allows you to define reusable colors, styles, themes, f
 ##### **Definition**
 ```typescript
 export type TableDefinitions = {
-    colors?: Record<string, TableColor | TableReference>;                         // Custom color definitions.
-    styles?: Record<string, TableHeaderStyle | TableReference>;                   // Reusable style definitions.
-    themes?: Record<string, TableTheme | TablePaletteReference | TableReference>; // Theme definitions.
-    formats?: {
-        numeric?: Record<string, TableNumericFormat | TableReference>;            // Custom numeric formats.
-        temporal?: Record<string, TableTemporalFormat | TableReference>;          // Custom temporal formats.
-    };
-    types?: Record<string, TableColumnType | TableReference>;                     // Reusable column type definitions.
+    colors?: Record<string, TableColor | TableReference>;                   // Custom color definitions.
+    styles?: Record<string, TableHeaderStyle | TableReference>;             // Reusable style definitions.
+    themes?: Record<string, TableTheme |  TableReference>;                  // Theme definitions.    
+    numerics?: Record<string, TableNumericFormat | TableReference>;         // Custom numeric formats.
+    temporal?: Record<string, TableTemporalFormat | TableReference>;        // Custom temporal formats.    
+    types?: Record<string, TableColumnType | TableReference>;               // Reusable column type definitions.
 };
 ```
 
@@ -1746,21 +1744,19 @@ export type TableDefinitions = {
     },
     "themes": {
       "reportTheme": { "inherits": ["@blue"], "header": { "bold": true } }
+    },    
+    "numerics": {
+      "currency": { "type": "currency", "symbol": "$", "position": "prefix" }
     },
-    "formats": {
-      "numeric": {
-        "currency": { "type": "currency", "symbol": "$", "position": "prefix" }
-      },
-      "temporal": {
-        "shortDate": [
-          { "type": "monthname", "length": "short" },
-          " ",
-          { "type": "day" },
-          ", ",
-          { "type": "year" }
-        ]
-      }
-    },
+    "temporals": {
+      "shortDate": [
+        { "type": "monthname", "length": "short" },
+        " ",
+        { "type": "day" },
+        ", ",
+        { "type": "year" }
+      ]
+    },    
     "types": {
       "currencyColumn": { "kind": "numeric", "format": "@currency" }
     }
