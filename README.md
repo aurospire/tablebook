@@ -136,18 +136,41 @@ async function main() {
 
 ## **API Guide and Reference**
 
-### **Table of Contents**
-1. [Result](#result)
-2. [TableBookIssue](#tablebookissue)
-3. [TableSelector](#tableselector)
-4. [TableStyle](#tablestyle)
-5. [TableTheme](#tabletheme)
-6. [TableColumnType](#tablecolumntype)
-7. [TableColumn](#tablecolumn)
-8. [TableGroup](#tablegroup)
-9. [TablePage](#tablepage)
-10. [TableDefinitions](#tabledefinitions)
-11. [TableBook](#tablebook)
+### Table of Contents
+
+1. [1. Result](#1-result)
+2. [2. TableBookIssue](#2-tablebookissue)
+   - [2.1 TableBookParseIssue](#21-tablebookparseissue)
+   - [2.2 TableBookValidateIssue](#22-tablebookvalidateissue)
+   - [2.3 TableBookProcessIssue](#23-tablebookprocessissue)
+   - [2.4 TableBookGenerateIssue](#24-tablebookgenerateissue)
+3. [3. TableSelector](#3-tableselector)
+   - [3.1 Single Group vs. Multiple Groups](#31-single-group-vs-multiple-groups)
+   - [3.2 Translating Selectors to A1 Notation](#32-translating-selectors-to-a1-notation)
+4. [4. TableReference](#4-tablereference)
+5. [5. TableStyle](#5-tablestyle)
+6. [6. TableHeaderStyle](#6-tableheaderstyle)
+7. [7. TableTheme](#7-tabletheme)
+8. [8. Expressions](#8-expressions)
+   - [8.1 TableLiteralExpression](#81-tableliteralexpression)
+   - [8.2 TableSelectorExpression](#82-tableselectorexpression)
+   - [8.3 TableCompoundExpression](#83-tablecompoundexpression)
+   - [8.4 TableNegatedExpression](#84-tablenegatedexpression)
+   - [8.5 TableFunctionExpression](#85-tablefunctionexpression)
+   - [8.6 TableRawExpression](#86-tablerawexpression)
+9. [9. TableColumnType](#9-tablecolumntype)
+   - [9.1 Text Type](#91-text-type)
+   - [9.2 Enum Type](#92-enum-type)
+   - [9.3 Lookup Type](#93-lookup-type)
+   - [9.4 Numeric Type](#94-numeric-type)
+   - [9.5 Temporal Type](#95-temporal-type)
+10. [10. TableUnit and Hierarchical Structure](#10-tableunit-and-hierarchical-structure)
+    - [10.1 TableUnit](#101-tableunit)
+    - [10.2 TableColumn](#102-tablecolumn)
+    - [10.3 TableGroup](#103-tablegroup)
+    - [10.4 TablePage](#104-tablepage)
+    - [10.5 TableBook](#105-tablebook)
+      - [10.5.1 TableDefinitions](#1051-tabledefinitions)
 
 ---
 ---
@@ -1605,4 +1628,192 @@ Here are some complete examples of `TableTemporalFormat` using `TableTemporalUni
    **Output:** `3:05 PM`
 
 ---
+---
+
+Got it! Let’s take a **bottom-up approach**, fully integrating **TableDefinitions** into the `TableBook` section for a cleaner explanation. Here’s the revised structure:
+
+---
+
+### **10. TableUnit and Hierarchical Structure**
+
+The `TableUnit` type provides the foundation for defining the `TableBook` hierarchy. This section builds from the smallest element (**TableColumn**) up to the entire workbook (**TableBook**), including reusable elements from `TableDefinitions`.
+
+---
+
+#### **10.1 TableUnit**
+
+The `TableUnit` is a base type for all elements in the hierarchy, providing shared properties like `name`, `theme`, and `description`.
+
+##### **Definition**
+```typescript
+export type TableUnit = {
+    name: string;                                                // Unique identifier for the unit.
+    theme?: TableTheme | TablePaletteReference | TableReference; // Optional visual theme.
+    description?: string;                                        // Optional explanation of the unit's purpose.
+};
+```
+
+---
+
+#### **10.2 TableColumn**
+
+A `TableColumn` represents the smallest unit of the hierarchy. It defines the data type, optional computed expressions, and metadata about its source.
+
+##### **Definition**
+```typescript
+export type TableColumn = TableUnit & {
+    type: TableColumnType | TableReference;      // The data type of the column.
+    source?: string;                             // Optional metadata about the column's data source.
+    expression?: TableExpression<TableSelector>; // Optional expression to compute the column's values.
+};
+```
+
+##### **Key Properties**
+- **`type`**: Specifies the column's data type, such as `numeric`, `text`, or `temporal`. See [TableColumnType](#9-tablecolumntype).
+- **`source`**: Describes where the data originates (e.g., an external database or API).
+- **`expression`**: Defines how the column's value is computed using structured expressions.
+
+##### **Example**
+```json
+{
+  "name": "Revenue",
+  "type": { "kind": "numeric" },  
+  "expression": {
+    "type": "compound",
+    "with": "+",
+    "items": [
+      { "type": "selector", "from": { "column": { "name": "Sales" }, "rows": "self" } },
+      { "type": "selector", "from": { "column": { "name": "Discounts" }, "rows": "self" } }
+    ]
+  }
+}
+```
+
+---
+
+#### **10.3 TableGroup**
+
+A `TableGroup` organizes related columns within a page. Groups make it easier to logically separate and style subsets of columns.
+
+##### **Definition**
+```typescript
+export type TableGroup = TableUnit & {
+    columns: TableColumn[]; // Array of columns within the group.    
+};
+```
+
+##### **Key Details**
+- Groups improve readability and organization.
+- If a page contains only one group, the group name and header are hidden in the output.
+
+##### **Example**
+```json
+{
+  "name": "RevenueGroup",
+  "columns": [
+    { "name": "Revenue", "type": { "kind": "numeric" } },
+    { "name": "Profit", "type": { "kind": "numeric" } }
+  ]
+}
+```
+
+---
+
+#### **10.4 TablePage**
+A `TablePage` represents a single sheet in the workbook, acting as the **table** in the `TableBook` paradigm. Each page contains one and only one table, which is defined by its groups and columns. The structure ensures that all data is organized vertically within this single table. This design keeps the focus on column-based relationships, with rows acting as records within the table. The `rows` property specifies the total number of records available for the table, ensuring consistency across all column groups.
+
+##### **Definition**
+```typescript
+export type TablePage = TableUnit & {
+    groups: TableGroup[]; // Array of column groups on the page.
+    rows: number;         // Total number of data rows on the page.
+};
+```
+
+##### **Key Details**
+- **`rows`**: Determines the number of rows available for data. Columns and groups operate within this range.
+- Pages can inherit or override themes from the book.
+
+##### **Example**
+```json
+{
+  "name": "SummaryPage",
+  "rows": 100,
+  "groups": [
+    {
+      "name": "RevenueGroup",
+      "columns": [
+        { "name": "Revenue", "type": { "kind": "numeric" } },
+        { "name": "Cost", "type": { "kind": "numeric" } }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+#### **10.5 TableBook**
+
+A `TableBook` is the root structure of the hierarchy, containing all pages and an optional `definitions` object for reusable elements.
+
+##### **Definition**
+```typescript
+export type TableBook = TableUnit & {
+    pages: TablePage[];        // Array of pages in the workbook.
+    definitions?: TableDefinitions; // Centralized reusable definitions.
+};
+```
+
+##### **TableDefinitions**
+The `definitions` object allows you to define reusable colors, styles, themes, formats, and types.
+
+##### **Definition**
+```typescript
+export type TableDefinitions = {
+    colors?: Record<string, TableColor | TableReference>;                         // Custom color definitions.
+    styles?: Record<string, TableHeaderStyle | TableReference>;                   // Reusable style definitions.
+    themes?: Record<string, TableTheme | TablePaletteReference | TableReference>; // Theme definitions.
+    formats?: {
+        numeric?: Record<string, TableNumericFormat | TableReference>;            // Custom numeric formats.
+        temporal?: Record<string, TableTemporalFormat | TableReference>;          // Custom temporal formats.
+    };
+    types?: Record<string, TableColumnType | TableReference>;                     // Reusable column type definitions.
+};
+```
+
+##### **Example: TableDefinitions**
+```json
+{
+  "definitions": {
+    "colors": {
+      "warning": "#FFA500",
+      "danger": "#FF0000"
+    },
+    "styles": {
+      "boldHeader": { "fore": "#FFFFFF", "back": "#0000FF", "bold": true }
+    },
+    "themes": {
+      "reportTheme": { "inherits": ["@blue"], "header": { "bold": true } }
+    },
+    "formats": {
+      "numeric": {
+        "currency": { "type": "currency", "symbol": "$", "position": "prefix" }
+      },
+      "temporal": {
+        "shortDate": [
+          { "type": "monthname", "length": "short" },
+          " ",
+          { "type": "day" },
+          ", ",
+          { "type": "year" }
+        ]
+      }
+    },
+    "types": {
+      "currencyColumn": { "kind": "numeric", "format": "@currency" }
+    }
+  }
+}
+```
 ---
