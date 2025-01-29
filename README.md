@@ -1598,9 +1598,9 @@ The `TableUnit` is a base type for all elements in the hierarchy, providing shar
 ##### **Definition**
 ```typescript
 export type TableUnit = {
-    name: string;                                                // Unique identifier for the unit.
-    theme?: TableTheme | TablePaletteReference | TableReference; // Optional visual theme.
-    description?: string;                                        // Optional explanation of the unit's purpose.
+    name: string;                        // Unique identifier for the unit.
+    theme?: TableTheme | TableReference; // Optional visual theme.
+    description?: string;                // Optional explanation of the unit's purpose.
 };
 ```
 
@@ -1722,14 +1722,12 @@ The `definitions` object allows you to define reusable colors, styles, themes, f
 ##### **Definition**
 ```typescript
 export type TableDefinitions = {
-    colors?: Record<string, TableColor | TableReference>;                         // Custom color definitions.
-    styles?: Record<string, TableHeaderStyle | TableReference>;                   // Reusable style definitions.
-    themes?: Record<string, TableTheme | TablePaletteReference | TableReference>; // Theme definitions.
-    formats?: {
-        numeric?: Record<string, TableNumericFormat | TableReference>;            // Custom numeric formats.
-        temporal?: Record<string, TableTemporalFormat | TableReference>;          // Custom temporal formats.
-    };
-    types?: Record<string, TableColumnType | TableReference>;                     // Reusable column type definitions.
+    colors?: Record<string, TableColor | TableReference>;                   // Custom color definitions.
+    styles?: Record<string, TableHeaderStyle | TableReference>;             // Reusable style definitions.
+    themes?: Record<string, TableTheme |  TableReference>;                  // Theme definitions.    
+    numerics?: Record<string, TableNumericFormat | TableReference>;         // Custom numeric formats.
+    temporal?: Record<string, TableTemporalFormat | TableReference>;        // Custom temporal formats.    
+    types?: Record<string, TableColumnType | TableReference>;               // Reusable column type definitions.
 };
 ```
 
@@ -1746,21 +1744,19 @@ export type TableDefinitions = {
     },
     "themes": {
       "reportTheme": { "inherits": ["@blue"], "header": { "bold": true } }
+    },    
+    "numerics": {
+      "currency": { "type": "currency", "symbol": "$", "position": "prefix" }
     },
-    "formats": {
-      "numeric": {
-        "currency": { "type": "currency", "symbol": "$", "position": "prefix" }
-      },
-      "temporal": {
-        "shortDate": [
-          { "type": "monthname", "length": "short" },
-          " ",
-          { "type": "day" },
-          ", ",
-          { "type": "year" }
-        ]
-      }
-    },
+    "temporals": {
+      "shortDate": [
+        { "type": "monthname", "length": "short" },
+        " ",
+        { "type": "day" },
+        ", ",
+        { "type": "year" }
+      ]
+    },    
     "types": {
       "currencyColumn": { "kind": "numeric", "format": "@currency" }
     }
@@ -1835,12 +1831,12 @@ Think of the `SheetBook` as an IR (Intermediate Representation) that abstracts a
 ```typescript
 tablebook.process(
   data: TableBook,
-  onMissing?: MissingReferenceResolvers,
+  resolvers?: TableDefinitionResolver[],
   logger?: TableProcessLogger
 ): TableBookProcessResult<SheetBook>;
 ```
 
-##### **11.3.1 MissingReferenceResolvers**
+##### **11.3.1 TableDefinitionResolver**
 
 Handles missing references for colors, styles, themes, formats, and types during processing. 
 Each resolver mirrors the structure of `TableDefinitions` and returns a `Result`. 
@@ -1848,28 +1844,28 @@ This enables support for prebuilt definitions (e.g., palettes) or custom type de
 
 ##### **Definition**
 ```typescript
-export type MissingReferenceResolver<T> = (name: string, path: ObjectPath) => Result<T, TableBookProcessIssue[]>;
+export type TableResolveReference<T> = (name: string) => Result<T, string>;
 
-export type MissingReferenceResolvers = {
-    colors?: MissingReferenceResolver<TableColor>;
-    styles?: MissingReferenceResolver<TableStyle>;
-    themes?: MissingReferenceResolver<TableTheme>;
+export type TableDefinitionResolver = {
+    colors?: TableResolveReference<TableColor>;
+    styles?: TableResolveReference<TableStyle>;
+    themes?: TableResolveReference<TableTheme>;
     format?: {
-        numeric?: MissingReferenceResolver<TableNumericFormat>;
-        temporal?: MissingReferenceResolver<TableTemporalFormat>;
+        numeric?: TableResolveReference<TableNumericFormat>;
+        temporal?: TableResolveReference<TableTemporalFormat>;
     };
-    types?: MissingReferenceResolver<TableColumnType>;
+    types?: TableResolveReference<TableColumnType>;
 };
 ```
 
 ##### **Example Resolver**
 ```typescript
-const resolvers: MissingReferenceResolvers = {
+const resolvers: TableDefinitionResolver = {
     colors: (name, path) => {
         if (name === 'black')
           return Result.success('#000000'),
         else
-          return Result.failure([{ type: 'processing', message: `Color not found: ${name}`, path }]);
+          return Result.failure(message: `Color not found.`);
     },
     format: {
         numerics: () => Result.success({ type: 'number', integer: { fixed: 2 }, decimal: { fixed: 2 } })

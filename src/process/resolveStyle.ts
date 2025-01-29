@@ -1,14 +1,15 @@
 import { TableBookProcessIssue } from "../issues";
 import { SheetBorder, SheetTitleStyle } from "../sheets";
+import { isReference } from "../tables";
 import { TableColor, TableHeaderStyle, TableReference, TableStyle } from "../tables/types";
 import { ColorObject, ObjectPath, Result } from "../util";
+import { ReferenceRegistry } from "./ReferenceRegistry";
 import { resolveColor } from "./resolveColor";
-import { isReference, ReferenceResolver } from "./resolveReference";
 
 export const resolveStyle = (
     style: TableHeaderStyle | TableReference,
-    colors: ReferenceResolver<TableColor>,
-    styles: ReferenceResolver<TableStyle>,
+    colors: ReferenceRegistry<TableColor>,
+    styles: ReferenceRegistry<TableStyle>,
     path: ObjectPath
 ): Result<SheetTitleStyle, TableBookProcessIssue[]> => {
     let resolved: TableHeaderStyle;
