@@ -3,11 +3,13 @@ import { LineCounter, parseDocument } from 'yaml';
 import { ZodIssue } from 'zod';
 import { GoogleGenerator, GoogleSheet } from './google';
 import { TableBookGenerateIssue, TableBookParseIssue, TableBookProcessIssue, TableBookValidateIssue } from './issues';
-import { MissingReferenceResolvers, processTableBook, TableProcessLogger } from './process';
+import { processTableBook, TableProcessLogger } from './process';
 import { SheetBook, SheetGenerator } from './sheets';
 import { TableBook } from './tables/types';
 import { TableBookValidator } from './tables/validate';
 import { ObjectPath, Result, TextLocation } from './util';
+import { TableDefinitionResolver } from './tables';
+import { StandardPaletteResolver } from './palettes';
 
 /** The result of parsing a TableBook, either successful or containing parse issues. */
 export type TableBookParseResult = Result<any, TableBookParseIssue[]>;
@@ -50,6 +52,20 @@ export const parseJson = (data: string): TableBookParseResult => {
             length: error.length
         })));
 };
+
+
+/**
+ * Options for processing a TableBook into a SheetBook.
+ */
+export type TableBookProcessOptions = {
+    /** Custom resolvers for missing references like themes, colors, or types. */
+    resolvers?: TableDefinitionResolver[];
+    /** Excludes the StandardPaletteResolver if true. Default is false. */
+    omitStandardPalette?: boolean;
+    /** Logger for tracking processing progress. */
+    logger?: TableProcessLogger;
+};
+
 
 /**
  * Parses a YAML string into a TableBook object.
@@ -109,7 +125,7 @@ export const tablebook = Object.freeze({
      * @param format - The format of the data (`json` or `yaml`).
      * @returns A `TableBookParseResult` with the parsed data or parsing issues.
      */
-    parse(data: string, format: 'json' | 'yaml' ): TableBookParseResult {
+    parse(data: string, format: 'json' | 'yaml'): TableBookParseResult {
         return format === 'json' ? parseJson(data) : parseYaml(data);
     },
 
@@ -128,12 +144,16 @@ export const tablebook = Object.freeze({
     /**
      * Converts a TableBook into a SheetBook.
      * @param data - The TableBook to convert.
-     * @param onMissing - Optional resolvers for missing references.
+     * @param resolvers - Optional resolvers for missing references. The StandardPaletteResolver is automatically included
      * @param logger - Optional logger for processing messages.
      * @returns A `TableBookProcessResult` with the converted data or processing issues.
      */
-    process(data: TableBook, onMissing?: MissingReferenceResolvers[], logger?: TableProcessLogger): TableBookProcessResult<SheetBook> {
-        return processTableBook(data, onMissing, logger);
+    process(data: TableBook, options: TableBookProcessOptions = {}): TableBookProcessResult<SheetBook> {
+        let { resolvers, omitStandardPalette, logger } = options;
+
+        resolvers = omitStandardPalette ? resolvers : [StandardPaletteResolver(), ...(resolvers ?? [])];
+
+        return processTableBook(data, resolvers, logger);
     },
 
     /**

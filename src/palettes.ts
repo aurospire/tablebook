@@ -1,5 +1,6 @@
-import { TablePalettes } from "./tables";
-import { ColorHex } from "./util";
+import { TableTheme } from "./tables";
+import { TableDefinitionResolver } from "./tables";
+import { ColorHex, Result } from "./util";
 
 /**
  * Creates a four-shade color palette.
@@ -16,10 +17,17 @@ const palette = (
     lightest: ColorHex
 ): StandardPalette => ({ darkest, dark, main, lightest });
 
+/**
+ * Represents a four-shade color palette used for theming.
+ */
 export type StandardPalette = {
+    /** The darkest shade, typically used for `group.back`. */
     darkest: ColorHex;
+    /** A dark shade, typically used for `header.back`. */
     dark: ColorHex;
+    /** The main shade, typically used for `tab` and `color`. */
     main: ColorHex;
+    /** The lightest shade, typically used for `data.back`. */
     lightest: ColorHex;
 };
 
@@ -71,4 +79,34 @@ export const StandardPalettes = {
     taupe: palette('#483C32', '#6B5D4F', '#857667', '#E5DBD1'), // Neutral brown-gray
     gray: palette('#3B3B3B', '#656565', '#7E7E7E', '#E8E8E8'), // Neutral gray shades
     charcoal: palette('#2A2A2A', '#4D4D4D', '#676767', '#E2E2E2'), // Deep gray tones
-} satisfies Record<typeof TablePalettes[number], StandardPalette>;
+} as const;
+
+/**
+ * Creates a resolver for standard palettes, providing built-in themes based on palette names.
+ * @returns A `TableDefinitionResolver` that resolves themes using standard palettes.
+ * 
+ * Resolves themes like `@blue`, `@red`, etc., by mapping to a predefined `StandardPalette`.
+ * Each resolved theme includes the following mappings:
+ * - `tab`: Uses the palette's `main` shade.
+ * - `group.back`: Uses the palette's `darkest` shade.
+ * - `header.back`: Uses the palette's `dark` shade.
+ * - `data.back`: Uses the palette's `lightest` shade.
+ */
+export const StandardPaletteResolver = (): TableDefinitionResolver => ({
+    themes: (name) => {
+        if (name in StandardPalettes) {
+            const palette: StandardPalette = (StandardPalettes as any)[name];
+
+            const theme: TableTheme = {
+                tab: palette.main,
+                group: { back: palette.darkest },
+                header: { back: palette.dark },
+                data: { back: palette.lightest },
+            };
+
+            return Result.success(theme);
+        } else {
+            return Result.failure(`Standard theme not found.`);
+        }
+    }
+});
