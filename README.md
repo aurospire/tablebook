@@ -1282,6 +1282,7 @@ Represents data with a fixed set of allowed values. Each value is defined as an 
 export type TableEnumType = {
     kind: "enum";
     description?: string;          // A description of the enum's purpose or usage.
+    style?: TableStyle;            // An optional style base that will apply to each enum item.
     items: TableEnumItem[];        // The list of allowed values (enum items).
 };
 ```
@@ -1293,47 +1294,41 @@ An `EnumItem` defines an individual value in the enum and supports customizable 
 export type TableEnumItem = {
     name: string;                             // The value of the enum item.
     description?: string;                     // Optional description for the item.
-    style?: TableStyle | TableReference;      // A complete style for this item.
-    color?: TableColor | TableReference;      // A shortcut for setting the foreground color.
+    style?: TableStyle | TableReference;      // A style for this item - will merge with base style
+    color?: TableColor | TableReference;      // A shortcut for setting the foreground color
 };
 ```
-
 ---
 
-#### **How `style` and `color` Work**
+##### Style Merging
 
-1. **Only `style` is Declared**:  
-   The declared style is applied as-is.  
-   ```json
-   { "name": "Pending", "style": { "fore": "#FFA500", "bold": true } }
-   ```
+The final style for an `EnumItem` is created by merging the three styles:
+```typescript
+(enum.style ?? {}) + (item.style ?? {}) + { fore: item.color }
+```
 
-2. **Only `color` is Declared**:  
-   The `color` is converted into a style with the `fore` property set to the `color` value.  
-   ```json
-   { "name": "Approved", "color": "#00FF00" }
-   ```
-   This becomes:
-   ```json
-   { "name": "Approved", "style": { "fore": "#00FF00" } }
-   ```
 
-3. **Both `style` and `color` Are Declared**:  
-   The `color` overrides the `fore` property of the `style`.  
-   ```json
-   {
-     "name": "Rejected",
-     "style": { "fore": "#FFA500", "bold": true },
-     "color": "#FF0000"
-   }
-   ```
-   This becomes:
-   ```json
-   {
-     "name": "Rejected",
-     "style": { "fore": "#FF0000", "bold": true }
-   }
-   ```
+Example:
+
+if `enum.style` is 
+```typescript
+{ bold: true, fore: '#000000 }
+```
+
+and `item.style` is
+```typescript
+{ italic: true, fore: '#111111 }
+```
+
+and `item.color` is 
+```typescript
+'#222222'
+```
+
+The final `EnumItem` style will be
+```typescript
+{ bold: true, italic: true, fore: '#222222 }
+```
 
 ---
 
@@ -1345,10 +1340,11 @@ This example defines an enum with a description and three items, each with uniqu
 {
   "kind": "enum",
   "description": "Approval status for items in the report.",
+  "style": { "bold": true },
   "items": [
     { "name": "Approved", "description": "Item was accepted.", "color": "#00FF00" },
     { "name": "Pending",  "description": "Item is under review.", "color": "#FFFF00" },
-    { "name": "Rejected", "description": "Item was denied.", "style": { "bold": true }, "color": "#FF0000" }
+    { "name": "Rejected", "description": "Item was denied.", "style": { "italic": true }, "color": "#FF0000" }
   ]
 }
 ```
