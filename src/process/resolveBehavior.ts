@@ -183,13 +183,14 @@ export const resolveEnumBehavior = (
             values: type.items.map(value => typeof value === 'string' ? value : value.name)
         },
         styles: type.items.map((item): SheetConditionalStyle | undefined => {
-            if (typeof item === 'string' || item.style === undefined)
+            console.log(item);
+            if (typeof item === 'string' || (item.style === undefined && item.color === undefined))
                 return undefined;
 
             // Resolve the style
             let style: SheetStyle | undefined = undefined;
 
-            const styleResult = resolveStyle(item.style, colors, styles, path);
+            const styleResult = item.style ? resolveStyle(item.style, colors, styles, path) : Result.success(undefined);
             const colorResult = item.color ? resolveColor(item.color, colors, path) : Result.success(undefined);
 
             if (styleResult.success)
@@ -208,11 +209,12 @@ export const resolveEnumBehavior = (
             else
                 issues.push(...colorResult.info);
 
-            if (style)
+            if (style) {
                 return {
                     rule: { type: 'is', value: item.name },
                     apply: style
                 };
+            }
         }).filter((value): value is SheetConditionalStyle => value !== undefined)
     };
 
