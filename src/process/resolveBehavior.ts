@@ -10,6 +10,7 @@ import { ReferenceRegistry } from "./ReferenceRegistry";
 import { resolveSelector } from "./resolveSelector";
 import { resolveStyle } from "./resolveStyle";
 import { isReference } from "../tables";
+import { mergeStyles } from "./resolveTheme";
 
 const resolveNumericRule = (
     rule: TableNumericType['rule'] & {},
@@ -176,6 +177,17 @@ export const resolveEnumBehavior = (
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
 
+    let baseStyle: SheetStyle | undefined;
+
+    if (type.style) {
+        const baseStyleResult = resolveStyle(type.style, colors, styles, path);
+
+        if (baseStyleResult.success)
+            baseStyle = baseStyleResult.value;
+        else
+            issues.push(...baseStyleResult.info);
+    }
+
     const behavior: SheetBehavior = {
         kind: 'text',
         rule: {
@@ -183,36 +195,35 @@ export const resolveEnumBehavior = (
             values: type.items.map(value => typeof value === 'string' ? value : value.name)
         },
         styles: type.items.map((item): SheetConditionalStyle | undefined => {
-            if (typeof item === 'string' || item.style === undefined)
+            if (typeof item === 'string' || !baseStyle || (item.style === undefined && item.color === undefined))
                 return undefined;
 
             // Resolve the style
-            let style: SheetStyle | undefined = undefined;
+            let style: SheetStyle = { ...baseStyle };
 
-            const styleResult = resolveStyle(item.style, colors, styles, path);
-            const colorResult = item.color ? resolveColor(item.color, colors, path) : Result.success(undefined);
 
-            if (styleResult.success)
-                style = styleResult.value;
+            const styleResult = item.style ? resolveStyle(item.style, colors, styles, path) : Result.success(undefined);
+
+            if (styleResult.success) {
+                if (styleResult.value) style = mergeStyles(style, styleResult.value, false);
+            }
             else
                 issues.push(...styleResult.info);
 
-            if (colorResult.success) {
-                // If a style already exists, change the forecolor to it
-                if (style)
-                    style.fore = colorResult.value;
-                // Otherwise, create a new style
-                else
-                    style = { fore: colorResult.value };
-            }
+
+            const colorResult = item.color ? resolveColor(item.color, colors, path) : Result.success(undefined);
+
+            if (colorResult.success)
+                style.fore = colorResult.value;
             else
                 issues.push(...colorResult.info);
 
-            if (style)
+            if (style) {
                 return {
                     rule: { type: 'is', value: item.name },
                     apply: style
                 };
+            }
         }).filter((value): value is SheetConditionalStyle => value !== undefined)
     };
 
