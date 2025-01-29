@@ -279,6 +279,7 @@ const TableEnumItem: z.ZodType<TableEnumItem> = z.object({
 
 const TableEnumType: z.ZodType<TableEnumType> = z.object({
     kind: z.literal(TableEnumTypeKind),
+    style: TableStyleReference.optional(),
     items: z.array(TableEnumItem)
 }).strict();
 

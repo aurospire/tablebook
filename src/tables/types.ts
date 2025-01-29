@@ -466,6 +466,10 @@ export const TableEnumTypeKind = 'enum';
  */
 export type TableEnumType = {
     kind: typeof TableEnumTypeKind;
+
+    /** Optional base style for Enum items */
+    style?: TableStyle | TableReference;
+
     /** Array of valid values for this enum */
     items: TableEnumItem[];
 };

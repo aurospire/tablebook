@@ -14,31 +14,23 @@ export type SheetTheme = {
     data: SheetStyle;
 };
 
+export const mergeStyles = (base: SheetTitleStyle, override: SheetTitleStyle, full: boolean): SheetTitleStyle => {
+    return {
+        fore: override.fore ?? base.fore,
+        back: override.back ?? base.back,
+        bold: override.bold ?? base.bold,
+        italic: override.italic ?? base.italic,
+        beneath: full ? override.beneath ?? base.beneath : undefined,
+        between: full ? override.between ?? base.between : undefined
+    };
+};
+
 export const mergeThemes = (base: SheetTheme, override: SheetTheme): SheetTheme => {
     return {
         tab: override.tab ?? base.tab,
-        header: {
-            fore: override.header.fore ?? base.header.fore,
-            back: override.header.back ?? base.header.back,
-            bold: override.header.bold ?? base.header.bold,
-            italic: override.header.italic ?? base.header.italic,
-            beneath: override.header.beneath ?? base.header.beneath,
-            between: override.header.between ?? base.header.between
-        },
-        group: {
-            fore: override.group.fore ?? base.group.fore,
-            back: override.group.back ?? base.group.back,
-            bold: override.group.bold ?? base.group.bold,
-            italic: override.group.italic ?? base.group.italic,
-            beneath: override.group.beneath ?? base.group.beneath,
-            between: override.group.between ?? base.group.between
-        },
-        data: {
-            fore: override.data.fore ?? base.data.fore,
-            back: override.data.back ?? base.data.back,
-            bold: override.data.bold ?? base.data.bold,
-            italic: override.data.italic ?? base.data.italic
-        }
+        header: mergeStyles(base.header, override.header, true),
+        group: mergeStyles(base.group, override.group, true),
+        data: mergeStyles(base.data, override.data, false)
     };
 };
 
