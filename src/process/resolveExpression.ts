@@ -74,7 +74,7 @@ export const resolveExpression = (
             break;
         }
         case 'raw': {
-            let result = expression.text;
+            let resolvedTags: [string, SheetSelector][] = [];
 
             if (expression.tags) {
                 for (const [tag, selector] of Object.entries(expression.tags)) {
@@ -83,14 +83,17 @@ export const resolveExpression = (
                     if (selectorResult.success) {
                         const value = selectorResult.value;
 
-                        value.page = value.page === page ? undefined : value.page;                        
+                        value.page = value.page === page ? undefined : value.page;
 
-                        result = result.replace(tag, SheetSelector().toAddress(selectorResult.value));
+                        resolvedTags.push([tag, value]);
                     }
-                    else
+                    else {
                         issues.push(...selectorResult.info);
+                    }
                 }
             }
+
+            resolved = { type: 'raw', text: expression.text, tags: resolvedTags.length ? Object.fromEntries(resolvedTags) : undefined };
         }
     }
 
