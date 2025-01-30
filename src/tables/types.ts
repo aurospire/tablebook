@@ -84,8 +84,6 @@
  * Expressions:
  * - Require full DataSelectors - not simply ColumnSelectors.
  * - Can be compound, negated, function, selector, or raw.
- * - Raw expressions can be used for custom expressions with references to DataSelectors.
- *   - Examples: { type: "raw", text: "SUM(@Revenue) + 10", tags: { "@Revenue": { column: { group: "Revenue", name: "Price" }, row: "all" } } }
  * 
  * Types are documented with JSON Schema patterns:
  * {

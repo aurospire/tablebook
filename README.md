@@ -1045,7 +1045,8 @@ If `Revenue` was column `D` (with a group header), this translates to `SUM(Items
 
 ### **8.7 TableRawExpression**
 
-A `TableRawExpression` represents a custom formula defined as raw text with placeholders (`tags`) that map to specific data selectors. This allows you to write advanced formulas while maintaining the structured column-row relationships of `TableBook`.
+A `TableRawExpression` represents a custom formula defined as raw text with placeholders (`tags`) that map to subexpressions. 
+This allows you to write advanced formulas while maintaining the structured column-row relationships of `TableBook`.
 
 ---
 
@@ -1053,8 +1054,8 @@ A `TableRawExpression` represents a custom formula defined as raw text with plac
 ```typescript
 export type TableRawExpression = {
     type: "raw";
-    text: string;                         // The formula text with placeholders.
-    tags?: Record<string, TableSelector>; // Placeholders mapped to TableSelectors.
+    text: string;                           // The formula text with placeholders.
+    tags?: Record<string, TableExpression>; // Placeholders mapped to TableExpression.
 };
 ```
 
