@@ -1,6 +1,6 @@
 import {
     TableBaseNumericFormat, TableDigitPlaceholder,
-    TableNumericFormat, TableTemporalFormat, 
+    TableNumericFormat, TableTemporalFormat,
     TableTemporalUnitLength, TableTemporalUnitType
 } from "../tables/types";
 
@@ -31,7 +31,7 @@ const processBaseNumber = (format: TableBaseNumericFormat<string>) => {
 
     if (format.commas) {
         result = result.padStart(2, '#');
-        result.slice(0, -2) + ',' + result.slice(-1);
+        result = result.slice(0, -1) + ',' + result.slice(-1);
     }
 
     if (format.decimal)
