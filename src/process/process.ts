@@ -96,9 +96,10 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
                     issues.push(...columnTheme.info);
 
                 let formula;
+
                 if (column.expression) {
                     const result = resolveExpression(column.expression, page.name, group.name, column.name, columns, columnPath);
-
+                    
                     if (!result.success)
                         issues.push(...result.info);
                     else
