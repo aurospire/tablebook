@@ -41,11 +41,11 @@ export const toFormula = (exp: SheetExpression, position: SheetPosition): string
         case 'raw': {
             let result = exp.text;
 
-            if (exp.tags) {
-                for (const [tag, item] of Object.entries(exp.tags)) {
-                    const formula = toFormula(item, position);
+            if (exp.vars) {
+                for (const [name, subexp] of Object.entries(exp.vars)) {
+                    const formula = toFormula(subexp, position);
 
-                    result = result.replaceAll(tag, formula);
+                    result = result.replaceAll(name, formula);
                 }
             }
 

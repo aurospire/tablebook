@@ -76,24 +76,22 @@ export const resolveExpression = (
         case 'raw': {
             let resolvedTags: [string, SheetExpression][] = [];
 
-            if (expression.tags) {
-                for (const [tag, item] of Object.entries(expression.tags)) {                    
+            if (expression.vars) {
+                for (const [name, subexp] of Object.entries(expression.vars)) {
 
-                    const itemResult = resolveExpression(item, page, group, name, columns, path);
-                    
-                    if (itemResult.success) {
-                        resolvedTags.push([tag,  itemResult.value]);
-                    }
-                    else {
-                        issues.push(...itemResult.info);
-                    }
+                    const subexpResult = resolveExpression(subexp, page, group, name, columns, path);
+
+                    if (subexpResult.success)
+                        resolvedTags.push([name, subexpResult.value]);
+                    else
+                        issues.push(...subexpResult.info);
                 }
             }
 
             resolved = {
                 type: 'raw',
                 text: expression.text,
-                tags: resolvedTags.length ? Object.fromEntries(resolvedTags) : undefined
+                vars: resolvedTags.length ? Object.fromEntries(resolvedTags) : undefined
             };
         }
     }

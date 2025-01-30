@@ -268,7 +268,7 @@ export type TableNegatedExpression<Selector> = {
     on: TableExpression<Selector>;
 };
 
-/** Type identifier for function expressions */
+/** Type identifier for function extagspressions */
 export const TableFunctionExpressionType = 'function';
 /** Expression that applies a named function to a list of arguments */
 export type TableFunctionExpression<Selector> = {
@@ -296,7 +296,7 @@ export const TableRawExpressionType = 'raw';
 export type TableRawExpression<Selector> = {
     type: typeof TableRawExpressionType,
     text: string,
-    tags?: Record<string, TableExpression<Selector>>;
+    vars?: Record<string, TableExpression<Selector>>;
 };
 
 /** All possible expression types for data computation and validation */
