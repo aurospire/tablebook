@@ -108,8 +108,10 @@ export class GoogleGenerator implements SheetGenerator {
                                 r = r.setDataValidation(sheetId, columnRange, column.behavior.rule, true);
 
                             if (column.behavior?.styles)
-                                for (const format of column.behavior.styles)
-                                    r = r.setConditionalFormat(sheetId, columnRange, format);
+                                for (let s = column.behavior.styles.length - 1; s >= 0; s--) {
+                                    const style = column.behavior.styles[s];
+                                    r = r.setConditionalFormat(sheetId, columnRange, style);
+                                }
 
                             if (column.titleStyle?.beneath)
                                 r = r.setBorder(sheetId, SheetRange.cell(index, rowOffset), { bottom: column.titleStyle.beneath });
