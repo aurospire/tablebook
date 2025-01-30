@@ -84,8 +84,6 @@
  * Expressions:
  * - Require full DataSelectors - not simply ColumnSelectors.
  * - Can be compound, negated, function, selector, or raw.
- * - Raw expressions can be used for custom expressions with references to DataSelectors.
- *   - Examples: { type: "raw", text: "SUM(@Revenue) + 10", tags: { "@Revenue": { column: { group: "Revenue", name: "Price" }, row: "all" } } }
  * 
  * Types are documented with JSON Schema patterns:
  * {
@@ -270,7 +268,7 @@ export type TableNegatedExpression<Selector> = {
     on: TableExpression<Selector>;
 };
 
-/** Type identifier for function expressions */
+/** Type identifier for function extagspressions */
 export const TableFunctionExpressionType = 'function';
 /** Expression that applies a named function to a list of arguments */
 export type TableFunctionExpression<Selector> = {
@@ -292,10 +290,14 @@ export const TableLiteralExpressionType = 'literal';
 /** Direct value expression */
 export type TableLiteralExpression = { type: typeof TableLiteralExpressionType, of: string | number | boolean; };
 
-/** Type identifier for flat expressions */
-export const TableRawExpressionType = 'raw';
-/* Flattened Expression, tags are replaced in the expression text */
-export type TableRawExpression<Selector> = { type: typeof TableRawExpressionType, text: string, tags?: Record<string, Selector>; };
+/** Type identifier for template expressions */
+export const TableTemplateExpressionType = 'template';
+/* Template Expression, tags are replaced in the expression text */
+export type TableTemplateExpression<Selector> = {
+    type: typeof TableTemplateExpressionType,
+    text: string,
+    vars?: Record<string, TableExpression<Selector>>;
+};
 
 /** All possible expression types for data computation and validation */
 export type TableExpression<Selector> =
@@ -303,7 +305,7 @@ export type TableExpression<Selector> =
     | TableNegatedExpression<Selector>
     | TableFunctionExpression<Selector>
     | TableSelectorExpression<Selector>
-    | TableRawExpression<Selector>
+    | TableTemplateExpression<Selector>
     | TableLiteralExpression
     ;
 

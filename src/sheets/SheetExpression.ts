@@ -38,14 +38,14 @@ export const toFormula = (exp: SheetExpression, position: SheetPosition): string
             return `-(${toFormula(exp.on, position)})`;
         case 'selector':
             return SheetSelector().toAddress(exp.from, position);
-        case 'raw': {
+        case 'template': {
             let result = exp.text;
-            
-            if (exp.tags) {
-                for (const [tag, selector] of Object.entries(exp.tags)) {
-                    const address = SheetSelector().toAddress(selector, position);
 
-                    result = result.replaceAll(tag, address);
+            if (exp.vars) {
+                for (const [name, subexp] of Object.entries(exp.vars)) {
+                    const formula = toFormula(subexp, position);
+
+                    result = result.replaceAll(name, formula);
                 }
             }
 

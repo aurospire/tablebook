@@ -1,5 +1,5 @@
 import { TableNumericFormat, TableTemporalFormat } from "../tables/types";
-import { SheetKind } from "./SheetKind";
+import { SheetKind } from "./SheetType";
 import { SheetConditionalStyle, SheetRule } from "./SheetRule";
 
 export type SheetBehavior = {

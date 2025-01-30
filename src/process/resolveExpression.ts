@@ -1,5 +1,5 @@
 import { TableBookProcessIssue } from "../issues";
-import { SheetSelector } from "../sheets";
+import { SheetExpression, SheetSelector } from "../sheets";
 import { TableExpression, TableSelector } from "../tables/types";
 import { ObjectPath, Result } from "../util";
 import { ResolvedColumn } from "./resolveColumns";
@@ -73,27 +73,26 @@ export const resolveExpression = (
 
             break;
         }
-        case 'raw': {
-            let resolvedTags: [string, SheetSelector][] = [];
+        case 'template': {
+            let resolvedTags: [string, SheetExpression][] = [];
 
-            if (expression.tags) {
-                for (const [tag, selector] of Object.entries(expression.tags)) {
-                    const selectorResult = resolveSelector(selector, columns, page, group, name, path);
+            if (expression.vars) {
+                for (const [name, subexp] of Object.entries(expression.vars)) {
 
-                    if (selectorResult.success) {
-                        const value = selectorResult.value;
+                    const subexpResult = resolveExpression(subexp, page, group, name, columns, path);
 
-                        value.page = value.page === page ? undefined : value.page;
-
-                        resolvedTags.push([tag, value]);
-                    }
-                    else {
-                        issues.push(...selectorResult.info);
-                    }
+                    if (subexpResult.success)
+                        resolvedTags.push([name, subexpResult.value]);
+                    else
+                        issues.push(...subexpResult.info);
                 }
             }
 
-            resolved = { type: 'raw', text: expression.text, tags: resolvedTags.length ? Object.fromEntries(resolvedTags) : undefined };
+            resolved = {
+                type: 'template',
+                text: expression.text,
+                vars: resolvedTags.length ? Object.fromEntries(resolvedTags) : undefined
+            };
         }
     }
 

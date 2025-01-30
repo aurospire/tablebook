@@ -1,7 +1,7 @@
 import { SheetData } from "../sheets/SheetData";
 import { SheetValue } from "../sheets/SheetContent";
 import { toFormula } from "../sheets/SheetExpression";
-import { SheetKind, toPattern } from "../sheets/SheetKind";
+import { SheetKind, toPattern } from "../sheets/SheetType";
 import { SheetPosition } from "../sheets/SheetPosition";
 import { SheetAlign, SheetWrap } from "../sheets/SheetStyle";
 import { toWeightedColorStyle } from "./GoogleStyles";
