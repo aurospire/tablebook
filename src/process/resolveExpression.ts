@@ -73,7 +73,7 @@ export const resolveExpression = (
 
             break;
         }
-        case 'raw': {
+        case 'template': {
             let resolvedTags: [string, SheetExpression][] = [];
 
             if (expression.vars) {
@@ -89,7 +89,7 @@ export const resolveExpression = (
             }
 
             resolved = {
-                type: 'raw',
+                type: 'template',
                 text: expression.text,
                 vars: resolvedTags.length ? Object.fromEntries(resolvedTags) : undefined
             };

@@ -152,7 +152,7 @@ async function main() {
    - [TableCompoundExpression](#83-tablecompoundexpression)
    - [TableNegatedExpression](#84-tablenegatedexpression)
    - [TableFunctionExpression](#85-tablefunctionexpression)
-   - [TableRawExpression](#86-tablerawexpression)
+   - [TableTemplateExpression](#86-tabletemplateexpression)
 9. [TableColumnType](#9-tablecolumntype)
    - [Text Type](#91-text-type)
    - [Enum Type](#92-enum-type)
@@ -879,7 +879,7 @@ export type TableExpression =
   | TableCompoundExpression
   | TableNegatedExpression
   | TableFunctionExpression
-  | TableRawExpression
+  | TableTemplateExpression
   ;
 ```
 
@@ -1043,19 +1043,19 @@ If `Revenue` was column `D` (with a group header), this translates to `SUM(Items
 
 ---
 
-### **8.7 TableRawExpression**
+### **8.7 TableTemplateExpression**
 
-A `TableRawExpression` represents a custom formula defined as raw text with placeholders (`tags`) that map to subexpressions. 
+A `TableTemplateExpression` represents a custom formula defined as literal text with placeholders (`vars`) that map to subexpressions. 
 This allows you to write advanced formulas while maintaining the structured column-row relationships of `TableBook`.
 
 ---
 
 #### **Definition**
 ```typescript
-export type TableRawExpression = {
-    type: "raw";
+export type TableTemplateExpression = {
+    type: "template";
     text: string;                           // The formula text with placeholders.
-    tags?: Record<string, TableExpression>; // Placeholders mapped to TableExpression.
+    vars?: Record<string, TableExpression>; // Placeholders mapped to TableExpression.
 };
 ```
 
@@ -1077,10 +1077,10 @@ export type TableRawExpression = {
 
 #### **Example**
 
-##### **Raw Expression**
+##### **Template Expression**
 ```typescript
-const rawExpression: TableRawExpression = {
-  type: "raw",
+const templateExpression: TableTemplateExpression = {
+  type: "template",
   text: "SUM(@Revenue) + @Constant",
   tags: {
     "@Revenue": {

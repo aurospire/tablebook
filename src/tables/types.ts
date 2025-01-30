@@ -290,11 +290,11 @@ export const TableLiteralExpressionType = 'literal';
 /** Direct value expression */
 export type TableLiteralExpression = { type: typeof TableLiteralExpressionType, of: string | number | boolean; };
 
-/** Type identifier for flat expressions */
-export const TableRawExpressionType = 'raw';
-/* Flattened Expression, tags are replaced in the expression text */
-export type TableRawExpression<Selector> = {
-    type: typeof TableRawExpressionType,
+/** Type identifier for template expressions */
+export const TableTemplateExpressionType = 'template';
+/* Template Expression, tags are replaced in the expression text */
+export type TableTemplateExpression<Selector> = {
+    type: typeof TableTemplateExpressionType,
     text: string,
     vars?: Record<string, TableExpression<Selector>>;
 };
@@ -305,7 +305,7 @@ export type TableExpression<Selector> =
     | TableNegatedExpression<Selector>
     | TableFunctionExpression<Selector>
     | TableSelectorExpression<Selector>
-    | TableRawExpression<Selector>
+    | TableTemplateExpression<Selector>
     | TableLiteralExpression
     ;
 

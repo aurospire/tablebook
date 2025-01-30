@@ -38,8 +38,8 @@ import {
     TableRangeOperators,
     TableRangeRule,
     TableRangeSelector,
-    TableRawExpression,
-    TableRawExpressionType,
+    TableTemplateExpression,
+    TableTemplateExpressionType,
     TableReference, TableReferenceRegex,
     TableRowSelector,
     TableSelector,
@@ -163,8 +163,8 @@ const TableSelectorExpression: z.ZodType<TableSelectorExpression<TableSelector>>
     from: TableDataSelector
 }).strict();
 
-const TableRawExpression: z.ZodType<TableRawExpression<TableSelector>> = z.object({
-    type: z.literal(TableRawExpressionType),
+const TableTemplateExpression: z.ZodType<TableTemplateExpression<TableSelector>> = z.object({
+    type: z.literal(TableTemplateExpressionType),
     text: z.string(),
     vars: z.record(z.string(), z.lazy(() => TableExpression)).optional()
 }).strict();
@@ -175,7 +175,7 @@ const TableExpression: z.ZodType<TableExpression<TableSelector>> = z.union([
     TableFunctionExpression,
     TableLiteralExpression,
     TableSelectorExpression,
-    TableRawExpression
+    TableTemplateExpression
 ]);
 
 /* Data Rules */
