@@ -285,17 +285,17 @@ export type TableSelectorExpression<Selector> = {
     from: Selector;
 };
 
-/** Type identifier for literal expressions */
+/** Type identifier for template expressions */
 export const TableLiteralExpressionType = 'literal';
-/** Direct value expression */
+/** Template expression */
 export type TableLiteralExpression = { type: typeof TableLiteralExpressionType, of: string | number | boolean; };
 
 /** Type identifier for template expressions */
 export const TableTemplateExpressionType = 'template';
-/* Template Expression, tags are replaced in the expression text */
+/** Expression that formats a string using placeholders replaced by variables */
 export type TableTemplateExpression<Selector> = {
-    type: typeof TableTemplateExpressionType,
-    text: string,
+    type: typeof TableTemplateExpressionType;
+    text: string;
     vars?: Record<string, TableExpression<Selector>>;
 };
 
