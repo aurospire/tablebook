@@ -590,32 +590,6 @@ export type TableStyle = {
     italic?: boolean;                   // Whether the text is italicized.
 };
 ```
-
----
-
-### **Key Concepts**
-- **Colors**: Use `TableColor` for fixed hexadecimal color codes or `TableReference` to point to reusable color definitions.
-- **Usage**: `TableStyle` is applied directly to specific schema elements where visual customization is needed. It does not cascade or inherit from parent elements.
-
----
-
-### **Example**
-
-#### **Text Example**
-```typescript
-const style: TableStyle = {
-  fore: "#FFFFFF",
-  back: "#0000FF",
-  bold: true
-};
-```
-
----
-
-### **Key Takeaways**
-- Use `TableStyle` for direct text and background styling.
-- Combine fixed colors (`TableColor`) with reusable references (`TableReference`) for flexibility.
-
 ---
 ---
 
