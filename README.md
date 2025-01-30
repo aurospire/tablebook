@@ -147,12 +147,12 @@ async function main() {
 6. [TableHeaderStyle](#6-tableheaderstyle)
 7. [TableTheme](#7-tabletheme)
 8. [Expressions](#8-expressions)
-   - [TableLiteralExpression](#81-tableliteralexpression)
-   - [TableSelectorExpression](#82-tableselectorexpression)
-   - [TableCompoundExpression](#83-tablecompoundexpression)
-   - [TableNegatedExpression](#84-tablenegatedexpression)
-   - [TableFunctionExpression](#85-tablefunctionexpression)
-   - [TableTemplateExpression](#86-tabletemplateexpression)
+   - [TableLiteralExpression](#82-tableliteralexpression)
+   - [TableSelectorExpression](#83-tableselectorexpression)
+   - [TableCompoundExpression](#84-tablecompoundexpression)
+   - [TableNegatedExpression](#85-tablenegatedexpression)
+   - [TableFunctionExpression](#86-tablefunctionexpression)
+   - [TableTemplateExpression](#87-tabletemplateexpression)
 9. [TableColumnType](#9-tablecolumntype)
    - [Text Type](#91-text-type)
    - [Enum Type](#92-enum-type)
@@ -1043,88 +1043,52 @@ If `Revenue` was column `D` (with a group header), this translates to `SUM(Items
 
 ---
 
-### **8.7 TableTemplateExpression**
+### **8.7 TableTemplateExpression**  
 
-A `TableTemplateExpression` represents a custom formula defined as literal text with placeholders (`vars`) that map to subexpressions. 
-This allows you to write advanced formulas while maintaining the structured column-row relationships of `TableBook`.
+A `TableTemplateExpression` represents a formula written as literal text with placeholders (`vars`) that map to subexpressions. This enables dynamic, structured computation while preserving the relationships between table data.
 
----
+#### **Definition**  
 
-#### **Definition**
 ```typescript
 export type TableTemplateExpression = {
     type: "template";
-    text: string;                           // The formula text with placeholders.
-    vars?: Record<string, TableExpression>; // Placeholders mapped to TableExpression.
+    text: string;                           // Formula text containing placeholders.
+    vars?: Record<string, TableExpression>; // Placeholders mapped to expressions.
 };
 ```
 
----
+#### **Example**  
 
-#### **How It Works**
-
-1. **Placeholders (`text` field)**:  
-   - The formula is written as a string, with placeholders (e.g., `@Revenue`) representing data points.
-   - During spreadsheet generation, each placeholder is replaced with the corresponding cell or range address derived from its selector.
-
-2. **Selectors (`tags` object)**:  
-   - Each placeholder in the `text` field maps to a `TableSelector`.
-   - The `TableSelector` specifies which column and rows to reference.  
-   - For example:
-     - `{ name: "Revenue", rows: "all" }` translates to `$C3:$C` if `Revenue` corresponds to column `C` with group headers present.
-
----
-
-#### **Example**
-
-##### **Template Expression**
 ```typescript
 const templateExpression: TableTemplateExpression = {
-  type: "template",
-  text: "SUM(@Revenue) + @Constant",
-  tags: {
-    "@Revenue": {
-      column: { name: "Revenue" },
-      rows: "all"
-    },
-    "@Constant": {
-      column: { name: "Constant" },
-      rows: "$2"
+  type: 'template',
+  text: 'COUNTIF(@Revenue, ">=50")',
+  vars: {
+    '@Revenue': {
+      type: 'selector',
+      from: { column: { page: 'Items', group: 'Info', name: 'Revenue' }, rows: 'all' }
     }
   }
 };
 ```
 
-##### **Explanation**
-1. **Placeholders (`@Revenue`, `@Constant`)**:
-   - `@Revenue` is mapped to all rows in the `Revenue` column.
-   - `@Constant` is mapped to a specific absolute row (`$2`) in the `Constant` column.
-
-2. **Result During Generation**:
-   - The placeholders are replaced based on `TableSelector` translations:
-     - `@Revenue` → `$C3:$C` (column `C`, rows starting at `3` due to a group header).
-     - `@Constant` → `$D$4` (column `D`, absolute row `4`, no group header).
-
-3. **Final Formula**:
-   ```plaintext
-   SUM($C3:$C) + $D$4
-   ```
+If `Revenue` was column `D` (with a group header), this translates to:  
+`COUNTIF(Items!$D3:$D, ">=50")`.
 
 ---
 
-##### **Best Practices for Placeholders**
-- Use descriptive and unique tags (e.g., `@Revenue` instead of generic names like `@Data`) to avoid conflicts or misinterpretation.
-- Ensure that placeholders align with your formula's logic and structure.
+### **How It Works**  
 
----
+1. **Template (`text` field)**:  
+   - The `text` field is a formula string that includes placeholders.  
+   - A placeholder can be any string, but it must exactly match a key in `vars`.
 
-### **8.8 Key Takeaways**
+2. **Variables (`vars` object)**:  
+   - `vars` maps placeholders to expressions.  
+   - Every placeholder in `text` **must** have a corresponding key in `vars`.  
+   - The placeholders do **not** have to follow any specific naming convention (`@Revenue` is just one example).  
 
-1. **Expressions Are Structured**: They use `TableSelectors` instead of traditional spreadsheet cells/ranges, ensuring clear column-based references.
-2. **Formula Translation**: Each expression type maps directly to a spreadsheet formula during generation.
-3. **Operators**: Support for logical comparisons and arithmetic/merge operations provides flexibility.
-4. **Literal and Selector Expressions**: Use these for simple values or direct column-row references.
-5. **Compound and Function Expressions**: Enable complex calculations by combining or processing data.
+This allows for dynamic formula generation while ensuring that every placeholder is backed by a structured table expression.
 
 ---
 ---
