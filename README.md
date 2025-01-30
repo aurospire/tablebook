@@ -1810,11 +1810,9 @@ export type TableResolveReference<T> = (name: string) => Result<T, string>;
 export type TableDefinitionResolver = {
     colors?: TableResolveReference<TableColor>;
     styles?: TableResolveReference<TableStyle>;
-    themes?: TableResolveReference<TableTheme>;
-    format?: {
-        numeric?: TableResolveReference<TableNumericFormat>;
-        temporal?: TableResolveReference<TableTemporalFormat>;
-    };
+    themes?: TableResolveReference<TableTheme>;    
+    numerics?: TableResolveReference<TableNumericFormat>;
+    temporals?: TableResolveReference<TableTemporalFormat>;    
     types?: TableResolveReference<TableColumnType>;
 };
 ```
