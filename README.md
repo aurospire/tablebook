@@ -64,31 +64,30 @@ import { tablebook } from 'tablebook';
 async function main() {
   // Sample TableBook JSON (normally loaded from a file or API)
   const tableBookJson = `
-  {
-    "name": "Sales Report",
-    "pages": [
-      {
-        "name": "Summary",
-        "groups": [
-          {
-            "name": "Revenue",
-            "columns": [
-              {
-                "name": "Region",
-                "type": { "kind": "text" }
-              },
-              {
-                "name": "Sales",
-                "type": { "kind": "numeric", "format": { "type": "currency", "symbol": "$" } }
-              }
-            ]
-          }
-        ],
-        "rows": 100
-      }
-    ]
-  }
-  `;
+{
+  "name": "Sales Report",
+  "pages": [
+    {
+      "name": "Summary",
+      "rows": 100,
+      "groups": [
+        {
+          "name": "Revenue",
+          "columns": [
+            {
+              "name": "Region",
+              "type": { "kind": "text" }
+            },
+            {
+              "name": "Sales",
+              "type": { "kind": "numeric", "format": { "type": "currency", "symbol": "$" } }
+            }
+          ]
+        }
+      ]
+    }
+  ];
+}`;
 
   // 1. Parse JSON into a TableBook object
   const parseResult = tablebook.parse('json', tableBookJson);
@@ -166,7 +165,6 @@ async function main() {
 9. [Result](#9-result)
 10. [TableBookIssue](#10-tablebookissue)   
 11. [tablebook Functions](#11-tablebook-functions)
----
 ---
 
 ## **1. TableSelector**
@@ -288,9 +286,9 @@ The structure of a table depends on whether it has **one group** or **multiple g
 
 ---
 
-### **1.3 Translating Selectors to A1 Notation**
+#### **1.3 Translating Selectors to A1 Notation**
 
-#### **Translation Rules**
+##### **Translation Rules**
 1. **Columns**:
    - Columns are mapped to spreadsheet letters (e.g., `"Sales"` → `A`).
 2. **Rows**:
@@ -298,9 +296,9 @@ The structure of a table depends on whether it has **one group** or **multiple g
      - Row 2 in A1 for single groups.
      - Row 3 in A1 for multiple groups.
 
-#### **Examples**
+##### **Examples**
 
-##### **1. Column Selector with All Rows**
+###### **1. Column Selector with All Rows**
 ```typescript
 { column: { name: "Sales" }, rows: "all" }
 ```
@@ -311,7 +309,7 @@ The structure of a table depends on whether it has **one group** or **multiple g
 
 ---
 
-##### **2. Fully Qualified Selector with Absolute Row**
+###### **2. Fully Qualified Selector with Absolute Row**
 ```typescript
 {
   column: { page: "Summary", group: "Revenue", name: "Sales" },
@@ -323,7 +321,7 @@ The structure of a table depends on whether it has **one group** or **multiple g
 
 ---
 
-##### **3. Relative Row Offset**
+###### **3. Relative Row Offset**
 ```typescript
 {
   column: { name: "Profit" },
@@ -335,7 +333,7 @@ The structure of a table depends on whether it has **one group** or **multiple g
 
 ---
 
-##### **4. Range of Rows**
+###### **4. Range of Rows**
 ```typescript
 {
   column: { name: "Sales" },
@@ -349,7 +347,7 @@ The structure of a table depends on whether it has **one group** or **multiple g
 
 ---
 
-##### **5. Self-Selector**
+###### **5. Self-Selector**
 ```typescript
 "self"
 ```
@@ -358,7 +356,7 @@ The structure of a table depends on whether it has **one group** or **multiple g
 
 ---
 
-### **1.4 Key Takeaways**
+#### **1.4 Key Takeaways**
 
 1. **Column Selection**:
    - `{ name: "Sales" }` → Same group and page.
@@ -428,7 +426,7 @@ The `TableHeaderStyle` type extends `TableStyle` to include border and partition
 
 ---
 
-### **4.1 Definition**
+#### **4.1 Definition**
 
 ```typescript
 export type TableHeaderStyle = TableStyle & {
@@ -439,11 +437,11 @@ export type TableHeaderStyle = TableStyle & {
 
 ---
 
-### **4.2 TableBorder**
+#### **4.2 TableBorder**
 
 The `TableBorder` type defines the appearance of a border.
 
-#### **Definition**
+##### **Definition**
 ```typescript
 export type TableBorder = {
     type: TableBorderType;              // The line style of the border.
@@ -451,7 +449,7 @@ export type TableBorder = {
 };
 ```
 
-#### **TableBorderType**
+##### **TableBorderType**
 Represents the available styles for border lines:
 ```typescript
 export type TableBorderType =
@@ -462,11 +460,11 @@ export type TableBorderType =
 ```
 ---
 
-### **4.3 TablePartition**
+#### **4.3 TablePartition**
 
 The `TablePartition` type groups together border definitions for beneath and between partitions, allowing granular control of the appearance of header styles.
 
-#### **Definition**
+##### **Definition**
 ```typescript
 export type TablePartition = {
     beneath?: TableBorder; // Border beneath the header.
@@ -511,7 +509,7 @@ export type TableTheme = {
 
 ---
 
-### **5.2 Flow from Book → Page → Group → Column**
+#### **5.2 Flow from Book → Page → Group → Column**
 
 Themes can be defined at any level of the `TableBook`. When a level has no theme, it simply keeps the one from above. If a level **does** define or reference a theme, that new theme merges its properties on top of whatever came before it. For example:
 
@@ -526,7 +524,7 @@ Themes can be defined at any level of the `TableBook`. When a level has no theme
 
 ---
 
-### **5.3 Built-In Palettes**
+#### **5.3 Built-In Palettes**
 
 `TableBook` includes a set of prebuilt palettes, each with four shades:
 
@@ -586,7 +584,7 @@ Best is to define it globally in the Book theme.
 
 ---
 
-### **5.4 Example: Setting a Book Theme**
+#### **5.4 Example: Setting a Book Theme**
 
 Below is an example of a **book-level** theme referencing the built-in **blue** palette. It then explicitly sets white, bold text for `group` and `header`:
 
@@ -630,7 +628,7 @@ Below is an example of a **book-level** theme referencing the built-in **blue** 
 
 ---
 
-### **5.5 Default Book Theme**
+#### **5.5 Default Book Theme**
 
 A good starting theme for your TableBook allows you to use different palettes for each page while ensuring clarity and consistency. The following example sets a clean, bold look for group and header text, with clear dividing lines between groups and columns.
 
@@ -655,7 +653,7 @@ A good starting theme for your TableBook allows you to use different palettes fo
 
 ---
 
-### **5.6 Key Points**
+#### **5.6 Key Points**
 
 1. **Property-by-Property Merging**  
    Multiple themes in `inherits` apply one after the other. Each level (book, page, group, column) can refine or leave properties as-is.
@@ -688,11 +686,11 @@ export type TableExpression =
 
 ---
 
-### **6.2 TableLiteralExpression**
+#### **6.2 TableLiteralExpression**
 
 The simplest type of expression, a `TableLiteralExpression`, represents a fixed value (number, string, or boolean).
 
-#### **Definition**
+##### **Definition**
 ```typescript
 export type TableLiteralExpression = {
     type: "literal";
@@ -700,7 +698,7 @@ export type TableLiteralExpression = {
 };
 ```
 
-#### **Example**
+##### **Example**
 ```typescript
 const literalExpression: TableLiteralExpression = {
   type: "literal",
@@ -712,11 +710,11 @@ This translates to the literal value `42` in a formula.
 
 ---
 
-### **6.3 TableSelectorExpression**
+#### **6.3 TableSelectorExpression**
 
 A `TableSelectorExpression` references data in a specific column and row. Instead of traditional spreadsheet ranges, it uses a `TableSelector` to target the data.
 
-#### **Definition**
+##### **Definition**
 ```typescript
 export type TableSelectorExpression = {
     type: "selector";
@@ -724,7 +722,7 @@ export type TableSelectorExpression = {
 };
 ```
 
-#### **Example**
+##### **Example**
 ```typescript
 const selectorExpression: TableSelectorExpression = {
   type: "selector",
@@ -739,11 +737,11 @@ This references the `Revenue` column, specifically the 5th row - or 6 in A1 addr
 
 ---
 
-### **6.4 TableCompoundExpression**
+#### **6.4 TableCompoundExpression**
 
 A `TableCompoundExpression` combines multiple expressions using an operator. It supports both comparison and arithmetic/merge operators.
 
-#### **Definition**
+##### **Definition**
 ```typescript
 export type TableCompoundExpression = {
     type: "compound";
@@ -752,7 +750,7 @@ export type TableCompoundExpression = {
 };
 ```
 
-#### **Available Operators**
+##### **Available Operators**
 
 **Comparison Operators**: Used for logical comparisons.
 | Operator | Description       |
@@ -774,7 +772,7 @@ export type TableCompoundExpression = {
 | `^`      | Exponentiation     |
 | `&`      | String concatenation |
 
-#### **Example**
+##### **Example**
 ```typescript
 const compoundExpression: TableCompoundExpression = {
   type: "compound",
@@ -790,11 +788,11 @@ If `Revenue` was column `C` (with no group header), this translates to `=$C$2 + 
 
 ---
 
-### **6.5 TableNegatedExpression**
+#### **6.5 TableNegatedExpression**
 
 A `TableNegatedExpression` inverts the result of another expression.
 
-#### **Definition**
+##### **Definition**
 ```typescript
 export type TableNegatedExpression = {
     type: "negated";
@@ -802,7 +800,7 @@ export type TableNegatedExpression = {
 };
 ```
 
-#### **Example**
+##### **Example**
 ```typescript
 const negatedExpression: TableNegatedExpression = {
   type: "negated",
@@ -817,11 +815,11 @@ If `Profit` was column `B` (with no group header), this corresponds to `=-($B2)`
 
 ---
 
-### **6.6 TableFunctionExpression**
+#### **6.6 TableFunctionExpression**
 
 A `TableFunctionExpression` applies a named function to a list of arguments, which can be other expressions.
 
-#### **Definition**
+##### **Definition**
 ```typescript
 export type TableFunctionExpression = {
     type: "function";
@@ -830,7 +828,7 @@ export type TableFunctionExpression = {
 };
 ```
 
-#### **Example**
+##### **Example**
 ```typescript
 const functionExpression: TableFunctionExpression = {
   type: "function",
@@ -846,11 +844,11 @@ If `Revenue` was column `D` (with a group header), this translates to `SUM(Items
 
 ---
 
-### **6.7 TableTemplateExpression**  
+#### **6.7 TableTemplateExpression**  
 
 A `TableTemplateExpression` represents a formula written as literal text with placeholders (`vars`) that map to subexpressions. This enables dynamic, structured computation while preserving the relationships between table data.
 
-#### **Definition**  
+##### **Definition**  
 
 ```typescript
 export type TableTemplateExpression = {
@@ -860,7 +858,7 @@ export type TableTemplateExpression = {
 };
 ```
 
-#### **Example**  
+##### **Example**  
 
 ```typescript
 const templateExpression: TableTemplateExpression = {
@@ -880,7 +878,7 @@ If `Revenue` was column `D` (with a group header), this translates to:
 
 ---
 
-### **How It Works**  
+#### **How It Works**  
 
 1. **Template (`text` field)**:  
    - The `text` field is a formula string that includes placeholders.  
@@ -908,11 +906,11 @@ The `TableColumnType` defines the type of data in a column. It determines how da
 
 ---
 
-### **7.1 TableConditionalStyle**
+#### **7.1 TableConditionalStyle**
 
 The `TableConditionalStyle` type applies styling to data when a specific rule or condition is met. It is used in conjunction with rules for text, numeric, and temporal types.
 
-#### **Definition**
+##### **Definition**
 ```typescript
 export type TableConditionalStyle<Rule> = {
     rule: Rule;                              // The rule to trigger this style.
@@ -922,13 +920,13 @@ export type TableConditionalStyle<Rule> = {
 
 ---
 
-### **7.2 Rules Overview**
+#### **7.2 Rules Overview**
 
 Rules (`TableRules`) define how values in a column are validated. Each type (text, numeric, temporal) has its own rule system, but all support custom rules using expressions.
 
 ---
 
-#### **7.2.1 TableCustomRule**
+##### **7.2.1 TableCustomRule**
 
 A `TableCustomRule` defines advanced validation using expressions.
 
@@ -940,7 +938,7 @@ export type TableCustomRule = {
 ```
 ---
 
-#### **7.2.2 Text Rules** (`TableTextRule`)
+##### **7.2.2 Text Rules** (`TableTextRule`)
 
 Text rules validate string values. 
 
@@ -950,7 +948,7 @@ export type TableTextRule =
     | TableCustomRule;
 ```
 
-##### **Match Rules**
+###### **Match Rules**
 ```typescript
 export type TableMatchRule = {
     type: "is" | "contains" | "begins" | "ends";
@@ -965,7 +963,7 @@ const rule: TableTextRule = { type: "contains", value: "Important" };
 
 ---
 
-#### **7.2.3 Numeric Rules** (`TableNumericRule`)
+##### **7.2.3 Numeric Rules** (`TableNumericRule`)
 
 Numeric rules validate number values.
 
@@ -976,7 +974,7 @@ export type TableNumericRule =
     | TableCustomRule;
 ```
 
-##### **Comparison Rules**
+###### **Comparison Rules**
 ```typescript
 export type TableComparisonRule<T> = {
     type: "=" | "<>" | ">" | "<" | ">=" | "<=";
@@ -984,7 +982,7 @@ export type TableComparisonRule<T> = {
 };
 ```
 
-##### **Range Rules**
+###### **Range Rules**
 ```typescript
 export type TableRangeRule<T> = {
     type: "between" | "outside";
@@ -1001,7 +999,7 @@ const rule2: TableNumericRule = { type: "between", low: 5, high: 20 };
 
 ---
 
-#### **7.2.4 Temporal Rules** (`TableTemporalRule`)
+##### **7.2.4 Temporal Rules** (`TableTemporalRule`)
 
 Temporal rules validate date and time values.
 
@@ -1012,7 +1010,7 @@ export type TableTemporalRule =
     | TableCustomRule;
 ```
 
-##### **Temporal String**
+###### **Temporal String**
 Dates and times must follow ISO format (e.g., `YYYY-MM-DD`).
 
 **Example:**
@@ -1026,7 +1024,7 @@ const rule: TableTemporalRule = {
 
 ---
 
-### **7.3 Text Type** (`TableTextType`)
+#### **7.3 Text Type** (`TableTextType`)
 
 Represents string-based data.
 
@@ -1040,11 +1038,11 @@ export type TableTextType = {
 
 ---
 
-### **7.4 Enum Type** (`TableEnumType`)
+#### **7.4 Enum Type** (`TableEnumType`)
 
 Represents data with a fixed set of allowed values. Each value is defined as an `EnumItem` with optional styling or color to visually distinguish between them.
 
-#### **Definition**
+##### **Definition**
 
 ```typescript
 export type TableEnumType = {
@@ -1100,7 +1098,7 @@ The final `EnumItem` style will be
 
 ---
 
-#### **Example**
+##### **Example**
 
 This example defines an enum with a description and three items, each with unique colors and optional descriptions:
 
@@ -1119,7 +1117,7 @@ This example defines an enum with a description and three items, each with uniqu
 
 ---
 
-### **7.5 Lookup Type** (`TableLookupType`)
+#### **7.5 Lookup Type** (`TableLookupType`)
 
 References valid values from another column.
 
@@ -1132,13 +1130,13 @@ export type TableLookupType = {
 
 ---
 
-### **9.6 Numeric Type** (`TableNumericType`)
+#### **7.6 Numeric Type** (`TableNumericType`)
 
 The `TableNumericType` represents numerical data, allowing for precise control over validation, formatting, and conditional styling. It is one of the most customizable column types in `TableBook`.
 
 ---
 
-#### **Definition**
+##### **Definition**
 
 ```typescript
 export type TableNumericType = {
@@ -1155,11 +1153,11 @@ export type TableNumericType = {
 
 ---
 
-#### **7.6.1 TableBaseNumericFormat**
+##### **7.6.1 TableBaseNumericFormat**
 
 All numeric formats (`number`, `percent`, `currency`) inherit from the `TableBaseNumericFormat`, which defines general options for displaying numbers.
 
-##### **Definition**
+###### **Definition**
 ```typescript
 export type TableBaseNumericFormat<Type extends string> = {
     type: Type;                               // The format type (e.g., "number", "percent").
@@ -1171,7 +1169,7 @@ export type TableBaseNumericFormat<Type extends string> = {
 
 ---
 
-#### **7.6.2 TableDigitPlaceholder**
+##### **7.6.2 TableDigitPlaceholder**
 
 `TableDigitPlaceholder` controls how digits are displayed using placeholder characters:
 
@@ -1181,7 +1179,7 @@ export type TableBaseNumericFormat<Type extends string> = {
 | `'#'`       | Flexible digit: shows a digit if present, or nothing otherwise. |
 | `'?'`       | Aligning digit: shows a digit if present, or a space for alignment. |
 
-##### **Definition**
+###### **Definition**
 ```typescript
 export type TableDigitPlaceholder = {
     fixed?: number;  // Number of '0' placeholders.
@@ -1198,7 +1196,7 @@ const placeholder: TableDigitPlaceholder = { fixed: 2, flex: 3 };
 
 ---
 
-#### **7.6.3 Numeric Formats**
+##### **7.6.3 Numeric Formats**
 
 There are three specific numeric formats, each inheriting from `TableBaseNumericFormat`:
 
@@ -1226,13 +1224,13 @@ There are three specific numeric formats, each inheriting from `TableBaseNumeric
 
 ---
 
-### **7.7 Temporal Type** (`TableTemporalType`)
+#### **7.7 Temporal Type** (`TableTemporalType`)
 
 The `TableTemporalType` represents date and time data, with flexible validation rules and customizable formatting. It simplifies handling ISO-compliant temporal values.
 
 ---
 
-#### **Definition**
+##### **Definition**
 
 ```typescript
 export type TableTemporalType = {
@@ -1245,7 +1243,7 @@ export type TableTemporalType = {
 
 ---
 
-#### **7.7.1 Temporal Rules**
+##### **7.7.1 Temporal Rules**
 
 Temporal rules validate date and time values. They are similar to numeric rules but operate on temporal strings (`YYYY-MM-DD`).
 
@@ -1265,13 +1263,13 @@ const rangeRule: TableTemporalRule = {
 
 ---
 
-#### **7.7.2 TableTemporalUnit**
+##### **7.7.2 TableTemporalUnit**
 
 A `TableTemporalUnit` defines a single element of a temporal format, such as a year, month, day, or time component. Each unit can optionally specify a `length`, which determines whether the unit is displayed in a short or long format.
 
 ---
 
-##### **Definition**
+###### **Definition**
 ```typescript
 export type TableTemporalUnit = {
     type: "year"       // The year of the date (e.g., 2025 or 25).
@@ -1289,7 +1287,7 @@ export type TableTemporalUnit = {
 
 ---
 
-##### **Unit Type Details**
+###### **Unit Type Details**
 
 | **Type**      | **Description**                          | **Short Example** | **Long Example**   |
 |---------------|------------------------------------------|-------------------|--------------------|
@@ -1306,7 +1304,7 @@ export type TableTemporalUnit = {
 ---
 
 
-##### **Example Temporal Formats**
+###### **Example Temporal Formats**
 
 Here are some complete examples of `TableTemporalFormat` using `TableTemporalUnit`:
 
@@ -1592,10 +1590,10 @@ Each issue type contains unique fields based on its context.
 
 ---
 
-### **10.1 TableBookParseIssue**
+#### **10.1 TableBookParseIssue**
 Represents issues encountered during the **parsing phase** (e.g., invalid JSON/YAML syntax).
 
-#### **Properties**
+##### **Properties**
 | Field         | Type                 | Description                                |
 |---------------|----------------------|--------------------------------------------|
 | `type`        | `'parsing'`          | Indicates the parsing phase.              |
@@ -1603,7 +1601,7 @@ Represents issues encountered during the **parsing phase** (e.g., invalid JSON/Y
 | `location`    | `TextLocation`       | Location (line/column) of the issue.      |
 | `length`      | `number`             | Length of the problematic text segment.   |
 
-#### **Example**
+##### **Example**
 ```typescript
 const issue: TableBookParseIssue = {
   type: "parsing",
@@ -1615,10 +1613,10 @@ const issue: TableBookParseIssue = {
 
 ---
 
-### **10.2 TableBookValidateIssue**
+#### **10.2 TableBookValidateIssue**
 Represents issues encountered during the **validation phase** (e.g., schema violations).
 
-#### **Properties**
+##### **Properties**
 | Field         | Type                 | Description                                |
 |---------------|----------------------|--------------------------------------------|
 | `type`        | `'validating'`       | Indicates the validation phase.           |
@@ -1626,7 +1624,7 @@ Represents issues encountered during the **validation phase** (e.g., schema viol
 | `path`        | `ObjectPath`         | Path to the problematic data.             |
 | `value`       | `any` (optional)     | The invalid value that caused the issue.  |
 
-#### **Example**
+##### **Example**
 ```typescript
 const issue: TableBookValidateIssue = {
   type: "validating",
@@ -1638,10 +1636,10 @@ const issue: TableBookValidateIssue = {
 
 ---
 
-### **10.3 TableBookProcessIssue**
+#### **10.3 TableBookProcessIssue**
 Represents issues encountered during the **processing phase** (e.g., resolving references).
 
-#### **Properties**
+##### **Properties**
 | Field         | Type                 | Description                                |
 |---------------|----------------------|--------------------------------------------|
 | `type`        | `'processing'`       | Indicates the processing phase.           |
@@ -1649,7 +1647,7 @@ Represents issues encountered during the **processing phase** (e.g., resolving r
 | `path`        | `ObjectPath`         | Path to the problematic data.             |
 | `data`        | `any`                | Contextual data about the issue.          |
 
-#### **Example**
+##### **Example**
 ```typescript
 const issue: TableBookProcessIssue = {
   type: "processing",
@@ -1661,17 +1659,17 @@ const issue: TableBookProcessIssue = {
 
 ---
 
-### **10.4 TableBookGenerateIssue**
+#### **10.4 TableBookGenerateIssue**
 Represents issues encountered during the **generation phase** (e.g., external generator errors).
 
-#### **Properties**
+##### **Properties**
 | Field         | Type                 | Description                                |
 |---------------|----------------------|--------------------------------------------|
 | `type`        | `'generating'`       | Indicates the generation phase.           |
 | `message`     | `string`             | Descriptive message about the issue.      |
 | `data`        | `any`                | Contextual data about the issue.          |
 
-#### **Example**
+##### **Example**
 ```typescript
 const issue: TableBookGenerateIssue = {
   type: "generating",
@@ -1682,11 +1680,11 @@ const issue: TableBookGenerateIssue = {
 
 ---
 
-### **Handling TableBook Issues**
+#### **Handling TableBook Issues**
 
 When working with `TableBook`, operations like parsing, validating, processing, or generating return `Result` types. Use the `info` field to inspect `TableBookIssue` objects when an operation fails.
 
-#### **Example**
+##### **Example**
 ```typescript
 const parseResult = tablebook.parse('json', rawInput);
 
