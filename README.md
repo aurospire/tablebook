@@ -348,7 +348,7 @@ if (!parseResult.success) {
 
 ### **Key Concepts**
 1. **Column-Based Selection Only**: Unlike traditional spreadsheets, `TableBook` does not support cell-based or horizontal (multi-column) selection. All data selection is **column-centric**, targeting one column at a time.
-2. **Page → Group → Column** oaradigm: Columns are identified within a hierarchy:
+2. **Page → Group → Column** paradigm: Columns are identified within a hierarchy:
    - **Page**: Synonymous with a `Table`, representing a single table within the spreadsheet. Each `Page` in the `TableBook` corresponds to one logical table, forming the core unit of the "book of tables."
    - **Group**: A subgroup within a page that organizes related columns.
    - **Column**: The specific column within a group.
@@ -439,7 +439,7 @@ The structure of a table depends on whether it has **one group** or **multiple g
 - **Row 1**: Column headers.  
 - **Row 2 onward**: Data rows.
 
-**Key Rule**: The first data row corresponds to **logical `$0`**, which maps to A1 row **2**.
+**Key Rule**: The first data row corresponds to **logical `$0`**, which maps to A1-address row **2**.
 
 ---
 
@@ -455,7 +455,7 @@ The structure of a table depends on whether it has **one group** or **multiple g
 - **Row 2**: Column headers.  
 - **Row 3 onward**: Data rows.
 
-**Key Rule**: The first data row corresponds to **logical `$0`**, which maps to A1 row **3**.
+**Key Rule**: The first data row corresponds to **logical `$0`**, which maps to A1-address row **3**.
 
 ---
 
