@@ -49,7 +49,6 @@ export const toFormula = (exp: SheetExpression, position: SheetPosition): string
                 }
             }
 
-            console.log(result)
             return result;
         }
     }
