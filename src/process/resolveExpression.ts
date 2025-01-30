@@ -1,5 +1,5 @@
 import { TableBookProcessIssue } from "../issues";
-import { SheetSelector } from "../sheets";
+import { SheetExpression, SheetSelector } from "../sheets";
 import { TableExpression, TableSelector } from "../tables/types";
 import { ObjectPath, Result } from "../util";
 import { ResolvedColumn } from "./resolveColumns";
@@ -74,26 +74,27 @@ export const resolveExpression = (
             break;
         }
         case 'raw': {
-            let resolvedTags: [string, SheetSelector][] = [];
+            let resolvedTags: [string, SheetExpression][] = [];
 
             if (expression.tags) {
-                for (const [tag, selector] of Object.entries(expression.tags)) {
-                    const selectorResult = resolveSelector(selector, columns, page, group, name, path);
+                for (const [tag, item] of Object.entries(expression.tags)) {                    
 
-                    if (selectorResult.success) {
-                        const value = selectorResult.value;
-
-                        value.page = value.page === page ? undefined : value.page;
-
-                        resolvedTags.push([tag, value]);
+                    const itemResult = resolveExpression(item, page, group, name, columns, path);
+                    
+                    if (itemResult.success) {
+                        resolvedTags.push([tag,  itemResult.value]);
                     }
                     else {
-                        issues.push(...selectorResult.info);
+                        issues.push(...itemResult.info);
                     }
                 }
             }
 
-            resolved = { type: 'raw', text: expression.text, tags: resolvedTags.length ? Object.fromEntries(resolvedTags) : undefined };
+            resolved = {
+                type: 'raw',
+                text: expression.text,
+                tags: resolvedTags.length ? Object.fromEntries(resolvedTags) : undefined
+            };
         }
     }
 

@@ -295,7 +295,11 @@ export type TableLiteralExpression = { type: typeof TableLiteralExpressionType, 
 /** Type identifier for flat expressions */
 export const TableRawExpressionType = 'raw';
 /* Flattened Expression, tags are replaced in the expression text */
-export type TableRawExpression<Selector> = { type: typeof TableRawExpressionType, text: string, tags?: Record<string, Selector>; };
+export type TableRawExpression<Selector> = {
+    type: typeof TableRawExpressionType,
+    text: string,
+    tags?: Record<string, TableExpression<Selector>>;
+};
 
 /** All possible expression types for data computation and validation */
 export type TableExpression<Selector> =
