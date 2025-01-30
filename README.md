@@ -696,7 +696,7 @@ The simplest type of expression, a `TableLiteralExpression`, represents a fixed 
 ```typescript
 export type TableLiteralExpression = {
     type: "literal";
-    of: string | number | boolean;
+    value: string | number | boolean;
 };
 ```
 
@@ -704,7 +704,7 @@ export type TableLiteralExpression = {
 ```typescript
 const literalExpression: TableLiteralExpression = {
   type: "literal",
-  of: 42
+  value: 42
 };
 ```
 
@@ -720,7 +720,7 @@ A `TableSelectorExpression` references data in a specific column and row. Instea
 ```typescript
 export type TableSelectorExpression = {
     type: "selector";
-    from: TableSelector;
+    selector: TableSelector;
 };
 ```
 
@@ -728,7 +728,7 @@ export type TableSelectorExpression = {
 ```typescript
 const selectorExpression: TableSelectorExpression = {
   type: "selector",
-  from: {
+  selector: {
     column: { name: "Revenue" },
     rows: "$5"
   }
@@ -747,7 +747,7 @@ A `TableCompoundExpression` combines multiple expressions using an operator. It 
 ```typescript
 export type TableCompoundExpression = {
     type: "compound";
-    with: TableComparisonOperator | TableMergeOperator;
+    op: TableComparisonOperator | TableMergeOperator;
     items: TableExpression[];
 };
 ```
@@ -778,7 +778,7 @@ export type TableCompoundExpression = {
 ```typescript
 const compoundExpression: TableCompoundExpression = {
   type: "compound",
-  with: "+",
+  op: "+",
   items: [
     { type: "selector", from: { column: { name: "Revenue" }, rows: "$0" } },
     { type: "literal", of: 100 }
@@ -798,7 +798,7 @@ A `TableNegatedExpression` inverts the result of another expression.
 ```typescript
 export type TableNegatedExpression = {
     type: "negated";
-    on: TableExpression;
+    item: TableExpression;
 };
 ```
 
@@ -806,9 +806,9 @@ export type TableNegatedExpression = {
 ```typescript
 const negatedExpression: TableNegatedExpression = {
   type: "negated",
-  on: {
+  item: {
     type: "selector",
-    from: { column: { name: "Profit" }, rows: "self" }
+    selector: { column: { name: "Profit" }, rows: "self" }
   }
 };
 ```
@@ -826,7 +826,7 @@ A `TableFunctionExpression` applies a named function to a list of arguments, whi
 export type TableFunctionExpression = {
     type: "function";
     name: string;
-    args: TableExpression[];
+    items: TableExpression[];
 };
 ```
 
@@ -835,7 +835,7 @@ export type TableFunctionExpression = {
 const functionExpression: TableFunctionExpression = {
   type: "function",
   name: "SUM",
-  args: [
+  items: [
     { type: "selector", from: { column: { page: 'Items', group: 'Info', name: "Revenue" }, rows: "all" } },
     { type: "literal", of: 50 }
   ]
