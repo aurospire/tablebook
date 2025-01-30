@@ -139,208 +139,37 @@ async function main() {
 
 ### Table of Contents
 
-1. [Result](#1-result)
-2. [TableBookIssue](#2-tablebookissue)   
-3. [TableSelector](#3-tableselector)
-4. [TableReference](#4-tablereference)
-5. [TableStyle](#5-tablestyle)
-6. [TableHeaderStyle](#6-tableheaderstyle)
-7. [TableTheme](#7-tabletheme)
-8. [Expressions](#8-expressions)
-   - [TableLiteralExpression](#82-tableliteralexpression)
-   - [TableSelectorExpression](#83-tableselectorexpression)
-   - [TableCompoundExpression](#84-tablecompoundexpression)
-   - [TableNegatedExpression](#85-tablenegatedexpression)
-   - [TableFunctionExpression](#86-tablefunctionexpression)
-   - [TableTemplateExpression](#87-tabletemplateexpression)
-9. [TableColumnType](#9-tablecolumntype)
-   - [Text Type](#91-text-type)
-   - [Enum Type](#92-enum-type)
-   - [Lookup Type](#93-lookup-type)
-   - [Numeric Type](#94-numeric-type)
-   - [Temporal Type](#95-temporal-type)
-10. [TableUnit and Hierarchical Structure](#10-tableunit-and-hierarchical-structure)
-    - [TableUnit](#101-tableunit)
-    - [TableColumn](#102-tablecolumn)
-    - [TableGroup](#103-tablegroup)
-    - [TablePage](#104-tablepage)
-    - [TableBook](#105-tablebook)
+1. [TableSelector](#1-tableselector)
+2. [TableReference](#2-tablereference)
+3. [TableStyle](#3-tablestyle)
+4. [TableHeaderStyle](#4-tableheaderstyle)
+5. [TableTheme](#5-tabletheme)
+6. [Expressions](#6-expressions)
+   - [TableLiteralExpression](#62-tableliteralexpression)
+   - [TableSelectorExpression](#63-tableselectorexpression)
+   - [TableCompoundExpression](#64-tablecompoundexpression)
+   - [TableNegatedExpression](#65-tablenegatedexpression)
+   - [TableFunctionExpression](#66-tablefunctionexpression)
+   - [TableTemplateExpression](#67-tabletemplateexpression)
+7. [TableColumnType](#7-tablecolumntype)
+   - [Text Type](#71-text-type)
+   - [Enum Type](#72-enum-type)
+   - [Lookup Type](#73-lookup-type)
+   - [Numeric Type](#74-numeric-type)
+   - [Temporal Type](#75-temporal-type)
+8. [TableUnit and Hierarchical Structure](#8-tableunit-and-hierarchical-structure)
+    - [TableUnit](#81-tableunit)
+    - [TableColumn](#82-tablecolumn)
+    - [TableGroup](#83-tablegroup)
+    - [TablePage](#84-tablepage)
+    - [TableBook](#85-tablebook)
+9. [Result](#9-result)
+10. [TableBookIssue](#10-tablebookissue)   
 11. [tablebook Functions](#11-tablebook-functions)
 ---
 ---
 
-### **1. Result**
-
-The `Result` type represents the outcome of an operation, which can either succeed or fail. It is a generic utility type, parameterized by:
-- `T`: The type of the value when the operation is successful.
-- `I`: The type of the additional information when the operation fails.
-
-#### **Definition**
-```typescript
-export type Result<T, I> =
-    | { success: true; value: T }
-    | { success: false; info: I; value?: T };
-```
-
-#### **Usage**
-The `Result` type ensures that all operations explicitly define success or failure, making it easier to handle errors consistently.
-
-#### **Properties**
-| Field         | Type     | Description                                      |
-|---------------|----------|--------------------------------------------------|
-| `success`     | `true` or `false` | Indicates if the operation succeeded.     |
-| `value`       | `T` (optional for failures) | The value returned on success or failure. |
-| `info`        | `I` (only for failures) | Additional details about the failure.    |
-
-#### **Methods**
-`Result` includes utility functions for creating and handling result objects:
-
-- **`Result.success(value: T): Result<T, any>`**
-  Creates a success result.
-  ```typescript
-  const successResult = Result.success("Processed successfully");
-  ```
-
-- **`Result.failure(info: I, value?: T): Result<T, I>`**
-  Creates a failure result, optionally including a value.
-  ```typescript
-  const failureResult = Result.failure("Invalid input format", rawInput);
-  ```
-
----
----
-
-### **2. TableBookIssue**
-
-The `TableBookIssue` type represents errors or warnings encountered while working with `TableBook` objects. It is a union type covering issues from four distinct phases:
-- Parsing
-- Validation
-- Processing
-- Generation
-
-#### **Definition**
-```typescript
-export type TableBookIssue = 
-    | TableBookParseIssue
-    | TableBookValidateIssue
-    | TableBookProcessIssue
-    | TableBookGenerateIssue;
-```
-
-Each issue type contains unique fields based on its context.
-
----
-
-### **2.1 TableBookParseIssue**
-Represents issues encountered during the **parsing phase** (e.g., invalid JSON/YAML syntax).
-
-#### **Properties**
-| Field         | Type                 | Description                                |
-|---------------|----------------------|--------------------------------------------|
-| `type`        | `'parsing'`          | Indicates the parsing phase.              |
-| `message`     | `string`             | Descriptive message about the issue.      |
-| `location`    | `TextLocation`       | Location (line/column) of the issue.      |
-| `length`      | `number`             | Length of the problematic text segment.   |
-
-#### **Example**
-```typescript
-const issue: TableBookParseIssue = {
-  type: "parsing",
-  message: "Unexpected token",
-  location: { index: 15, line: 2, column: 6 },
-  length: 1
-};
-```
-
----
-
-### **2.2 TableBookValidateIssue**
-Represents issues encountered during the **validation phase** (e.g., schema violations).
-
-#### **Properties**
-| Field         | Type                 | Description                                |
-|---------------|----------------------|--------------------------------------------|
-| `type`        | `'validating'`       | Indicates the validation phase.           |
-| `message`     | `string`             | Descriptive message about the issue.      |
-| `path`        | `ObjectPath`         | Path to the problematic data.             |
-| `value`       | `any` (optional)     | The invalid value that caused the issue.  |
-
-#### **Example**
-```typescript
-const issue: TableBookValidateIssue = {
-  type: "validating",
-  message: "Invalid type: expected numeric",
-  path: ["page1", "Revenue", "Price"],
-  value: "NotANumber"
-};
-```
-
----
-
-### **2.3 TableBookProcessIssue**
-Represents issues encountered during the **processing phase** (e.g., resolving references).
-
-#### **Properties**
-| Field         | Type                 | Description                                |
-|---------------|----------------------|--------------------------------------------|
-| `type`        | `'processing'`       | Indicates the processing phase.           |
-| `message`     | `string`             | Descriptive message about the issue.      |
-| `path`        | `ObjectPath`         | Path to the problematic data.             |
-| `data`        | `any`                | Contextual data about the issue.          |
-
-#### **Example**
-```typescript
-const issue: TableBookProcessIssue = {
-  type: "processing",
-  message: "Reference not found: @Revenue",
-  path: ["page1", "Revenue"],
-  data: { reference: "@Revenue" }
-};
-```
-
----
-
-### **2.4 TableBookGenerateIssue**
-Represents issues encountered during the **generation phase** (e.g., external generator errors).
-
-#### **Properties**
-| Field         | Type                 | Description                                |
-|---------------|----------------------|--------------------------------------------|
-| `type`        | `'generating'`       | Indicates the generation phase.           |
-| `message`     | `string`             | Descriptive message about the issue.      |
-| `data`        | `any`                | Contextual data about the issue.          |
-
-#### **Example**
-```typescript
-const issue: TableBookGenerateIssue = {
-  type: "generating",
-  message: "Failed to connect to Google Sheets API",
-  data: { errorCode: 401, reason: "Unauthorized" }
-};
-```
-
----
-
-### **Handling TableBook Issues**
-
-When working with `TableBook`, operations like parsing, validating, processing, or generating return `Result` types. Use the `info` field to inspect `TableBookIssue` objects when an operation fails.
-
-#### **Example**
-```typescript
-const parseResult = tablebook.parse('json', rawInput);
-
-if (!parseResult.success) {
-  console.error("Parsing Issues:");
-  for (const issue of parseResult.info) {
-    console.error(`- ${issue.message} at line ${issue.location.line}`);
-  }
-}
-```
-
----
----
-
-## **3. TableSelector**
+## **1. TableSelector**
 
 `TableSelector` provides a structured way to reference specific columns and rows in a `TableBook`. It ensures clarity and flexibility by using logical references instead of direct cell addresses (e.g., `A1:B5`). These logical references are later translated into A1-style spreadsheet references during generation.
 
@@ -353,7 +182,7 @@ if (!parseResult.success) {
    - **Group**: A subgroup within a page that organizes related columns.
    - **Column**: The specific column within a group.
 
-### **3.1 TableSelector Types**
+### **1.1 TableSelector Types**
 
 A `TableSelector` can reference either the current column and row (`"self"`) or a specific combination of a column and rows.
 
@@ -367,13 +196,13 @@ export type TableSelector =
   };
 ```
 
-#### **3.1.1 TableSelfSelector**
+#### **1.1.1 TableSelfSelector**
 ```typescript
 export type TableSelfSelector = "self";
 ```
 - Refers to the **current column** and/or **row** in context.  
 
-#### **3.1.2 TableColumnSelector**
+#### **1.1.2 TableColumnSelector**
 ```typescript
 export type TableColumnSelector = {
   page?: string;  // Optional page.
@@ -391,7 +220,7 @@ export type TableColumnSelector = {
 | `{ group: "Revenue", name: "Sales" }`                 | References `"Sales"` in `"Revenue"` in the current page.            |
 | `{ page: "Summary", group: "Revenue", name: "Sales" }`| Fully qualified reference to `"Sales"` in `"Revenue"` on `"Summary"`.|
 
-#### **3.1.3 TableRowSelector**
+#### **1.1.3 TableRowSelector**
 ```typescript
 export type TableRowSelector = 
   | TableUnitSelector
@@ -425,7 +254,7 @@ export type TableAllSelector = "all";
 
 ---
 
-### **3.2 Single Group vs. Multiple Groups**
+### **1.2 Single Group vs. Multiple Groups**
 
 The structure of a table depends on whether it has **one group** or **multiple groups** of columns.
 
@@ -459,7 +288,7 @@ The structure of a table depends on whether it has **one group** or **multiple g
 
 ---
 
-### **3.3 Translating Selectors to A1 Notation**
+### **1.3 Translating Selectors to A1 Notation**
 
 #### **Translation Rules**
 1. **Columns**:
@@ -529,7 +358,7 @@ The structure of a table depends on whether it has **one group** or **multiple g
 
 ---
 
-### **3.4 Key Takeaways**
+### **1.4 Key Takeaways**
 
 1. **Column Selection**:
    - `{ name: "Sales" }` → Same group and page.
@@ -552,7 +381,7 @@ The structure of a table depends on whether it has **one group** or **multiple g
 ---
 ---
 
-### **4. TableReference**
+### **2. TableReference**
 
 The `TableReference` type enables reusable definitions in `TableBook`. It allows you to reference shared elements like colors, styles, or themes, ensuring consistency across your table schema.
 
@@ -568,7 +397,7 @@ export type TableReference = `@${string}`;
 ---
 ---
 
-### **5. TableStyle**
+### **3. TableStyle**
 
 The `TableStyle` type defines visual styling for text and backgrounds. It is a reusable element that can be applied wherever specific styling is required in a `TableBook`.
 
@@ -593,13 +422,13 @@ export type TableStyle = {
 ---
 ---
 
-### **6. TableHeaderStyle**
+### **4. TableHeaderStyle**
 
 The `TableHeaderStyle` type extends `TableStyle` to include border and partition options. It is specifically used for styling table headers, such as group or column headers, to enhance visual structure.
 
 ---
 
-### **6.1 Definition**
+### **4.1 Definition**
 
 ```typescript
 export type TableHeaderStyle = TableStyle & {
@@ -610,7 +439,7 @@ export type TableHeaderStyle = TableStyle & {
 
 ---
 
-### **6.2 TableBorder**
+### **4.2 TableBorder**
 
 The `TableBorder` type defines the appearance of a border.
 
@@ -633,7 +462,7 @@ export type TableBorderType =
 ```
 ---
 
-### **6.3 TablePartition**
+### **4.3 TablePartition**
 
 The `TablePartition` type groups together border definitions for beneath and between partitions, allowing granular control of the appearance of header styles.
 
@@ -648,12 +477,12 @@ export type TablePartition = {
 ---
 ---
 
-### **7. TableTheme**
+### **5. TableTheme**
 
 A **TableTheme** defines coordinated styling for multiple areas - tabs, group headers, column headers, and data cells.
 You can apply a theme at different levels of a `TableBook` (book → page → group → column), with each level either using or refining the theme from above.
 
-#### **7.1 Definition**
+#### **5.1 Definition**
 
 ```typescript
 export type TableTheme = {
@@ -682,7 +511,7 @@ export type TableTheme = {
 
 ---
 
-### **7.2 Flow from Book → Page → Group → Column**
+### **5.2 Flow from Book → Page → Group → Column**
 
 Themes can be defined at any level of the `TableBook`. When a level has no theme, it simply keeps the one from above. If a level **does** define or reference a theme, that new theme merges its properties on top of whatever came before it. For example:
 
@@ -697,7 +526,7 @@ Themes can be defined at any level of the `TableBook`. When a level has no theme
 
 ---
 
-### **7.3 Built-In Palettes**
+### **5.3 Built-In Palettes**
 
 `TableBook` includes a set of prebuilt palettes, each with four shades:
 
@@ -757,7 +586,7 @@ Best is to define it globally in the Book theme.
 
 ---
 
-### **7.4 Example: Setting a Book Theme**
+### **5.4 Example: Setting a Book Theme**
 
 Below is an example of a **book-level** theme referencing the built-in **blue** palette. It then explicitly sets white, bold text for `group` and `header`:
 
@@ -801,7 +630,7 @@ Below is an example of a **book-level** theme referencing the built-in **blue** 
 
 ---
 
-### **7.5 Default Book Theme**
+### **5.5 Default Book Theme**
 
 A good starting theme for your TableBook allows you to use different palettes for each page while ensuring clarity and consistency. The following example sets a clean, bold look for group and header text, with clear dividing lines between groups and columns.
 
@@ -826,7 +655,7 @@ A good starting theme for your TableBook allows you to use different palettes fo
 
 ---
 
-### **7.6 Key Points**
+### **5.6 Key Points**
 
 1. **Property-by-Property Merging**  
    Multiple themes in `inherits` apply one after the other. Each level (book, page, group, column) can refine or leave properties as-is.
@@ -840,11 +669,11 @@ A good starting theme for your TableBook allows you to use different palettes fo
 ---
 ---
 
-### **8. Expressions**
+### **6. Expressions**
 
 Expressions in `TableBook` are used to define structured formulas, replacing traditional spreadsheet cell references (e.g., `A1:B5`) with precise column-row relationships via `TableSelectors`. These formulas allow for consistent, column-based computations that translate into spreadsheet formulas during generation.
 
-#### **8.1 Definition**
+#### **6.1 Definition**
 
 ```typescript
 export type TableExpression =
@@ -859,7 +688,7 @@ export type TableExpression =
 
 ---
 
-### **8.2 TableLiteralExpression**
+### **6.2 TableLiteralExpression**
 
 The simplest type of expression, a `TableLiteralExpression`, represents a fixed value (number, string, or boolean).
 
@@ -883,7 +712,7 @@ This translates to the literal value `42` in a formula.
 
 ---
 
-### **8.3 TableSelectorExpression**
+### **6.3 TableSelectorExpression**
 
 A `TableSelectorExpression` references data in a specific column and row. Instead of traditional spreadsheet ranges, it uses a `TableSelector` to target the data.
 
@@ -910,7 +739,7 @@ This references the `Revenue` column, specifically the 5th row - or 6 in A1 addr
 
 ---
 
-### **8.4 TableCompoundExpression**
+### **6.4 TableCompoundExpression**
 
 A `TableCompoundExpression` combines multiple expressions using an operator. It supports both comparison and arithmetic/merge operators.
 
@@ -961,7 +790,7 @@ If `Revenue` was column `C` (with no group header), this translates to `=$C$2 + 
 
 ---
 
-### **8.5 TableNegatedExpression**
+### **6.5 TableNegatedExpression**
 
 A `TableNegatedExpression` inverts the result of another expression.
 
@@ -988,7 +817,7 @@ If `Profit` was column `B` (with no group header), this corresponds to `=-($B2)`
 
 ---
 
-### **8.6 TableFunctionExpression**
+### **6.6 TableFunctionExpression**
 
 A `TableFunctionExpression` applies a named function to a list of arguments, which can be other expressions.
 
@@ -1017,7 +846,7 @@ If `Revenue` was column `D` (with a group header), this translates to `SUM(Items
 
 ---
 
-### **8.7 TableTemplateExpression**  
+### **6.7 TableTemplateExpression**  
 
 A `TableTemplateExpression` represents a formula written as literal text with placeholders (`vars`) that map to subexpressions. This enables dynamic, structured computation while preserving the relationships between table data.
 
@@ -1067,7 +896,7 @@ This allows for dynamic formula generation while ensuring that every placeholder
 ---
 ---
 
-### **9. TableColumnType**
+### **7. TableColumnType**
 
 The `TableColumnType` defines the type of data in a column. It determines how data is validated, formatted, and optionally styled conditionally. There are five main types:
 
@@ -1079,7 +908,7 @@ The `TableColumnType` defines the type of data in a column. It determines how da
 
 ---
 
-### **9.1 TableConditionalStyle**
+### **7.1 TableConditionalStyle**
 
 The `TableConditionalStyle` type applies styling to data when a specific rule or condition is met. It is used in conjunction with rules for text, numeric, and temporal types.
 
@@ -1093,13 +922,13 @@ export type TableConditionalStyle<Rule> = {
 
 ---
 
-### **9.2 Rules Overview**
+### **7.2 Rules Overview**
 
 Rules (`TableRules`) define how values in a column are validated. Each type (text, numeric, temporal) has its own rule system, but all support custom rules using expressions.
 
 ---
 
-#### **9.2.1 TableCustomRule**
+#### **7.2.1 TableCustomRule**
 
 A `TableCustomRule` defines advanced validation using expressions.
 
@@ -1111,7 +940,7 @@ export type TableCustomRule = {
 ```
 ---
 
-#### **9.2.2 Text Rules** (`TableTextRule`)
+#### **7.2.2 Text Rules** (`TableTextRule`)
 
 Text rules validate string values. 
 
@@ -1136,7 +965,7 @@ const rule: TableTextRule = { type: "contains", value: "Important" };
 
 ---
 
-#### **9.2.3 Numeric Rules** (`TableNumericRule`)
+#### **7.2.3 Numeric Rules** (`TableNumericRule`)
 
 Numeric rules validate number values.
 
@@ -1172,7 +1001,7 @@ const rule2: TableNumericRule = { type: "between", low: 5, high: 20 };
 
 ---
 
-#### **9.2.4 Temporal Rules** (`TableTemporalRule`)
+#### **7.2.4 Temporal Rules** (`TableTemporalRule`)
 
 Temporal rules validate date and time values.
 
@@ -1197,7 +1026,7 @@ const rule: TableTemporalRule = {
 
 ---
 
-### **9.3 Text Type** (`TableTextType`)
+### **7.3 Text Type** (`TableTextType`)
 
 Represents string-based data.
 
@@ -1211,7 +1040,7 @@ export type TableTextType = {
 
 ---
 
-### **9.4 Enum Type** (`TableEnumType`)
+### **7.4 Enum Type** (`TableEnumType`)
 
 Represents data with a fixed set of allowed values. Each value is defined as an `EnumItem` with optional styling or color to visually distinguish between them.
 
@@ -1290,7 +1119,7 @@ This example defines an enum with a description and three items, each with uniqu
 
 ---
 
-### **9.5 Lookup Type** (`TableLookupType`)
+### **7.5 Lookup Type** (`TableLookupType`)
 
 References valid values from another column.
 
@@ -1326,7 +1155,7 @@ export type TableNumericType = {
 
 ---
 
-#### **9.6.1 TableBaseNumericFormat**
+#### **7.6.1 TableBaseNumericFormat**
 
 All numeric formats (`number`, `percent`, `currency`) inherit from the `TableBaseNumericFormat`, which defines general options for displaying numbers.
 
@@ -1342,7 +1171,7 @@ export type TableBaseNumericFormat<Type extends string> = {
 
 ---
 
-#### **9.6.2 TableDigitPlaceholder**
+#### **7.6.2 TableDigitPlaceholder**
 
 `TableDigitPlaceholder` controls how digits are displayed using placeholder characters:
 
@@ -1369,7 +1198,7 @@ const placeholder: TableDigitPlaceholder = { fixed: 2, flex: 3 };
 
 ---
 
-#### **9.6.3 Numeric Formats**
+#### **7.6.3 Numeric Formats**
 
 There are three specific numeric formats, each inheriting from `TableBaseNumericFormat`:
 
@@ -1397,7 +1226,7 @@ There are three specific numeric formats, each inheriting from `TableBaseNumeric
 
 ---
 
-### **9.7 Temporal Type** (`TableTemporalType`)
+### **7.7 Temporal Type** (`TableTemporalType`)
 
 The `TableTemporalType` represents date and time data, with flexible validation rules and customizable formatting. It simplifies handling ISO-compliant temporal values.
 
@@ -1416,7 +1245,7 @@ export type TableTemporalType = {
 
 ---
 
-#### **9.7.1 Temporal Rules**
+#### **7.7.1 Temporal Rules**
 
 Temporal rules validate date and time values. They are similar to numeric rules but operate on temporal strings (`YYYY-MM-DD`).
 
@@ -1436,7 +1265,7 @@ const rangeRule: TableTemporalRule = {
 
 ---
 
-#### **9.7.2 TableTemporalUnit**
+#### **7.7.2 TableTemporalUnit**
 
 A `TableTemporalUnit` defines a single element of a temporal format, such as a year, month, day, or time component. Each unit can optionally specify a `length`, which determines whether the unit is displayed in a short or long format.
 
@@ -1520,13 +1349,13 @@ Here are some complete examples of `TableTemporalFormat` using `TableTemporalUni
 ---
 ---
 
-### **10. TableUnit and Hierarchical Structure**
+### **8. TableUnit and Hierarchical Structure**
 
 The `TableUnit` type provides the foundation for defining the `TableBook` hierarchy. This section builds from the smallest element (**TableColumn**) up to the entire workbook (**TableBook**), including reusable elements from `TableDefinitions`.
 
 ---
 
-#### **10.1 TableUnit**
+#### **8.1 TableUnit**
 
 The `TableUnit` is a base type for all elements in the hierarchy, providing shared properties like `name`, `theme`, and `description`.
 
@@ -1541,7 +1370,7 @@ export type TableUnit = {
 
 ---
 
-#### **10.2 TableColumn**
+#### **8.2 TableColumn**
 
 A `TableColumn` represents the smallest unit of the hierarchy. It defines the data type, optional computed expressions, and metadata about its source.
 
@@ -1577,7 +1406,7 @@ export type TableColumn = TableUnit & {
 
 ---
 
-#### **10.3 TableGroup**
+#### **8.3 TableGroup**
 
 A `TableGroup` organizes related columns within a page. Groups make it easier to logically separate and style subsets of columns.
 
@@ -1605,7 +1434,7 @@ export type TableGroup = TableUnit & {
 
 ---
 
-#### **10.4 TablePage**
+#### **8.4 TablePage**
 A `TablePage` represents a single sheet in the workbook, acting as the **table** in the `TableBook` paradigm. Each page contains one and only one table, which is defined by its groups and columns. The structure ensures that all data is organized vertically within this single table. This design keeps the focus on column-based relationships, with rows acting as records within the table. The `rows` property specifies the total number of records available for the table, ensuring consistency across all column groups.
 
 ##### **Definition**
@@ -1639,7 +1468,7 @@ export type TablePage = TableUnit & {
 
 ---
 
-#### **10.5 TableBook**
+#### **8.5 TableBook**
 
 A `TableBook` is the root structure of the hierarchy, containing all pages and an optional `definitions` object for reusable elements.
 
@@ -1698,6 +1527,177 @@ export type TableDefinitions = {
   }
 }
 ```
+---
+---
+
+### **9. Result**
+
+The `Result` type represents the outcome of an operation, which can either succeed or fail. It is a generic utility type, parameterized by:
+- `T`: The type of the value when the operation is successful.
+- `I`: The type of the additional information when the operation fails.
+
+#### **Definition**
+```typescript
+export type Result<T, I> =
+    | { success: true; value: T }
+    | { success: false; info: I; value?: T };
+```
+
+#### **Usage**
+The `Result` type ensures that all operations explicitly define success or failure, making it easier to handle errors consistently.
+
+#### **Properties**
+| Field         | Type     | Description                                      |
+|---------------|----------|--------------------------------------------------|
+| `success`     | `true` or `false` | Indicates if the operation succeeded.     |
+| `value`       | `T` (optional for failures) | The value returned on success or failure. |
+| `info`        | `I` (only for failures) | Additional details about the failure.    |
+
+#### **Methods**
+`Result` includes utility functions for creating and handling result objects:
+
+- **`Result.success(value: T): Result<T, any>`**
+  Creates a success result.
+  ```typescript
+  const successResult = Result.success("Processed successfully");
+  ```
+
+- **`Result.failure(info: I, value?: T): Result<T, I>`**
+  Creates a failure result, optionally including a value.
+  ```typescript
+  const failureResult = Result.failure("Invalid input format", rawInput);
+  ```
+
+---
+---
+
+### **10. TableBookIssue**
+
+The `TableBookIssue` type represents errors or warnings encountered while working with `TableBook` objects. It is a union type covering issues from four distinct phases:
+- Parsing
+- Validation
+- Processing
+- Generation
+
+#### **Definition**
+```typescript
+export type TableBookIssue = 
+    | TableBookParseIssue
+    | TableBookValidateIssue
+    | TableBookProcessIssue
+    | TableBookGenerateIssue;
+```
+
+Each issue type contains unique fields based on its context.
+
+---
+
+### **10.1 TableBookParseIssue**
+Represents issues encountered during the **parsing phase** (e.g., invalid JSON/YAML syntax).
+
+#### **Properties**
+| Field         | Type                 | Description                                |
+|---------------|----------------------|--------------------------------------------|
+| `type`        | `'parsing'`          | Indicates the parsing phase.              |
+| `message`     | `string`             | Descriptive message about the issue.      |
+| `location`    | `TextLocation`       | Location (line/column) of the issue.      |
+| `length`      | `number`             | Length of the problematic text segment.   |
+
+#### **Example**
+```typescript
+const issue: TableBookParseIssue = {
+  type: "parsing",
+  message: "Unexpected token",
+  location: { index: 15, line: 2, column: 6 },
+  length: 1
+};
+```
+
+---
+
+### **10.2 TableBookValidateIssue**
+Represents issues encountered during the **validation phase** (e.g., schema violations).
+
+#### **Properties**
+| Field         | Type                 | Description                                |
+|---------------|----------------------|--------------------------------------------|
+| `type`        | `'validating'`       | Indicates the validation phase.           |
+| `message`     | `string`             | Descriptive message about the issue.      |
+| `path`        | `ObjectPath`         | Path to the problematic data.             |
+| `value`       | `any` (optional)     | The invalid value that caused the issue.  |
+
+#### **Example**
+```typescript
+const issue: TableBookValidateIssue = {
+  type: "validating",
+  message: "Invalid type: expected numeric",
+  path: ["page1", "Revenue", "Price"],
+  value: "NotANumber"
+};
+```
+
+---
+
+### **10.3 TableBookProcessIssue**
+Represents issues encountered during the **processing phase** (e.g., resolving references).
+
+#### **Properties**
+| Field         | Type                 | Description                                |
+|---------------|----------------------|--------------------------------------------|
+| `type`        | `'processing'`       | Indicates the processing phase.           |
+| `message`     | `string`             | Descriptive message about the issue.      |
+| `path`        | `ObjectPath`         | Path to the problematic data.             |
+| `data`        | `any`                | Contextual data about the issue.          |
+
+#### **Example**
+```typescript
+const issue: TableBookProcessIssue = {
+  type: "processing",
+  message: "Reference not found: @Revenue",
+  path: ["page1", "Revenue"],
+  data: { reference: "@Revenue" }
+};
+```
+
+---
+
+### **10.4 TableBookGenerateIssue**
+Represents issues encountered during the **generation phase** (e.g., external generator errors).
+
+#### **Properties**
+| Field         | Type                 | Description                                |
+|---------------|----------------------|--------------------------------------------|
+| `type`        | `'generating'`       | Indicates the generation phase.           |
+| `message`     | `string`             | Descriptive message about the issue.      |
+| `data`        | `any`                | Contextual data about the issue.          |
+
+#### **Example**
+```typescript
+const issue: TableBookGenerateIssue = {
+  type: "generating",
+  message: "Failed to connect to Google Sheets API",
+  data: { errorCode: 401, reason: "Unauthorized" }
+};
+```
+
+---
+
+### **Handling TableBook Issues**
+
+When working with `TableBook`, operations like parsing, validating, processing, or generating return `Result` types. Use the `info` field to inspect `TableBookIssue` objects when an operation fails.
+
+#### **Example**
+```typescript
+const parseResult = tablebook.parse('json', rawInput);
+
+if (!parseResult.success) {
+  console.error("Parsing Issues:");
+  for (const issue of parseResult.info) {
+    console.error(`- ${issue.message} at line ${issue.location.line}`);
+  }
+}
+```
+
 ---
 ---
 
