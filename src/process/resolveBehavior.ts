@@ -143,7 +143,7 @@ const resolveTextBehavior = (
                 };
             }
 
-            const applyResult = resolveStyle(style.apply, colors, styles, path);
+            const applyResult = resolveStyle(style.style, colors, styles, path);
 
             if (!applyResult.success)
                 styleIssues.push(...applyResult.info);
@@ -154,7 +154,7 @@ const resolveTextBehavior = (
             else {
                 return {
                     rule: rule!,
-                    apply: applyResult.value!
+                    style: applyResult.value!
                 };
             }
         });
@@ -221,7 +221,7 @@ export const resolveEnumBehavior = (
             if (style) {
                 return {
                     rule: { type: 'is', value: item.name },
-                    apply: style
+                    style: style
                 };
             }
         }).filter((value): value is SheetConditionalStyle => value !== undefined)
@@ -295,7 +295,7 @@ const resolveNumericBehavior = (
             if (!ruleResult.success)
                 styleIssues.push(...ruleResult.info);
 
-            const applyResult = resolveStyle(style.apply, colors, styles, path);
+            const applyResult = resolveStyle(style.style, colors, styles, path);
 
             if (!applyResult.success)
                 styleIssues.push(...applyResult.info);
@@ -306,7 +306,7 @@ const resolveNumericBehavior = (
             else {
                 return {
                     rule: ruleResult.value!,
-                    apply: applyResult.value!
+                    style: applyResult.value!
                 };
             }
         }).filter((value): value is SheetConditionalStyle => value !== undefined);
@@ -368,7 +368,7 @@ const resolveTemporalBehavior = (
             if (!ruleResult.success)
                 styleIssues.push(...ruleResult.info);
 
-            const applyResult = resolveStyle(style.apply, colors, styles, path);
+            const applyResult = resolveStyle(style.style, colors, styles, path);
 
             if (!applyResult.success)
                 styleIssues.push(...applyResult.info);
@@ -379,7 +379,7 @@ const resolveTemporalBehavior = (
             else {
                 return {
                     rule: ruleResult.value!,
-                    apply: applyResult.value!
+                    style: applyResult.value!
                 };
             }
         }).filter((value): value is SheetConditionalStyle => value !== undefined);

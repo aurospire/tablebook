@@ -62,5 +62,5 @@ export type SheetRule =
 
 export type SheetConditionalStyle = {
     rule: SheetRule;
-    apply: SheetStyle;
+    style: SheetStyle;
 };

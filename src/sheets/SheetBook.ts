@@ -26,6 +26,6 @@ export type SheetColumn = {
     title: string;
     titleStyle?: SheetTitleStyle;
     dataStyle?: SheetStyle;
-    formula?: TableExpression<SheetSelector>;
+    expression?: TableExpression<SheetSelector>;
     behavior?: SheetBehavior;
 };

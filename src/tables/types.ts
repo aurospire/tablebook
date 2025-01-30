@@ -288,7 +288,10 @@ export type TableSelectorExpression<Selector> = {
 /** Type identifier for template expressions */
 export const TableLiteralExpressionType = 'literal';
 /** Template expression */
-export type TableLiteralExpression = { type: typeof TableLiteralExpressionType, of: string | number | boolean; };
+export type TableLiteralExpression = {
+    type: typeof TableLiteralExpressionType,
+    of: string | number | boolean;
+};
 
 /** Type identifier for template expressions */
 export const TableTemplateExpressionType = 'template';
@@ -357,7 +360,7 @@ export type TableTextRule = TableMatchRule | TableCustomRule;
 /** Defines a style to apply when a rule condition is met */
 export type TableConditionalStyle<Rule> = {
     rule: Rule;
-    apply: TableStyle | TableReference;
+    style: TableStyle | TableReference;
 };
 
 /* Numeric Formats */
