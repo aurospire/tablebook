@@ -44,7 +44,7 @@ export class ReferenceRegistry<T> {
             : emptyResolver;
     }
 
-    layer(refs?: TableReferenceMap<T>): ReferenceRegistry<T> {
+    overlay(refs?: TableReferenceMap<T>): ReferenceRegistry<T> {
         if (refs) {
             const resolver = new ReferenceRegistry(refs);
 
@@ -110,15 +110,15 @@ export class DefinitionsRegistry implements TableDefinitionsRegistry {
     }
 
 
-    layer(definitions?: TableDefinitions): DefinitionsRegistry {
+    overlay(definitions?: TableDefinitions): DefinitionsRegistry {
         return definitions
             ? new DefinitionsRegistry({
-                colors: this.#registries.colors.layer(definitions.colors),
-                styles: this.#registries.styles.layer(definitions.styles),
-                themes: this.#registries.themes.layer(definitions.themes),
-                numerics: this.#registries.numerics.layer(definitions.numerics),
-                temporals: this.#registries.temporals.layer(definitions.temporals),
-                types: this.#registries.types.layer(definitions.types),
+                colors: this.#registries.colors.overlay(definitions.colors),
+                styles: this.#registries.styles.overlay(definitions.styles),
+                themes: this.#registries.themes.overlay(definitions.themes),
+                numerics: this.#registries.numerics.overlay(definitions.numerics),
+                temporals: this.#registries.temporals.overlay(definitions.temporals),
+                types: this.#registries.types.overlay(definitions.types),
             })
             : this;
     }

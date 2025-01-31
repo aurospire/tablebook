@@ -43,7 +43,7 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
 
         const page = book.pages[p]; logger?.page?.(page);
 
-        const pageDefinitions = bookDefinitions.layer(page.definitions);
+        const pageDefinitions = bookDefinitions.overlay(page.definitions);
 
         const pageParents: (TableTheme | TableReference)[] = book.theme ? [book.theme] : [];
 
@@ -66,7 +66,7 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
 
             const group = page.groups[g]; logger?.group?.(group);
 
-            const groupDefinitions = pageDefinitions.layer(group.definitions);
+            const groupDefinitions = pageDefinitions.overlay(group.definitions);
 
             const groupParents = [...pageParents, ...(page.theme ? [page.theme] : [])];
 
@@ -88,7 +88,7 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
 
                 const column = group.columns[c]; logger?.column?.(column);
 
-                const columnDefinitions = groupDefinitions.layer(column.definitions);
+                const columnDefinitions = groupDefinitions.overlay(column.definitions);
 
                 const columnParents = [...groupParents, ...(group.theme ? [group.theme] : [])];
 
