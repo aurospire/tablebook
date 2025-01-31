@@ -1,9 +1,9 @@
 import { TableBookProcessIssue } from "../issues";
 import { SheetStyle, SheetTitleStyle } from "../sheets";
 import { isReference } from "../tables";
-import { TableColor, TableReference, TableStyle, TableTheme } from "../tables/types";
+import { TableReference, TableTheme } from "../tables/types";
 import { ColorObject, ObjectPath, Result } from "../util";
-import { ReferenceRegistry } from "./ReferenceRegistry";
+import { DefinitionsRegistry } from "./DefinitionsRegistry";
 import { resolveColor } from "./resolveColor";
 import { resolveStyle } from "./resolveStyle";
 
@@ -36,9 +36,7 @@ export const mergeThemes = (base: SheetTheme, override: SheetTheme): SheetTheme 
 
 export const resolveTheme = (
     theme: TableTheme | TableReference,
-    colors: ReferenceRegistry<TableColor>,
-    styles: ReferenceRegistry<TableStyle>,
-    themes: ReferenceRegistry<TableTheme>,
+    definitions: DefinitionsRegistry,
     parents: (TableTheme | TableReference)[],
     chain: TableTheme[],
     path: ObjectPath
@@ -47,7 +45,7 @@ export const resolveTheme = (
     const issues: TableBookProcessIssue[] = [];
 
     if (isReference(theme)) {
-        const result = themes.resolve(theme, path);
+        const result = definitions.themes.resolve(theme, path);
 
         if (result.success)
             resolved = result.value;
@@ -71,7 +69,7 @@ export const resolveTheme = (
     for (let i = 0; i < parents.length; i++) {
         const parent = parents[i];
 
-        const resolvedParent = resolveTheme(parent, colors, styles, themes, [], [], path);
+        const resolvedParent = resolveTheme(parent, definitions, [], [], path);
 
         if (resolvedParent.success)
             result = mergeThemes(result, resolvedParent.value);
@@ -85,7 +83,7 @@ export const resolveTheme = (
         for (let i = 0; i < resolved.inherits.length; i++) {
             const inherit = resolved.inherits[i];
 
-            const resolvedInherit = resolveTheme(inherit, colors, styles, themes, [], branchChain, path);
+            const resolvedInherit = resolveTheme(inherit, definitions, [], branchChain, path);
 
             if (resolvedInherit.success)
                 result = mergeThemes(result, resolvedInherit.value);
@@ -97,7 +95,7 @@ export const resolveTheme = (
 
     let tab: ColorObject | undefined;
     if (resolved.tab) {
-        const result = resolveColor(resolved.tab, colors, path);
+        const result = resolveColor(resolved.tab, definitions, path);
 
         if (result.success)
             tab = result.value;
@@ -107,7 +105,7 @@ export const resolveTheme = (
 
     let header: SheetTitleStyle | undefined;
     if (resolved.header) {
-        const result = resolveStyle(resolved.header, colors, styles, path);
+        const result = resolveStyle(resolved.header, definitions, path);
 
         if (result.success)
             header = result.value;
@@ -118,7 +116,7 @@ export const resolveTheme = (
 
     let group: SheetTitleStyle | undefined;
     if (resolved.group) {
-        const result = resolveStyle(resolved.group, colors, styles, path);
+        const result = resolveStyle(resolved.group, definitions, path);
 
         if (result.success)
             group = result.value;
@@ -128,7 +126,7 @@ export const resolveTheme = (
 
     let data: SheetStyle | undefined;
     if (resolved.data) {
-        const result = resolveStyle(resolved.data, colors, styles, path);
+        const result = resolveStyle(resolved.data, definitions, path);
 
         if (result.success)
             data = result.value;

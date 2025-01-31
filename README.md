@@ -1349,77 +1349,174 @@ Here are some complete examples of `TableTemporalFormat` using `TableTemporalUni
 
 ### **8. TableUnit and Hierarchical Structure**
 
-The `TableUnit` type provides the foundation for defining the `TableBook` hierarchy. This section builds from the smallest element (**TableColumn**) up to the entire workbook (**TableBook**), including reusable elements from `TableDefinitions`.
+The `TableUnit` type provides the foundation for defining a `TableBook`. This section covers each layer of the hierarchy—from the smallest element (**TableColumn**) to the root (**TableBook**)—and explains how **definitions** can be declared at each level to enable flexible, cascading reuse of styles, formats, and more.
 
 ---
 
-#### **8.1 TableUnit**
+### **8.1 TableDefinitions**
 
-The `TableUnit` is a base type for all elements in the hierarchy, providing shared properties like `name`, `theme`, and `description`.
+A `TableUnit` can optionally declare `definitions` that store **reusable, named elements** such as colors, styles, themes, numeric/temporal formats, and column types. Each level (**column, group, page, book**) can define its own `definitions`, and references to these definitions cascade **upward** when a match isn't found locally.
 
-##### **Definition**
+Additionally, **definitions themselves can reference other definitions** using `TableReference`. This enables modular, hierarchical styling and formatting where:
+- A **style** can reference a **color**.
+- A **theme** can inherit from another **theme**.
+- A **type** can reference a **format**.
+- A **numeric format** can reference another numeric format.
+- A **temporal format** can reference a pre-existing pattern.
+
+This design allows for **cleaner, DRY (Don’t Repeat Yourself) configurations**, making it easy to create reusable building blocks.
+
+---
+
+#### **8.1.1 Definition**
+
+```typescript
+export type TableReferenceMap<T> = Record<string, T | TableReference>;
+
+export type TableDefinitions = {
+    colors?: TableReferenceMap<TableColor>;
+    styles?: TableReferenceMap<TableHeaderStyle>;
+    themes?: TableReferenceMap<TableTheme>;
+    numerics?: TableReferenceMap<TableNumericFormat>;
+    temporals?: TableReferenceMap<TableTemporalFormat>;    
+    types?: TableReferenceMap<TableColumnType>;    
+};
+```
+
+##### **How TableReference Works**
+Each category (`colors`, `styles`, `themes`, `numerics`, `temporals`, `types`) follows the same pattern:  
+A **named object** can either:
+- Define the element **inline** (e.g., `danger: { fore: "#FF0000" }`).
+- **Reference another definition** using `@referenceName` (e.g., `alert: "@danger"`).
+
+This enables:
+1. **Thematic consistency** – A style can refer to predefined colors.
+2. **Extensible formats** – A numeric format can extend another numeric format.
+3. **Hierarchical styling** – A theme can inherit another theme’s properties.
+
+---
+
+#### **8.1.2 Example**
+
+```json
+{
+  "definitions": {
+    "colors": {
+      "warning": "#FFA500",
+      "danger": "#FF0000",
+      "alert": "@danger"
+    },
+    "styles": {
+      "boldHeader": { "fore": "#FFFFFF", "back": "#0000FF", "bold": true },
+      "alertHeader": { "fore": "@alert", "bold": true }
+    },
+    "themes": {
+      "corporate": { "inherits": ["@blue"], "header": "@boldHeader" }
+    },
+    "numerics": {
+      "currency": { "type": "currency", "symbol": "$", "position": "prefix" },
+      "usd": "@currency"
+    },
+    "temporals": {
+      "shortDate": [
+        { "type": "monthname", "length": "short" },
+        " ",
+        { "type": "day" },
+        ", ",
+        { "type": "year" }
+      ],
+      "usFormat": "@shortDate"
+    },
+    "types": {
+      "currencyColumn": { "kind": "numeric", "format": "@usd" }
+    }
+  }
+}
+```
+
+#### **8.1.3 Explanation of Example**
+- **Color Reference (`@alert`)**: `"alert"` refers to `"danger"`, meaning `"alert"` will resolve to `#FF0000`.
+- **Style Inheritance (`@alertHeader`)**: `"alertHeader"` references `"alert"` for its foreground color.
+- **Theme Inheritance (`@corporate`)**: The `"corporate"` theme inherits from `"@blue"` and applies `"@boldHeader"` to headers.
+- **Numeric Format Reference (`@usd`)**: `"usd"` simply references `"currency"`, ensuring consistency.
+- **Temporal Format Reference (`@usFormat`)**: `"usFormat"` refers to `"shortDate"`, preventing duplication.
+- **Column Type Reference (`@currencyColumn`)**: `"currencyColumn"` applies `"@usd"` as its format.
+
+---
+
+### **8.1.4 Key Benefits**
+- **Reusability**: Any definition can be **used multiple times** without repetition.
+- **Consistency**: Ensures **standardized** styling, formatting, and data types across the `TableBook`.
+- **Modular Structure**: Small, **composable** definitions allow for easier customization and scaling.
+- **Cascading Resolution**: If `"@referenceName"` isn't found in a `TableUnit`, it will **search upward** (column → group → page → book).
+
+---
+
+### **8.2 TableUnit**
+
+All elements in a `TableBook` (columns, groups, pages, and the book itself) extend `TableUnit`. It holds common properties like a name, optional theme, an optional description, and the optional `definitions`.
+
+#### **8.2.1 Definition**
+
 ```typescript
 export type TableUnit = {
-    name: string;                        // Unique identifier for the unit.
-    theme?: TableTheme | TableReference; // Optional visual theme.
-    description?: string;                // Optional explanation of the unit's purpose.
+  name: string;                        // Unique identifier.
+  theme?: TableTheme | TableReference; // Optional theme for this unit.
+  description?: string;                // Optional explanation/purpose.
+  definitions?: TableDefinitions;      // Local definitions, cascading upward.
 };
 ```
+
+- **`name`** must follow `TableUnitNameRegex` (`^[A-Z][A-Za-z0-9_]+$`), starting with an uppercase letter.
+- **`theme`** can be an inline `TableTheme` or a reference like `@myTheme`.
+- **`definitions`** can override or add to any definitions from parent units.
 
 ---
 
-#### **8.2 TableColumn**
+### **8.3 TableColumn**
 
-A `TableColumn` represents the smallest unit of the hierarchy. It defines the data type, optional computed expressions, and metadata about its source.
+A `TableColumn` represents the smallest unit in a `TableBook`. It extends `TableUnit` and includes properties for data typing and optional expressions.
 
-##### **Definition**
+#### **8.3.1 Definition**
+
 ```typescript
 export type TableColumn = TableUnit & {
-    type: TableColumnType | TableReference;      // The data type of the column.
-    source?: string;                             // Optional metadata about the column's data source.
-    expression?: TableExpression<TableSelector>; // Optional expression to compute the column's values.
+  type: TableColumnType | TableReference;      // The data type of the column.
+  source?: string;                             // Optional metadata about the column's data source.
+  expression?: TableExpression<TableSelector>; // Optional expression for computed values.
 };
 ```
 
-##### **Key Properties**
-- **`type`**: Specifies the column's data type, such as `numeric`, `text`, or `temporal`. See [TableColumnType](#9-tablecolumntype).
-- **`source`**: Describes where the data originates (e.g., an external database or API).
-- **`expression`**: Defines how the column's value is computed using structured expressions.
+#### **8.3.2 Example**
 
-##### **Example**
 ```json
 {
   "name": "Revenue",
-  "type": { "kind": "numeric" },  
-  "expression": {
-    "type": "compound",
-    "with": "+",
-    "items": [
-      { "type": "selector", "from": { "column": { "name": "Sales" }, "rows": "self" } },
-      { "type": "selector", "from": { "column": { "name": "Discounts" }, "rows": "self" } }
-    ]
+  "type": "@currencyColumn",
+  "definitions": {
+    "types": {
+      "currencyColumn": { "kind": "numeric", "format": "@currency" }
+    }
   }
 }
 ```
 
 ---
 
-#### **8.3 TableGroup**
+### **8.4 TableGroup**
 
-A `TableGroup` organizes related columns within a page. Groups make it easier to logically separate and style subsets of columns.
+A `TableGroup` organizes multiple `TableColumn` elements into a logical set (e.g., financial columns vs. operational columns). Groups also extend `TableUnit`, so they can have their own definitions, theme, or description.
 
-##### **Definition**
+#### **8.4.1 Definition**
+
 ```typescript
 export type TableGroup = TableUnit & {
-    columns: TableColumn[]; // Array of columns within the group.    
+  columns: TableColumn[];
 };
 ```
 
-##### **Key Details**
-- Groups improve readability and organization.
-- If a page contains only one group, the group name and header are hidden in the output.
+#### **8.4.2 Example**
 
-##### **Example**
 ```json
 {
   "name": "RevenueGroup",
@@ -1432,22 +1529,21 @@ export type TableGroup = TableUnit & {
 
 ---
 
-#### **8.4 TablePage**
-A `TablePage` represents a single sheet in the workbook, acting as the **table** in the `TableBook` paradigm. Each page contains one and only one table, which is defined by its groups and columns. The structure ensures that all data is organized vertically within this single table. This design keeps the focus on column-based relationships, with rows acting as records within the table. The `rows` property specifies the total number of records available for the table, ensuring consistency across all column groups.
+### **8.5 TablePage**
 
-##### **Definition**
+A `TablePage` represents a **single sheet** within a `TableBook`. Every page has **one table** made up of groups and columns.
+
+#### **8.5.1 Definition**
+
 ```typescript
 export type TablePage = TableUnit & {
-    groups: TableGroup[]; // Array of column groups on the page.
-    rows: number;         // Total number of data rows on the page.
+  groups: TableGroup[];
+  rows: number;         // Number of Rows in the Table
 };
 ```
 
-##### **Key Details**
-- **`rows`**: Determines the number of rows available for data. Columns and groups operate within this range.
-- Pages can inherit or override themes from the book.
+#### **8.5.2 Example**
 
-##### **Example**
 ```json
 {
   "name": "SummaryPage",
@@ -1456,8 +1552,7 @@ export type TablePage = TableUnit & {
     {
       "name": "RevenueGroup",
       "columns": [
-        { "name": "Revenue", "type": { "kind": "numeric" } },
-        { "name": "Cost", "type": { "kind": "numeric" } }
+        { "name": "Revenue", "type": { "kind": "numeric" } }
       ]
     }
   ]
@@ -1466,65 +1561,60 @@ export type TablePage = TableUnit & {
 
 ---
 
-#### **8.5 TableBook**
+### **8.6 TableBook**
 
-A `TableBook` is the root structure of the hierarchy, containing all pages and an optional `definitions` object for reusable elements.
+A `TableBook` is the **root** container, holding an array of pages. It extends `TableUnit` so it can also specify **global** definitions, themes, or descriptions.
 
-##### **Definition**
+#### **8.6.1 Definition**
+
 ```typescript
 export type TableBook = TableUnit & {
-    pages: TablePage[];        // Array of pages in the workbook.
-    definitions?: TableDefinitions; // Centralized reusable definitions.
+  pages: TablePage[];
 };
 ```
 
-##### **TableDefinitions**
-The `definitions` object allows you to define reusable colors, styles, themes, formats, and types.
+#### **8.6.2 Example**
 
-##### **Definition**
-```typescript
-export type TableDefinitions = {
-    colors?: Record<string, TableColor | TableReference>;                   // Custom color definitions.
-    styles?: Record<string, TableHeaderStyle | TableReference>;             // Reusable style definitions.
-    themes?: Record<string, TableTheme |  TableReference>;                  // Theme definitions.    
-    numerics?: Record<string, TableNumericFormat | TableReference>;         // Custom numeric formats.
-    temporal?: Record<string, TableTemporalFormat | TableReference>;        // Custom temporal formats.    
-    types?: Record<string, TableColumnType | TableReference>;               // Reusable column type definitions.
-};
-```
-
-##### **Example: TableDefinitions**
 ```json
 {
+  "name": "AnnualReport",
   "definitions": {
     "colors": {
-      "warning": "#FFA500",
-      "danger": "#FF0000"
-    },
-    "styles": {
-      "boldHeader": { "fore": "#FFFFFF", "back": "#0000FF", "bold": true }
+      "highlight": "#FFD700"
     },
     "themes": {
-      "reportTheme": { "inherits": ["@blue"], "header": { "bold": true } }
-    },    
-    "numerics": {
-      "currency": { "type": "currency", "symbol": "$", "position": "prefix" }
-    },
-    "temporals": {
-      "shortDate": [
-        { "type": "monthname", "length": "short" },
-        " ",
-        { "type": "day" },
-        ", ",
-        { "type": "year" }
-      ]
-    },    
-    "types": {
-      "currencyColumn": { "kind": "numeric", "format": "@currency" }
+      "highlightTheme": {
+        "inherits": ["@blue"],
+        "tab": "@highlight"
+      }
     }
-  }
+  },
+  "pages": [
+    {
+      "name": "SummaryPage",
+      "theme": "@highlightTheme",
+      "rows": 100,
+      "groups": [
+        {
+          "name": "RevenueGroup",
+          "columns": [
+            { "name": "Revenue", "type": "@currencyColumn" }
+          ]
+        }
+      ]
+    }
+  ]
 }
 ```
+
+---
+
+### **Key Takeaways**
+1. **Local Definitions at Every Level**: Each `TableUnit` can define its own `definitions`, enabling flexible, localized overrides or additions.
+2. **Upward Cascading**: If a referenced definition isn’t found locally, the search continues up the hierarchy.
+3. **Consistent Column-Based Design**: Each page holds exactly one table, defined by groups and columns, with row count determined by the page’s `rows` property.
+4. **Unified `TableUnit`**: Common properties (`name`, `theme`, `description`, `definitions`) ensure consistent behavior and the ability to override settings at any level.
+
 ---
 ---
 

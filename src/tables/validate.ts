@@ -313,11 +313,21 @@ const TableColumnType: z.ZodType<TableColumnType> = z.union([
 ]);
 
 /* Table Structures */
+const TableDefinitions: z.ZodType<TableDefinitions> = z.object({
+    colors: z.record(z.string(), z.union([TableColor, TableReference])).optional(),
+    styles: z.record(z.string(), z.union([TableHeaderStyle, TableReference])).optional(),
+    themes: z.record(z.string(), z.union([TableTheme, TableReference])).optional(),
+    numerics: z.record(z.string(), z.union([TableNumericFormat, TableReference])).optional(),
+    temporals: z.record(z.string(), z.union([TableTemporalFormat, TableReference])).optional(),
+    types: z.record(z.string(), z.union([TableColumnType, TableReference])).optional()
+}).strict();
+
 const TableUnit = z.object({
     name: z.string().regex(TableUnitNameRegex),
     theme: z.union([TableTheme, TableReference]).optional(),
-    description: z.string().optional()
-});
+    description: z.string().optional(),
+    definitions: TableDefinitions.optional()
+}).strict();
 
 const TableColumn: z.ZodType<TableColumn> = TableUnit.merge(z.object({
     type: z.union([TableColumnType, TableReference]),
@@ -334,18 +344,9 @@ const TablePage: z.ZodType<TablePage> = TableUnit.merge(z.object({
     rows: z.number().int().positive()
 })).strict();
 
-const TableDefinitions: z.ZodType<TableDefinitions> = z.object({
-    colors: z.record(z.string(), z.union([TableColor, TableReference])).optional(),
-    styles: z.record(z.string(), z.union([TableHeaderStyle, TableReference])).optional(),
-    themes: z.record(z.string(), z.union([TableTheme, TableReference])).optional(),
-    numerics: z.record(z.string(), z.union([TableNumericFormat, TableReference])).optional(),
-    temporals: z.record(z.string(), z.union([TableTemporalFormat, TableReference])).optional(),
-    types: z.record(z.string(), z.union([TableColumnType, TableReference])).optional()
-}).strict();
 
 const TableBook: z.ZodType<TableBook> = TableUnit.merge(z.object({
     pages: z.array(TablePage),
-    definitions: TableDefinitions.optional()
 })).strict();
 
 export { TableBook as TableBookValidator };

@@ -1,15 +1,15 @@
 import { DateTime } from "luxon";
 import { TableBookProcessIssue } from "../issues";
 import { SheetBehavior, SheetConditionalStyle, SheetRule, SheetStyle } from "../sheets";
+import { isReference } from "../tables";
 import { TableColor, TableColumnType, TableComparisonRule, TableEnumType, TableLookupType, TableNumericFormat, TableNumericType, TableReference, TableStyle, TableTemporalFormat, TableTemporalString, TableTemporalType, TableTextType } from "../tables/types";
 import { ObjectPath, Result } from "../util";
+import { DefinitionsRegistry, ReferenceRegistry } from "./DefinitionsRegistry";
 import { resolveColor } from "./resolveColor";
 import { ResolvedColumn } from "./resolveColumns";
 import { resolveExpression } from "./resolveExpression";
-import { ReferenceRegistry } from "./ReferenceRegistry";
 import { resolveSelector } from "./resolveSelector";
 import { resolveStyle } from "./resolveStyle";
-import { isReference } from "../tables";
 import { mergeStyles } from "./resolveTheme";
 
 const resolveNumericRule = (
@@ -90,8 +90,7 @@ const resolveTextBehavior = (
     resolved: TableTextType,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
-    colors: ReferenceRegistry<TableColor>,
-    styles: ReferenceRegistry<TableStyle>,
+    definitions: DefinitionsRegistry,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
 
@@ -143,7 +142,7 @@ const resolveTextBehavior = (
                 };
             }
 
-            const applyResult = resolveStyle(style.style, colors, styles, path);
+            const applyResult = resolveStyle(style.style, definitions, path);
 
             if (!applyResult.success)
                 styleIssues.push(...applyResult.info);
@@ -171,8 +170,7 @@ const resolveTextBehavior = (
 
 export const resolveEnumBehavior = (
     type: TableEnumType,
-    colors: ReferenceRegistry<TableColor>,
-    styles: ReferenceRegistry<TableStyle>,
+    definitions: DefinitionsRegistry,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
@@ -180,7 +178,7 @@ export const resolveEnumBehavior = (
     let baseStyle: SheetStyle | undefined;
 
     if (type.style) {
-        const baseStyleResult = resolveStyle(type.style, colors, styles, path);
+        const baseStyleResult = resolveStyle(type.style, definitions, path);
 
         if (baseStyleResult.success)
             baseStyle = baseStyleResult.value;
@@ -202,7 +200,7 @@ export const resolveEnumBehavior = (
             let style: SheetStyle = { ...baseStyle };
 
 
-            const styleResult = item.style ? resolveStyle(item.style, colors, styles, path) : Result.success(undefined);
+            const styleResult = item.style ? resolveStyle(item.style, definitions, path) : Result.success(undefined);
 
             if (styleResult.success) {
                 if (styleResult.value) style = mergeStyles(style, styleResult.value, false);
@@ -211,10 +209,10 @@ export const resolveEnumBehavior = (
                 issues.push(...styleResult.info);
 
 
-            const colorResult = item.color ? resolveColor(item.color, colors, path) : Result.success(undefined);
+            const colorResult = item.color ? resolveColor(item.color, definitions, path) : Result.success(undefined);
 
             if (colorResult.success)
-                style.fore = colorResult.value;
+                style.fore = colorResult.value || style.fore;
             else
                 issues.push(...colorResult.info);
 
@@ -254,9 +252,7 @@ const resolveNumericBehavior = (
     type: TableNumericType,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
-    colors: ReferenceRegistry<TableColor>,
-    styles: ReferenceRegistry<TableStyle>,
-    numerics: ReferenceRegistry<TableNumericFormat>,
+    definitions: DefinitionsRegistry,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
@@ -264,7 +260,7 @@ const resolveNumericBehavior = (
     let resolvedFormat: TableNumericFormat | undefined;
     if (type.format) {
         if (isReference(type.format)) {
-            const resolved = numerics.resolve(type.format, path);
+            const resolved = definitions.numerics.resolve(type.format, path);
 
             if (resolved.success)
                 resolvedFormat = resolved.value;
@@ -295,7 +291,7 @@ const resolveNumericBehavior = (
             if (!ruleResult.success)
                 styleIssues.push(...ruleResult.info);
 
-            const applyResult = resolveStyle(style.style, colors, styles, path);
+            const applyResult = resolveStyle(style.style, definitions, path);
 
             if (!applyResult.success)
                 styleIssues.push(...applyResult.info);
@@ -327,9 +323,7 @@ const resolveTemporalBehavior = (
     type: TableTemporalType,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
-    colors: ReferenceRegistry<TableColor>,
-    styles: ReferenceRegistry<TableStyle>,
-    temporals: ReferenceRegistry<TableTemporalFormat>,
+    definitions: DefinitionsRegistry,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
@@ -337,7 +331,7 @@ const resolveTemporalBehavior = (
     let resolvedFormat: TableTemporalFormat | undefined;
     if (type.format) {
         if (isReference(type.format)) {
-            const resolved = temporals.resolve(type.format, path);
+            const resolved = definitions.temporals.resolve(type.format, path);
 
             if (resolved.success)
                 resolvedFormat = resolved.value;
@@ -368,7 +362,7 @@ const resolveTemporalBehavior = (
             if (!ruleResult.success)
                 styleIssues.push(...ruleResult.info);
 
-            const applyResult = resolveStyle(style.style, colors, styles, path);
+            const applyResult = resolveStyle(style.style, definitions, path);
 
             if (!applyResult.success)
                 styleIssues.push(...applyResult.info);
@@ -399,17 +393,13 @@ export const resolveBehavior = (
     type: TableColumnType | TableReference,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
-    types: ReferenceRegistry<TableColumnType>,
-    colors: ReferenceRegistry<TableColor>,
-    styles: ReferenceRegistry<TableStyle>,
-    numerics: ReferenceRegistry<TableNumericFormat>,
-    temporals: ReferenceRegistry<TableTemporalFormat>,
+    definitions: DefinitionsRegistry,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     let resolved: TableColumnType;
 
     if (isReference(type)) {
-        const result = types.resolve(type, path);
+        const result = definitions.types.resolve(type, path);
 
         if (result.success)
             resolved = result.value;
@@ -421,19 +411,19 @@ export const resolveBehavior = (
 
     switch (resolved.kind) {
         case "text":
-            return resolveTextBehavior(resolved, page, group, name, columns, colors, styles, path);
+            return resolveTextBehavior(resolved, page, group, name, columns, definitions, path);
 
         case "enum":
-            return resolveEnumBehavior(resolved, colors, styles, path);
+            return resolveEnumBehavior(resolved, definitions, path);
 
         case "lookup":
             return resolveLookupBehavior(resolved, page, group, name, columns, path);
 
         case "numeric":
-            return resolveNumericBehavior(resolved, page, group, name, columns, colors, styles, numerics, path);
+            return resolveNumericBehavior(resolved, page, group, name, columns, definitions, path);
 
         case "temporal":
-            return resolveTemporalBehavior(resolved, page, group, name, columns, colors, styles, temporals, path);
+            return resolveTemporalBehavior(resolved, page, group, name, columns, definitions, path);
     };
 
 };

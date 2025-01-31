@@ -3,7 +3,7 @@ import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "../sheets/SheetBo
 import { TableDefinitionResolver } from "../tables";
 import { TableBook, TableColumn, TableGroup, TablePage, TableReference, TableTheme } from "../tables/types";
 import { ObjectPath, Result } from "../util";
-import { ReferenceRegistry } from "./ReferenceRegistry";
+import { DefinitionsRegistry, ReferenceRegistry } from "./DefinitionsRegistry";
 import { resolveBehavior } from "./resolveBehavior";
 import { resolveColumns } from "./resolveColumns";
 import { resolveExpression } from "./resolveExpression";
@@ -35,12 +35,7 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
     const columns = columnsResult.value!;
 
     // Reify definitions
-    const colors = new ReferenceRegistry(book.definitions?.colors, resolvers?.map(item => item.colors));
-    const styles = new ReferenceRegistry(book.definitions?.styles, resolvers?.map(item => item.styles));
-    const themes = new ReferenceRegistry(book.definitions?.themes, resolvers?.map(item => item.themes));
-    const numerics = new ReferenceRegistry(book.definitions?.numerics, resolvers?.map(item => item.numerics));
-    const temporals = new ReferenceRegistry(book.definitions?.temporals, resolvers?.map(item => item.temporals));
-    const types = new ReferenceRegistry(book.definitions?.types, resolvers?.map(item => item.types));
+    const bookDefinitions = DefinitionsRegistry.new(book.definitions, resolvers);
 
 
     for (let p = 0; p < book.pages.length; p++) {
@@ -48,9 +43,11 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
 
         const page = book.pages[p]; logger?.page?.(page);
 
+        const pageDefinitions = bookDefinitions.overlay(page.definitions);
+
         const pageParents: (TableTheme | TableReference)[] = book.theme ? [book.theme] : [];
 
-        const pageTheme = resolveTheme(page.theme ?? {}, colors, styles, themes, pageParents, [], pagePath);
+        const pageTheme = resolveTheme(page.theme ?? {}, pageDefinitions, pageParents, [], pagePath);
 
         if (!pageTheme.success)
             issues.push(...pageTheme.info);
@@ -69,9 +66,11 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
 
             const group = page.groups[g]; logger?.group?.(group);
 
+            const groupDefinitions = pageDefinitions.overlay(group.definitions);
+
             const groupParents = [...pageParents, ...(page.theme ? [page.theme] : [])];
 
-            const groupTheme = resolveTheme(group.theme ?? {}, colors, styles, themes, groupParents, [], groupPath);
+            const groupTheme = resolveTheme(group.theme ?? {}, groupDefinitions, groupParents, [], groupPath);
 
             if (!groupTheme.success)
                 issues.push(...groupTheme.info);
@@ -89,9 +88,11 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
 
                 const column = group.columns[c]; logger?.column?.(column);
 
+                const columnDefinitions = groupDefinitions.overlay(column.definitions);
+
                 const columnParents = [...groupParents, ...(group.theme ? [group.theme] : [])];
 
-                const columnTheme = resolveTheme(column.theme ?? {}, colors, styles, themes, columnParents, [], columnPath);
+                const columnTheme = resolveTheme(column.theme ?? {}, columnDefinitions, columnParents, [], columnPath);
                 if (!columnTheme.success)
                     issues.push(...columnTheme.info);
 
@@ -99,7 +100,7 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
 
                 if (column.expression) {
                     const result = resolveExpression(column.expression, page.name, group.name, column.name, columns, columnPath);
-                    
+
                     if (!result.success)
                         issues.push(...result.info);
                     else
@@ -108,7 +109,7 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
 
                 let behavior;
                 if (column.type !== undefined) {
-                    const result = resolveBehavior(column.type, page.name, group.name, column.name, columns, types, colors, styles, numerics, temporals, columnPath);
+                    const result = resolveBehavior(column.type, page.name, group.name, column.name, columns, columnDefinitions, columnPath);
 
                     if (!result.success)
                         issues.push(...result.info);

@@ -3,13 +3,12 @@ import { SheetBorder, SheetTitleStyle } from "../sheets";
 import { isReference } from "../tables";
 import { TableColor, TableHeaderStyle, TableReference, TableStyle } from "../tables/types";
 import { ColorObject, ObjectPath, Result } from "../util";
-import { ReferenceRegistry } from "./ReferenceRegistry";
+import { DefinitionsRegistry, ReferenceRegistry } from "./DefinitionsRegistry";
 import { resolveColor } from "./resolveColor";
 
 export const resolveStyle = (
     style: TableHeaderStyle | TableReference,
-    colors: ReferenceRegistry<TableColor>,
-    styles: ReferenceRegistry<TableStyle>,
+    definitions: DefinitionsRegistry,
     path: ObjectPath
 ): Result<SheetTitleStyle, TableBookProcessIssue[]> => {
     let resolved: TableHeaderStyle;
@@ -17,7 +16,7 @@ export const resolveStyle = (
     const issues: TableBookProcessIssue[] = [];
 
     if (isReference(style)) {
-        const result = styles.resolve(style, path);
+        const result = definitions.styles.resolve(style, path);
 
         if (!result.success)
             return Result.failure(result.info);
@@ -30,7 +29,7 @@ export const resolveStyle = (
 
     let fore: ColorObject | undefined;
     if (resolved.fore) {
-        const result = resolveColor(resolved.fore, colors, path);
+        const result = resolveColor(resolved.fore, definitions, path);
 
         if (result.success)
             fore = result.value;
@@ -40,7 +39,7 @@ export const resolveStyle = (
 
     let back: ColorObject | undefined;
     if (resolved.back) {
-        const result = resolveColor(resolved.back, colors, path);
+        const result = resolveColor(resolved.back, definitions, path);
 
         if (result.success)
             back = result.value;
@@ -55,7 +54,7 @@ export const resolveStyle = (
 
     let beneath: SheetBorder | undefined;
     if (resolved.beneath) {
-        const result = resolveColor(resolved.beneath.color, colors, path);
+        const result = resolveColor(resolved.beneath.color, definitions, path);
 
         if (result.success)
             beneath = {
@@ -68,7 +67,7 @@ export const resolveStyle = (
 
     let between: SheetBorder | undefined;
     if (resolved.between) {
-        const result = resolveColor(resolved.between.color, colors, path);
+        const result = resolveColor(resolved.between.color, definitions, path);
 
         if (result.success)
             between = {
