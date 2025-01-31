@@ -913,8 +913,8 @@ The `TableConditionalStyle` type applies styling to data when a specific rule or
 ##### **Definition**
 ```typescript
 export type TableConditionalStyle<Rule> = {
-    rule: Rule;                              // The rule to trigger this style.
-    apply: TableStyle | TableReference;      // The style to apply if the rule is satisfied.
+    when: Rule;                              // The rule to trigger this style.
+    style: TableStyle | TableReference;      // The style to apply if the rule is satisfied.
 };
 ```
 

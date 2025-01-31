@@ -126,8 +126,8 @@ const resolveTextBehavior = (
 
             let rule: SheetRule | undefined;
 
-            if (style.rule.type === 'custom') {
-                const result = resolveExpression(style.rule.expression, page, group, name, columns, path);
+            if (style.when.type === 'custom') {
+                const result = resolveExpression(style.when.expression, page, group, name, columns, path);
                 if (result.success)
                     rule = {
                         type: 'formula',
@@ -138,8 +138,8 @@ const resolveTextBehavior = (
             }
             else {
                 rule = {
-                    type: style.rule.type,
-                    value: style.rule.value
+                    type: style.when.type,
+                    value: style.when.value
                 };
             }
 
@@ -153,7 +153,7 @@ const resolveTextBehavior = (
             }
             else {
                 return {
-                    rule: rule!,
+                    when: rule!,
                     style: applyResult.value!
                 };
             }
@@ -220,7 +220,7 @@ export const resolveEnumBehavior = (
 
             if (style) {
                 return {
-                    rule: { type: 'is', value: item.name },
+                    when: { type: 'is', value: item.name },
                     style: style
                 };
             }
@@ -290,7 +290,7 @@ const resolveNumericBehavior = (
         resolvedStyles = type.styles.map((style): SheetConditionalStyle | undefined => {
             const styleIssues: TableBookProcessIssue[] = [];
 
-            const ruleResult = resolveNumericRule(style.rule, page, group, name, columns, path);
+            const ruleResult = resolveNumericRule(style.when, page, group, name, columns, path);
 
             if (!ruleResult.success)
                 styleIssues.push(...ruleResult.info);
@@ -305,7 +305,7 @@ const resolveNumericBehavior = (
             }
             else {
                 return {
-                    rule: ruleResult.value!,
+                    when: ruleResult.value!,
                     style: applyResult.value!
                 };
             }
@@ -363,7 +363,7 @@ const resolveTemporalBehavior = (
         resolvedStyles = type.styles.map((style): SheetConditionalStyle | undefined => {
             const styleIssues: TableBookProcessIssue[] = [];
 
-            const ruleResult = resolveTemporalRule(style.rule, page, group, name, columns, path);
+            const ruleResult = resolveTemporalRule(style.when, page, group, name, columns, path);
 
             if (!ruleResult.success)
                 styleIssues.push(...ruleResult.info);
@@ -378,7 +378,7 @@ const resolveTemporalBehavior = (
             }
             else {
                 return {
-                    rule: ruleResult.value!,
+                    when: ruleResult.value!,
                     style: applyResult.value!
                 };
             }

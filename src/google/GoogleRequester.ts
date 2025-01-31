@@ -116,7 +116,7 @@ export class GoogleRequester {
                 rule: {
                     ranges: [toGridRange(sheetId, range)],
                     booleanRule: {
-                        condition: toGoogleCondition(format.rule, range.from, false),
+                        condition: toGoogleCondition(format.when, range.from, false),
                         format: toCellFormat(format.style)
                     }
                 }

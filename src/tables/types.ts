@@ -360,7 +360,7 @@ export type TableTextRule = TableMatchRule | TableCustomRule;
 
 /** Defines a style to apply when a rule condition is met */
 export type TableConditionalStyle<Rule> = {
-    rule: Rule;
+    when: Rule;
     style: TableStyle | TableReference;
 };
 

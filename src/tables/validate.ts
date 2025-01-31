@@ -212,7 +212,7 @@ const TableTextRule: z.ZodType<TableTextRule> = z.union([TableMatchRule, TableCu
 
 const makeConditionalStyle = <Rule extends z.ZodType<any>>(rule: Rule) => {
     return z.object({
-        rule: rule,
+        when: rule,
         style: TableStyleReference
     }).strict();
 };
