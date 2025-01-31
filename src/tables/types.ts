@@ -537,6 +537,25 @@ export type TableColumnType = TableTextType | TableEnumType | TableLookupType | 
 
 /* Table Structures */
 
+/** A named map of definitions where values can be either type `T` or a `TableReference`. */
+export type TableReferenceMap<T> = Record<string, T | TableReference>;
+
+/** Container for reusable definitions, enabling references to common elements across the TableBook. */
+export type TableDefinitions = {
+    /** Custom color definitions. Includes prebuilt colors from StandardPalettes->main */
+    colors?: TableReferenceMap<TableColor>;
+    /** Reusable style definitions */
+    styles?: TableReferenceMap<TableHeaderStyle>;
+    /** Custom theme definitions. Includes prebuilt Themes build from StandardPalettes */
+    themes?: TableReferenceMap<TableTheme>;
+    /** Custom numeric format definitions */
+    numerics?: TableReferenceMap<TableNumericFormat>;
+    /** Custom temporal format definitions */
+    temporals?: TableReferenceMap<TableTemporalFormat>;    
+    /** Reusable type definitions */
+    types?: TableReferenceMap<TableColumnType>;    
+};
+
 /** Regex pattern validating table unit names: must start with uppercase, followed by alphanumeric */
 export const TableUnitNameRegex = /^[A-Z][A-Za-z0-9_]+$/;
 
@@ -551,6 +570,8 @@ export type TableUnit = {
     theme?: TableTheme | TableReference;
     /** Optional description of the unit's purpose */
     description?: string;
+    /** Optional container for reusable definitions */
+    definitions?: TableDefinitions;
 };
 
 /** 
@@ -587,31 +608,10 @@ export type TablePage = TableUnit & {
 };
 
 /** 
-* Container for reusable definitions
-* Enables referencing common elements across the TableBook
-*/
-export type TableDefinitions = {
-    /** Custom color definitions. Includes prebuilt colors from StandardPalettes->main */
-    colors?: Record<string, TableColor | TableReference>;
-    /** Reusable style definitions */
-    styles?: Record<string, TableHeaderStyle | TableReference>;
-    /** Custom theme definitions. Includes prebuilt Themes build from StandardPalettes */
-    themes?: Record<string, TableTheme | TableReference>;
-    /** Custom numeric format definitions */
-    numerics?: Record<string, TableNumericFormat | TableReference>;
-    /** Custom temporal format definitions */
-    temporals?: Record<string, TableTemporalFormat | TableReference>;
-    /** Reusable type definitions */
-    types?: Record<string, TableColumnType | TableReference>;
-};
-
-/** 
 * Root type representing an entire workbook
 * Contains all pages and shared definitions
 */
 export type TableBook = TableUnit & {
     /** Array of pages in this workbook */
     pages: TablePage[];
-    /** Optional container for reusable definitions */
-    definitions?: TableDefinitions;
 };
