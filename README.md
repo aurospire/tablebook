@@ -1353,7 +1353,7 @@ The `TableUnit` type provides the foundation for defining a `TableBook`. This se
 
 ---
 
-### **8.1 TableDefinitions**
+#### **8.1 TableDefinitions**
 
 A `TableUnit` can optionally declare `definitions` that store **reusable, named elements** such as colors, styles, themes, numeric/temporal formats, and column types. Each level (**column, group, page, book**) can define its own `definitions`, and references to these definitions cascade **upward** when a match isn't found locally.
 
@@ -1368,7 +1368,7 @@ This design allows for **cleaner, DRY (Don’t Repeat Yourself) configurations**
 
 ---
 
-#### **8.1.1 Definition**
+##### **8.1.1 Definition**
 
 ```typescript
 export type TableReferenceMap<T> = Record<string, T | TableReference>;
@@ -1396,7 +1396,7 @@ This enables:
 
 ---
 
-#### **8.1.2 Example**
+##### **8.1.2 Example**
 
 ```json
 {
@@ -1434,7 +1434,7 @@ This enables:
 }
 ```
 
-#### **8.1.3 Explanation of Example**
+##### **8.1.3 Explanation of Example**
 - **Color Reference (`@alert`)**: `"alert"` refers to `"danger"`, meaning `"alert"` will resolve to `#FF0000`.
 - **Style Inheritance (`@alertHeader`)**: `"alertHeader"` references `"alert"` for its foreground color.
 - **Theme Inheritance (`@corporate`)**: The `"corporate"` theme inherits from `"@blue"` and applies `"@boldHeader"` to headers.
@@ -1444,7 +1444,7 @@ This enables:
 
 ---
 
-### **8.1.4 Key Benefits**
+##### **8.1.4 Key Benefits**
 - **Reusability**: Any definition can be **used multiple times** without repetition.
 - **Consistency**: Ensures **standardized** styling, formatting, and data types across the `TableBook`.
 - **Modular Structure**: Small, **composable** definitions allow for easier customization and scaling.
@@ -1452,11 +1452,11 @@ This enables:
 
 ---
 
-### **8.2 TableUnit**
+#### **8.2 TableUnit**
 
 All elements in a `TableBook` (columns, groups, pages, and the book itself) extend `TableUnit`. It holds common properties like a name, optional theme, an optional description, and the optional `definitions`.
 
-#### **8.2.1 Definition**
+##### **8.2.1 Definition**
 
 ```typescript
 export type TableUnit = {
@@ -1473,11 +1473,11 @@ export type TableUnit = {
 
 ---
 
-### **8.3 TableColumn**
+#### **8.3 TableColumn**
 
 A `TableColumn` represents the smallest unit in a `TableBook`. It extends `TableUnit` and includes properties for data typing and optional expressions.
 
-#### **8.3.1 Definition**
+##### **8.3.1 Definition**
 
 ```typescript
 export type TableColumn = TableUnit & {
@@ -1487,7 +1487,7 @@ export type TableColumn = TableUnit & {
 };
 ```
 
-#### **8.3.2 Example**
+##### **8.3.2 Example**
 
 ```json
 {
@@ -1503,11 +1503,11 @@ export type TableColumn = TableUnit & {
 
 ---
 
-### **8.4 TableGroup**
+#### **8.4 TableGroup**
 
 A `TableGroup` organizes multiple `TableColumn` elements into a logical set (e.g., financial columns vs. operational columns). Groups also extend `TableUnit`, so they can have their own definitions, theme, or description.
 
-#### **8.4.1 Definition**
+##### **8.4.1 Definition**
 
 ```typescript
 export type TableGroup = TableUnit & {
@@ -1515,7 +1515,7 @@ export type TableGroup = TableUnit & {
 };
 ```
 
-#### **8.4.2 Example**
+##### **8.4.2 Example**
 
 ```json
 {
@@ -1529,11 +1529,11 @@ export type TableGroup = TableUnit & {
 
 ---
 
-### **8.5 TablePage**
+#### **8.5 TablePage**
 
 A `TablePage` represents a **single sheet** within a `TableBook`. Every page has **one table** made up of groups and columns.
 
-#### **8.5.1 Definition**
+##### **8.5.1 Definition**
 
 ```typescript
 export type TablePage = TableUnit & {
@@ -1542,7 +1542,7 @@ export type TablePage = TableUnit & {
 };
 ```
 
-#### **8.5.2 Example**
+##### **8.5.2 Example**
 
 ```json
 {
@@ -1561,11 +1561,11 @@ export type TablePage = TableUnit & {
 
 ---
 
-### **8.6 TableBook**
+#### **8.6 TableBook**
 
 A `TableBook` is the **root** container, holding an array of pages. It extends `TableUnit` so it can also specify **global** definitions, themes, or descriptions.
 
-#### **8.6.1 Definition**
+##### **8.6.1 Definition**
 
 ```typescript
 export type TableBook = TableUnit & {
@@ -1573,7 +1573,7 @@ export type TableBook = TableUnit & {
 };
 ```
 
-#### **8.6.2 Example**
+##### **8.6.2 Example**
 
 ```json
 {
@@ -1609,7 +1609,7 @@ export type TableBook = TableUnit & {
 
 ---
 
-### **Key Takeaways**
+#### **Key Takeaways**
 1. **Local Definitions at Every Level**: Each `TableUnit` can define its own `definitions`, enabling flexible, localized overrides or additions.
 2. **Upward Cascading**: If a referenced definition isn’t found locally, the search continues up the hierarchy.
 3. **Consistent Column-Based Design**: Each page holds exactly one table, defined by groups and columns, with row count determined by the page’s `rows` property.
