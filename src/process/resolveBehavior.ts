@@ -212,7 +212,7 @@ export const resolveEnumBehavior = (
             const colorResult = item.color ? resolveColor(item.color, definitions, path) : Result.success(undefined);
 
             if (colorResult.success)
-                style.fore = colorResult.value;
+                style.fore = colorResult.value || style.fore;
             else
                 issues.push(...colorResult.info);
 
