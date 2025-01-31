@@ -44,12 +44,16 @@ export class ReferenceRegistry<T> {
             : emptyResolver;
     }
 
-    layer(refs: TableReferenceMap<T>): ReferenceRegistry<T> {
-        const resolver = new ReferenceRegistry(refs);
+    layer(refs?: TableReferenceMap<T>): ReferenceRegistry<T> {
+        if (refs) {
+            const resolver = new ReferenceRegistry(refs);
 
-        resolver.#resolver = registryResolver(this);
+            resolver.#resolver = registryResolver(this);
 
-        return resolver;
+            return resolver;
+        }
+
+        return this;
     }
 
     resolve(ref: TableReference, path: ObjectPath): Result<T, TableBookProcessIssue[]> {
@@ -94,27 +98,29 @@ export class DefinitionsRegistry implements TableDefinitionsRegistry {
         this.#registries = registries;
     }
 
-    static new(defintions: TableDefinitions, resolvers?: TableDefinitionResolver[]) {
+    static new(defintions?: TableDefinitions, resolvers?: TableDefinitionResolver[]) {
         return new DefinitionsRegistry({
-            colors: new ReferenceRegistry(defintions.colors, resolvers?.map(r => r.colors)),
-            styles: new ReferenceRegistry(defintions.styles, resolvers?.map(r => r.styles)),
-            themes: new ReferenceRegistry(defintions.themes, resolvers?.map(r => r.themes)),
-            numerics: new ReferenceRegistry(defintions.numerics, resolvers?.map(r => r.numerics)),
-            temporals: new ReferenceRegistry(defintions.temporals, resolvers?.map(r => r.temporals)),
-            types: new ReferenceRegistry(defintions.types, resolvers?.map(r => r.types)),
+            colors: new ReferenceRegistry(defintions?.colors, resolvers?.map(r => r.colors)),
+            styles: new ReferenceRegistry(defintions?.styles, resolvers?.map(r => r.styles)),
+            themes: new ReferenceRegistry(defintions?.themes, resolvers?.map(r => r.themes)),
+            numerics: new ReferenceRegistry(defintions?.numerics, resolvers?.map(r => r.numerics)),
+            temporals: new ReferenceRegistry(defintions?.temporals, resolvers?.map(r => r.temporals)),
+            types: new ReferenceRegistry(defintions?.types, resolvers?.map(r => r.types)),
         });
     }
 
 
-    layer(definitions: TableDefinitions): DefinitionsRegistry {
-        return new DefinitionsRegistry({
-            colors: definitions.colors ? this.#registries.colors.layer(definitions.colors) : this.#registries.colors,
-            styles: definitions.styles ? this.#registries.styles.layer(definitions.styles) : this.#registries.styles,
-            themes: definitions.themes ? this.#registries.themes.layer(definitions.themes) : this.#registries.themes,
-            numerics: definitions.numerics ? this.#registries.numerics.layer(definitions.numerics) : this.#registries.numerics,
-            temporals: definitions.temporals ? this.#registries.temporals.layer(definitions.temporals) : this.#registries.temporals,
-            types: definitions.types ? this.#registries.types.layer(definitions.types) : this.#registries.types,
-        });
+    layer(definitions?: TableDefinitions): DefinitionsRegistry {
+        return definitions
+            ? new DefinitionsRegistry({
+                colors: this.#registries.colors.layer(definitions.colors),
+                styles: this.#registries.styles.layer(definitions.styles),
+                themes: this.#registries.themes.layer(definitions.themes),
+                numerics: this.#registries.numerics.layer(definitions.numerics),
+                temporals: this.#registries.temporals.layer(definitions.temporals),
+                types: this.#registries.types.layer(definitions.types),
+            })
+            : this;
     }
 
     get colors() { return this.#registries.colors; }
