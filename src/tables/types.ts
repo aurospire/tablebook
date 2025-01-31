@@ -240,6 +240,32 @@ export type TableTheme = {
 
 
 /* Operators */
+/** Type identifier for template expressions */
+export const TableLiteralExpressionType = 'literal';
+/** Template expression */
+export type TableLiteralExpression = {
+    type: typeof TableLiteralExpressionType,
+    value: string | number | boolean;
+};
+
+/** Type identifier for selector expressions */
+export const TableSelectorExpressionType = 'selector';
+/** Expression that references data via a selector */
+export type TableSelectorExpression<Selector> = {
+    type: typeof TableSelectorExpressionType;
+    selector: Selector;
+};
+
+/** Type identifier for function extagspressions */
+export const TableFunctionExpressionType = 'function';
+/** Expression that applies a named function to a list of arguments */
+export type TableFunctionExpression<Selector> = {
+    type: typeof TableFunctionExpressionType;
+    name: string;
+    items: TableExpression<Selector>[];
+}; // Function validity is user-responsibility 
+
+
 /** Valid comparison operators for conditional expressions */
 export const TableComparisonOperators = ['=', '<>', '>', '<', '>=', '<='] as const;
 /** Type representing valid comparison operators */
@@ -256,7 +282,7 @@ export const TableCompoundExpressionType = 'compound';
 /** Expression that combines multiple values using comparison or merge operators */
 export type TableCompoundExpression<Selector> = {
     type: typeof TableCompoundExpressionType;
-    with: TableComparisonOperator | TableMergeOperator;
+    op: TableComparisonOperator | TableMergeOperator;
     items: TableExpression<Selector>[];
 };
 
@@ -265,30 +291,8 @@ export const TableNegatedExpressionType = 'negated';
 /** Expression that inverts the result of another expression */
 export type TableNegatedExpression<Selector> = {
     type: typeof TableNegatedExpressionType;
-    on: TableExpression<Selector>;
+    item: TableExpression<Selector>;
 };
-
-/** Type identifier for function extagspressions */
-export const TableFunctionExpressionType = 'function';
-/** Expression that applies a named function to a list of arguments */
-export type TableFunctionExpression<Selector> = {
-    type: typeof TableFunctionExpressionType;
-    name: string;
-    args: TableExpression<Selector>[];
-}; // Function validity is user-responsibility 
-
-/** Type identifier for selector expressions */
-export const TableSelectorExpressionType = 'selector';
-/** Expression that references data via a selector */
-export type TableSelectorExpression<Selector> = {
-    type: typeof TableSelectorExpressionType;
-    from: Selector;
-};
-
-/** Type identifier for template expressions */
-export const TableLiteralExpressionType = 'literal';
-/** Template expression */
-export type TableLiteralExpression = { type: typeof TableLiteralExpressionType, of: string | number | boolean; };
 
 /** Type identifier for template expressions */
 export const TableTemplateExpressionType = 'template';
@@ -301,12 +305,12 @@ export type TableTemplateExpression<Selector> = {
 
 /** All possible expression types for data computation and validation */
 export type TableExpression<Selector> =
+    | TableLiteralExpression
+    | TableSelectorExpression<Selector>
+    | TableFunctionExpression<Selector>
     | TableCompoundExpression<Selector>
     | TableNegatedExpression<Selector>
-    | TableFunctionExpression<Selector>
-    | TableSelectorExpression<Selector>
     | TableTemplateExpression<Selector>
-    | TableLiteralExpression
     ;
 
 /* Data Rules */
@@ -356,8 +360,8 @@ export type TableTextRule = TableMatchRule | TableCustomRule;
 
 /** Defines a style to apply when a rule condition is met */
 export type TableConditionalStyle<Rule> = {
-    rule: Rule;
-    apply: TableStyle | TableReference;
+    when: Rule;
+    style: TableStyle | TableReference;
 };
 
 /* Numeric Formats */

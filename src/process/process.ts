@@ -120,7 +120,7 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
                     title: column.name,
                     titleStyle: columnTheme.value!.header,
                     dataStyle: columnTheme.value!.data,
-                    formula,
+                    expression: formula,
                     behavior
                 };
 

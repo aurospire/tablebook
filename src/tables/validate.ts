@@ -136,31 +136,31 @@ const TableComparisonOperator: z.ZodType<TableComparisonOperator> = z.enum(Table
 const TableMergeOperator: z.ZodType<TableMergeOperator> = z.enum(TableMergeOperators);
 
 /* Expressions */
-const TableCompoundExpression: z.ZodType<TableCompoundExpression<TableSelector>> = z.object({
-    type: z.literal(TableCompoundExpressionType),
-    with: z.union([TableComparisonOperator, TableMergeOperator]),
-    items: z.array(z.lazy(() => TableExpression))
+const TableLiteralExpression: z.ZodType<TableLiteralExpression> = z.object({
+    type: z.literal(TableLiteralExpressionType),
+    value: z.union([z.string(), z.number(), z.boolean()])
 }).strict();
 
-const TableNegatedExpression: z.ZodType<TableNegatedExpression<TableSelector>> = z.object({
-    type: z.literal(TableNegatedExpressionType),
-    on: z.lazy(() => TableExpression)
+const TableSelectorExpression: z.ZodType<TableSelectorExpression<TableSelector>> = z.object({
+    type: z.literal(TableSelectorExpressionType),
+    selector: TableDataSelector
 }).strict();
 
 const TableFunctionExpression: z.ZodType<TableFunctionExpression<TableSelector>> = z.object({
     type: z.literal(TableFunctionExpressionType),
     name: z.string().transform(value => value.toUpperCase()),
-    args: z.array(z.lazy(() => TableExpression))
+    items: z.array(z.lazy(() => TableExpression))
 }).strict();
 
-const TableLiteralExpression: z.ZodType<TableLiteralExpression> = z.object({
-    type: z.literal(TableLiteralExpressionType),
-    of: z.union([z.string(), z.number(), z.boolean()])
+const TableCompoundExpression: z.ZodType<TableCompoundExpression<TableSelector>> = z.object({
+    type: z.literal(TableCompoundExpressionType),
+    op: z.union([TableComparisonOperator, TableMergeOperator]),
+    items: z.array(z.lazy(() => TableExpression))
 }).strict();
 
-const TableSelectorExpression: z.ZodType<TableSelectorExpression<TableSelector>> = z.object({
-    type: z.literal(TableSelectorExpressionType),
-    from: TableDataSelector
+const TableNegatedExpression: z.ZodType<TableNegatedExpression<TableSelector>> = z.object({
+    type: z.literal(TableNegatedExpressionType),
+    item: z.lazy(() => TableExpression)
 }).strict();
 
 const TableTemplateExpression: z.ZodType<TableTemplateExpression<TableSelector>> = z.object({
@@ -170,11 +170,11 @@ const TableTemplateExpression: z.ZodType<TableTemplateExpression<TableSelector>>
 }).strict();
 
 const TableExpression: z.ZodType<TableExpression<TableSelector>> = z.union([
-    TableCompoundExpression,
-    TableNegatedExpression,
-    TableFunctionExpression,
     TableLiteralExpression,
     TableSelectorExpression,
+    TableFunctionExpression,
+    TableCompoundExpression,
+    TableNegatedExpression,
     TableTemplateExpression
 ]);
 
@@ -212,8 +212,8 @@ const TableTextRule: z.ZodType<TableTextRule> = z.union([TableMatchRule, TableCu
 
 const makeConditionalStyle = <Rule extends z.ZodType<any>>(rule: Rule) => {
     return z.object({
-        rule: rule,
-        apply: TableStyleReference
+        when: rule,
+        style: TableStyleReference
     }).strict();
 };
 

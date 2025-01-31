@@ -99,7 +99,7 @@ export class GoogleGenerator implements SheetGenerator {
                             r = r.updateCells(sheetId, columnRange, {
                                 horizontal: 'middle', vertical: 'middle',
                                 ...column.dataStyle,
-                                value: column.formula,
+                                value: column.expression,
                                 kind: column.behavior?.kind,
                                 format: column.behavior?.format
                             });

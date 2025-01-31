@@ -24,7 +24,7 @@ export const resolveExpression = (
             resolved = {
                 type: "function",
                 name: expression.name,
-                args: expression.args.map(arg => {
+                items: expression.items.map(arg => {
                     const result = resolveExpression(arg, page, group, name, columns, path);
 
                     if (result.success)
@@ -40,7 +40,7 @@ export const resolveExpression = (
         case "compound": {
             resolved = {
                 type: "compound",
-                with: expression.with,
+                op: expression.op,
                 items: expression.items.map(item => {
                     const result = resolveExpression(item, page, group, name, columns, path);
 
@@ -55,19 +55,19 @@ export const resolveExpression = (
             break;
         }
         case "negated": {
-            const result = resolveExpression(expression.on, page, group, name, columns, path);
+            const result = resolveExpression(expression.item, page, group, name, columns, path);
 
             if (result.success)
-                resolved = { type: 'negated', on: result.value };
+                resolved = { type: 'negated', item: result.value };
             else
                 issues.push(...result.info);
 
             break;
         }
         case "selector": {
-            const result = resolveSelector(expression.from, columns, page, group, name, path);
+            const result = resolveSelector(expression.selector, columns, page, group, name, path);
             if (result.success)
-                resolved = { type: 'selector', from: result.value };
+                resolved = { type: 'selector', selector: result.value };
             else
                 issues.push(...result.info);
 
