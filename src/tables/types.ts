@@ -115,7 +115,7 @@
 export const TableReferenceRegex = /^@(.+)$/;
 
 /** Type for referencing context-dependent items (color, style, theme, type) defined in TableBook */
-export type TableReference<T extends string = string> = `@${T}`;
+export type TableReference = `@${string}`;
 
 
 /* Data Selection */
