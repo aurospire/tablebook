@@ -12,16 +12,10 @@ export type TableReferenceLookup<T> = Record<string, T> | TableReferenceResolver
 
 /** Defines resolvers for various table definitions */
 export type TableDefinitionResolver = {
-    /** Lookup for table colors */
     colors?: TableReferenceLookup<TableColor>;
-    /** Lookup for table header styles */
     styles?: TableReferenceLookup<TableHeaderStyle>;
-    /** Lookup for table themes */
     themes?: TableReferenceLookup<TableTheme>;
-    /** Lookup for table numeric formats */
     numerics?: TableReferenceLookup<TableNumericFormat>;
-    /** Lookup for table temporal formats */
     temporals?: TableReferenceLookup<TableTemporalFormat>;
-    /** Lookup for table column types */
     types?: TableReferenceLookup<TableColumnType>;
 };
