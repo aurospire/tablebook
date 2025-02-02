@@ -175,17 +175,6 @@ export const resolveEnumBehavior = (
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
 
-    let baseStyle: SheetStyle | undefined;
-
-    if (type.style) {
-        const baseStyleResult = resolveStyle(type.style, definitions, path);
-
-        if (baseStyleResult.success)
-            baseStyle = baseStyleResult.value;
-        else
-            issues.push(...baseStyleResult.info);
-    }
-
     const behavior: SheetBehavior = {
         kind: 'text',
         rule: {
@@ -193,18 +182,16 @@ export const resolveEnumBehavior = (
             values: type.items.map(value => typeof value === 'string' ? value : value.name)
         },
         styles: type.items.map((item): SheetConditionalStyle | undefined => {
-            if (typeof item === 'string' || !baseStyle || (item.style === undefined && item.color === undefined))
+            if (typeof item === 'string' || (item.style === undefined && item.color === undefined))
                 return undefined;
 
             // Resolve the style
-            let style: SheetStyle = { ...baseStyle };
-
+            let style: SheetStyle | undefined;
 
             const styleResult = item.style ? resolveStyle(item.style, definitions, path) : Result.success(undefined);
 
-            if (styleResult.success) {
-                if (styleResult.value) style = mergeStyles(style, styleResult.value, false);
-            }
+            if (styleResult.success)
+                style = styleResult.value;
             else
                 issues.push(...styleResult.info);
 
@@ -212,7 +199,7 @@ export const resolveEnumBehavior = (
             const colorResult = item.color ? resolveColor(item.color, definitions, path) : Result.success(undefined);
 
             if (colorResult.success)
-                style.fore = colorResult.value || style.fore;
+                style = { ...(style ?? {}), fore: colorResult.value };
             else
                 issues.push(...colorResult.info);
 

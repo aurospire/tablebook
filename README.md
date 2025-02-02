@@ -144,24 +144,8 @@ async function main() {
 4. [TableHeaderStyle](#4-tableheaderstyle)
 5. [TableTheme](#5-tabletheme)
 6. [Expressions](#6-expressions)
-   - [TableLiteralExpression](#62-tableliteralexpression)
-   - [TableSelectorExpression](#63-tableselectorexpression)
-   - [TableCompoundExpression](#64-tablecompoundexpression)
-   - [TableNegatedExpression](#65-tablenegatedexpression)
-   - [TableFunctionExpression](#66-tablefunctionexpression)
-   - [TableTemplateExpression](#67-tabletemplateexpression)
 7. [TableColumnType](#7-tablecolumntype)
-   - [Text Type](#71-text-type)
-   - [Enum Type](#72-enum-type)
-   - [Lookup Type](#73-lookup-type)
-   - [Numeric Type](#74-numeric-type)
-   - [Temporal Type](#75-temporal-type)
-8. [TableUnit and Hierarchical Structure](#8-tableunit-and-hierarchical-structure)
-    - [TableUnit](#81-tableunit)
-    - [TableColumn](#82-tablecolumn)
-    - [TableGroup](#83-tablegroup)
-    - [TablePage](#84-tablepage)
-    - [TableBook](#85-tablebook)
+8. [TableUnit and Hierarchical Structure](#8-tableunit-and-hierarchical-structure)    
 9. [Result](#9-result)
 10. [TableBookIssue](#10-tablebookissue)   
 11. [tablebook Functions](#11-tablebook-functions)
@@ -1048,7 +1032,6 @@ Represents data with a fixed set of allowed values. Each value is defined as an 
 export type TableEnumType = {
     kind: "enum";
     description?: string;          // A description of the enum's purpose or usage.
-    style?: TableStyle;            // An optional style base that will apply to each enum item.
     items: TableEnumItem[];        // The list of allowed values (enum items).
 };
 ```
@@ -1068,22 +1051,17 @@ export type TableEnumItem = {
 
 ##### Style Merging
 
-The final style for an `EnumItem` is created by merging the three styles:
+The final style for an `EnumItem` is created by merging the two styles:
 ```typescript
-(enum.style ?? {}) + (item.style ?? {}) + { fore: item.color }
+(item.style ?? {}) + { fore: item.color }
 ```
 
 
 Example:
 
-if `enum.style` is 
+if `item.style` is 
 ```typescript
-{ bold: true, fore: '#000000 }
-```
-
-and `item.style` is
-```typescript
-{ italic: true, fore: '#111111 }
+{ bold: true, back: '#fffffff', fore: '#000000' }
 ```
 
 and `item.color` is 
@@ -1093,7 +1071,7 @@ and `item.color` is
 
 The final `EnumItem` style will be
 ```typescript
-{ bold: true, italic: true, fore: '#222222 }
+{ bold: true,  back: '#fffffff', fore: '#222222 }
 ```
 
 ---
@@ -1105,8 +1083,7 @@ This example defines an enum with a description and three items, each with uniqu
 ```json
 {
   "kind": "enum",
-  "description": "Approval status for items in the report.",
-  "style": { "bold": true },
+  "description": "Approval status for items in the report.",  
   "items": [
     { "name": "Approved", "description": "Item was accepted.", "color": "#00FF00" },
     { "name": "Pending",  "description": "Item is under review.", "color": "#FFFF00" },
