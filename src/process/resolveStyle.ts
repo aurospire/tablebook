@@ -3,12 +3,12 @@ import { SheetBorder, SheetTitleStyle } from "../sheets";
 import { isReference } from "../tables";
 import { TableColor, TableHeaderStyle, TableReference, TableStyle } from "../tables/types";
 import { ColorObject, ObjectPath, Result } from "../util";
-import { DefinitionsRegistry, ReferenceRegistry } from "./DefinitionsRegistry";
+import { TableDefinitionsManager, TableReferenceRegistry } from "./DefinitionsRegistry";
 import { resolveColor } from "./resolveColor";
 
 export const resolveStyle = (
     style: TableHeaderStyle | TableReference,
-    definitions: DefinitionsRegistry,
+    definitions: TableDefinitionsManager,
     path: ObjectPath
 ): Result<SheetTitleStyle, TableBookProcessIssue[]> => {
     let resolved: TableHeaderStyle;

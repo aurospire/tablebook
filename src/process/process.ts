@@ -3,7 +3,7 @@ import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "../sheets/SheetBo
 import { TableDefinitionResolver } from "../tables";
 import { TableBook, TableColumn, TableGroup, TablePage, TableReference, TableTheme } from "../tables/types";
 import { ObjectPath, Result } from "../util";
-import { DefinitionsRegistry, ReferenceRegistry } from "./DefinitionsRegistry";
+import { TableDefinitionsManager, TableReferenceRegistry } from "./DefinitionsRegistry";
 import { resolveBehavior } from "./resolveBehavior";
 import { resolveColumns } from "./resolveColumns";
 import { resolveExpression } from "./resolveExpression";
@@ -35,7 +35,7 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
     const columns = columnsResult.value!;
 
     // Reify definitions
-    const bookDefinitions = DefinitionsRegistry.new(book.definitions, resolvers);
+    const bookDefinitions = TableDefinitionsManager.new(book.definitions, resolvers);
 
 
     for (let p = 0; p < book.pages.length; p++) {

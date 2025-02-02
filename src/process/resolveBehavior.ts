@@ -4,7 +4,7 @@ import { SheetBehavior, SheetConditionalStyle, SheetRule, SheetStyle } from "../
 import { isReference } from "../tables";
 import { TableColor, TableColumnType, TableComparisonRule, TableEnumType, TableLookupType, TableNumericFormat, TableNumericType, TableReference, TableStyle, TableTemporalFormat, TableTemporalString, TableTemporalType, TableTextType } from "../tables/types";
 import { ObjectPath, Result } from "../util";
-import { DefinitionsRegistry, ReferenceRegistry } from "./DefinitionsRegistry";
+import { TableDefinitionsManager, TableReferenceRegistry } from "./DefinitionsRegistry";
 import { resolveColor } from "./resolveColor";
 import { ResolvedColumn } from "./resolveColumns";
 import { resolveExpression } from "./resolveExpression";
@@ -90,7 +90,7 @@ const resolveTextBehavior = (
     resolved: TableTextType,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
-    definitions: DefinitionsRegistry,
+    definitions: TableDefinitionsManager,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
 
@@ -170,7 +170,7 @@ const resolveTextBehavior = (
 
 export const resolveEnumBehavior = (
     type: TableEnumType,
-    definitions: DefinitionsRegistry,
+    definitions: TableDefinitionsManager,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
@@ -239,7 +239,7 @@ const resolveNumericBehavior = (
     type: TableNumericType,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
-    definitions: DefinitionsRegistry,
+    definitions: TableDefinitionsManager,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
@@ -310,7 +310,7 @@ const resolveTemporalBehavior = (
     type: TableTemporalType,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
-    definitions: DefinitionsRegistry,
+    definitions: TableDefinitionsManager,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
@@ -380,7 +380,7 @@ export const resolveBehavior = (
     type: TableColumnType | TableReference,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
-    definitions: DefinitionsRegistry,
+    definitions: TableDefinitionsManager,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
     let resolved: TableColumnType;

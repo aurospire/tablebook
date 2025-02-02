@@ -2,11 +2,11 @@ import { TableBookProcessIssue } from "../issues";
 import { isReference } from "../tables";
 import { TableColor, TableReference } from "../tables/types";
 import { ColorObject, Colors, ObjectPath, Result } from "../util";
-import { DefinitionsRegistry } from "./DefinitionsRegistry";
+import { TableDefinitionsManager } from "./DefinitionsRegistry";
 
 export const resolveColor = (
     color: TableColor | TableReference,
-    definitions: DefinitionsRegistry,
+    definitions: TableDefinitionsManager,
     path: ObjectPath
 ): Result<ColorObject, TableBookProcessIssue[]> => {
 
