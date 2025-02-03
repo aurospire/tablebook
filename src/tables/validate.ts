@@ -289,6 +289,7 @@ const TableEnumType: z.ZodType<TableEnumType> = z.object({
 const TableLookupType: z.ZodType<TableLookupType> = z.object({
     kind: z.literal(TableLookupTypeKind),
     style: TableStyleReference.optional(),
+    styles: z.array(TableTextConditionalStyle).optional(),
     column: TableColumnSelector
 }).strict();
 
