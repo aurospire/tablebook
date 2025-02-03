@@ -1319,7 +1319,7 @@ type TableDefinitions = {
     themes?: TableReferenceMap<TableTheme>;
     numerics?: TableReferenceMap<TableNumericFormat>;
     temporals?: TableReferenceMap<TableTemporalFormat>;    
-    types?: TableReferenceMap<TableColumnType>;    
+    types?: TableReferenceMap<TableDataType>;    
 };
 ```
 
@@ -1421,7 +1421,7 @@ A `TableColumn` represents the smallest unit in a `TableBook`. It extends `Table
 
 ```typescript
 type TableColumn = TableUnit & {
-  type: TableColumnType | TableReference;      // The data type of the column.
+  type: TableDataType | TableReference;      // The data type of the column.
   source?: string;                             // Optional metadata about the column's data source.
   expression?: TableExpression<TableSelector>; // Optional expression for computed values.
 };
@@ -1815,7 +1815,7 @@ type TableDefinitionResolver = {
     themes?: TableResolveReference<TableTheme>;    
     numerics?: TableResolveReference<TableNumericFormat>;
     temporals?: TableResolveReference<TableTemporalFormat>;    
-    types?: TableResolveReference<TableColumnType>;
+    types?: TableResolveReference<TableDataType>;
 };
 ```
 
