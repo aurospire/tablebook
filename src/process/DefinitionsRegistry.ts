@@ -1,6 +1,6 @@
 import { TableBookProcessIssue } from "../issues";
 import { isReference, TableDefinitionResolver, TableReferenceLookup, TableReferenceResolver } from "../tables/references";
-import { TableColor, TableColumnType, TableDefinitions, TableHeaderStyle, TableNumericFormat, TableReference, TableReferenceMap, TableTemporalFormat, TableTheme } from "../tables/types";
+import { TableColor, TableDataType, TableDefinitions, TableHeaderStyle, TableNumericFormat, TableReference, TableReferenceMap, TableTemporalFormat, TableTheme } from "../tables/types";
 import { ObjectPath, Result } from "../util";
 
 type RegistryResolver<T> = (ref: TableReference, path: ObjectPath) => Result<T, TableBookProcessIssue[]>;
@@ -103,7 +103,7 @@ export type TableDefinitionsRegistry = {
     themes: TableReferenceRegistry<TableTheme>;
     numerics: TableReferenceRegistry<TableNumericFormat>;
     temporals: TableReferenceRegistry<TableTemporalFormat>;
-    types: TableReferenceRegistry<TableColumnType>;
+    types: TableReferenceRegistry<TableDataType>;
 };
 
 export class TableDefinitionsManager implements TableDefinitionsRegistry {

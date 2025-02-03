@@ -325,6 +325,11 @@ export type TableTemporalFormat = TableTemporalItem[];
 
 
 /* Data Types */
+export type TableDataTypeBase<Kind extends string> ={    
+    kind: Kind;
+    /** Optional base style for the column, will merge with theme data style */
+    style?: TableStyle | TableReference;
+}
 
 /** Identifies a text type in the type system */
 export const TableTextTypeKind = 'text';
@@ -332,12 +337,11 @@ export const TableTextTypeKind = 'text';
  * Text data type for string values
  * Supports validation rules, conditional styling, and computed expressions
  */
-export type TableTextType = {
-    kind: typeof TableTextTypeKind;
-    /** Optional validation rule for the text content */
-    rule?: TableTextRule;
+export type TableTextType = TableDataTypeBase<typeof TableTextTypeKind> & {    
     /** Optional array of conditional styles based on text rules */
     styles?: TableConditionalStyle<TableTextRule>[];
+    /** Optional validation rule for the text content */
+    rule?: TableTextRule;
 };
 
 /** 
@@ -354,13 +358,8 @@ export type TableEnumItem = {
 
 /** Identifies an enum type in the type system */
 export const TableEnumTypeKind = 'enum';
-/** 
- * Enumerated data type with a fixed set of possible values
- * Each value can have its own style
- */
-export type TableEnumType = {
-    kind: typeof TableEnumTypeKind;
-
+/** Enumerated data type with a fixed set of possible values */
+export type TableEnumType = TableDataTypeBase<typeof TableEnumTypeKind> & {
     /** Array of valid values for this enum */
     items: TableEnumItem[];
 };
@@ -368,12 +367,8 @@ export type TableEnumType = {
 
 /** Identifies a lookup type in the type system */
 export const TableLookupTypeKind = 'lookup';
-/** 
- * Lookup data type that references valid values from another column
- * Useful for maintaining consistency and relationships between columns
- */
-export type TableLookupType = {
-    kind: typeof TableLookupTypeKind;
+/** A data type that restricts values to those present in a specified column. */
+export type TableLookupType = TableDataTypeBase<typeof TableLookupTypeKind> & {    
     /** Column containing the valid values for this lookup */
     column: TableColumnSelector;
 };
@@ -381,42 +376,33 @@ export type TableLookupType = {
 
 /** Identifies a numeric type in the type system */
 export const TableNumericTypeKind = 'numeric';
-/** 
- * Numeric data type for numbers and calculations
- * Supports formatting options, validation rules, and computed expressions
- */
-export type TableNumericType = {
-    kind: typeof TableNumericTypeKind;
-    /** Optional validation rule for the numeric value */
-    rule?: TableNumericRule;
+/** Numeric data type for numbers, currency, percent */
+export type TableNumericType = TableDataTypeBase<typeof TableNumericTypeKind> & {
     /** Optional array of conditional styles based on numeric rules */
     styles?: TableConditionalStyle<TableNumericRule>[];
+    /** Optional validation rule for the numeric value */
+    rule?: TableNumericRule;
     /** Optional formatting for how the number should be displayed */
     format?: TableNumericFormat | TableReference;
 };
 
 /** Identifies a temporal type in the type system */
 export const TableTemporalTypeKind = 'temporal';
-/** 
- * Temporal data type for dates and times
- * Supports multiple format options, validation rules, and computed expressions
- */
-export type TableTemporalType = {
-    kind: typeof TableTemporalTypeKind;
-    /** Optional validation rule for the temporal value */
-    rule?: TableTemporalRule;
+/** Temporal data type for dates and times */
+export type TableTemporalType = TableDataTypeBase<typeof TableTemporalTypeKind> & {    
     /** Optional array of conditional styles based on temporal rules */
     styles?: TableConditionalStyle<TableTemporalRule>[];
+    /** Optional validation rule for the temporal value */
+    rule?: TableTemporalRule;
     /** Optional formatting for how the date/time should be displayed */
     format?: TableTemporalFormat | TableReference;
 };
-
 
 /** 
  * Union of all possible data types in the system
  * Can be a concrete type definition or a reference to a predefined type
  */
-export type TableColumnType = TableTextType | TableEnumType | TableLookupType | TableNumericType | TableTemporalType;
+export type TableDataType = TableTextType | TableEnumType | TableLookupType | TableNumericType | TableTemporalType;
 
 
 
@@ -438,7 +424,7 @@ export type TableDefinitions = {
     /** Custom temporal format definitions */
     temporals?: TableReferenceMap<TableTemporalFormat>;    
     /** Reusable type definitions */
-    types?: TableReferenceMap<TableColumnType>;    
+    types?: TableReferenceMap<TableDataType>;    
 };
 
 /** Regex pattern validating table unit names: must start with uppercase, followed by alphanumeric */
@@ -465,7 +451,7 @@ export type TableUnit = {
 */
 export type TableColumn = TableUnit & {
     /** Data type defining the content and behavior of this column */
-    type: TableColumnType | TableReference;
+    type: TableDataType | TableReference;
     /** Optional metadata describing where the column's data comes from */
     source?: string;
     /** Optional expression to compute the value */

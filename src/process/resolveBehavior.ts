@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { TableBookProcessIssue } from "../issues";
 import { SheetBehavior, SheetConditionalStyle, SheetRule, SheetStyle } from "../sheets";
 import { isReference } from "../tables";
-import { TableColor, TableColumnType, TableComparisonRule, TableEnumType, TableLookupType, TableNumericFormat, TableNumericType, TableReference, TableStyle, TableTemporalFormat, TableTemporalString, TableTemporalType, TableTextType } from "../tables/types";
+import { TableColor, TableDataType, TableComparisonRule, TableEnumType, TableLookupType, TableNumericFormat, TableNumericType, TableReference, TableStyle, TableTemporalFormat, TableTemporalString, TableTemporalType, TableTextType } from "../tables/types";
 import { ObjectPath, Result } from "../util";
 import { TableDefinitionsManager, TableReferenceRegistry } from "./DefinitionsRegistry";
 import { resolveColor } from "./resolveColor";
@@ -161,8 +161,8 @@ const resolveTextBehavior = (
 
     const behavior: SheetBehavior = {
         kind: 'text',
+        styles: resolvedStyles,
         rule: resolvedRule,
-        styles: resolvedStyles
     };
 
     return issues.length === 0 ? Result.success(behavior) : Result.failure(issues, behavior);
@@ -177,10 +177,6 @@ export const resolveEnumBehavior = (
 
     const behavior: SheetBehavior = {
         kind: 'text',
-        rule: {
-            type: 'enum',
-            values: type.items.map(value => typeof value === 'string' ? value : value.name)
-        },
         styles: type.items.map((item): SheetConditionalStyle | undefined => {
             if (typeof item === 'string' || (item.style === undefined && item.color === undefined))
                 return undefined;
@@ -209,7 +205,11 @@ export const resolveEnumBehavior = (
                     style: style
                 };
             }
-        }).filter((value): value is SheetConditionalStyle => value !== undefined)
+        }).filter((value): value is SheetConditionalStyle => value !== undefined),
+        rule: {
+            type: 'enum',
+            values: type.items.map(value => typeof value === 'string' ? value : value.name)
+        }
     };
 
     return issues.length === 0 ? Result.success(behavior) : Result.failure(issues, behavior);
@@ -297,9 +297,9 @@ const resolveNumericBehavior = (
 
     const behavior: SheetBehavior = {
         kind: 'number',
-        format: resolvedFormat,
         rule: resolvedRule,
-        styles: resolvedStyles
+        styles: resolvedStyles,
+        format: resolvedFormat,
     };
 
     return issues.length === 0 ? Result.success(behavior) : Result.failure(issues, behavior);
@@ -368,49 +368,37 @@ const resolveTemporalBehavior = (
 
     const behavior: SheetBehavior = {
         kind: 'number',
-        format: resolvedFormat,
+        styles: resolvedStyles,
         rule: resolvedRule,
-        styles: resolvedStyles
+        format: resolvedFormat,
     };
 
     return issues.length === 0 ? Result.success(behavior) : Result.failure(issues, behavior);
 };
 
 export const resolveBehavior = (
-    type: TableColumnType | TableReference,
+    type: TableDataType,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
     definitions: TableDefinitionsManager,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
-    let resolved: TableColumnType;
 
-    if (isReference(type)) {
-        const result = definitions.types.resolve(type, path);
-
-        if (result.success)
-            resolved = result.value;
-        else
-            return Result.failure(result.info);
-    }
-    else
-        resolved = type;
-
-    switch (resolved.kind) {
+    switch (type.kind) {
         case "text":
-            return resolveTextBehavior(resolved, page, group, name, columns, definitions, path);
+            return resolveTextBehavior(type, page, group, name, columns, definitions, path);
 
         case "enum":
-            return resolveEnumBehavior(resolved, definitions, path);
+            return resolveEnumBehavior(type, definitions, path);
 
         case "lookup":
-            return resolveLookupBehavior(resolved, page, group, name, columns, path);
+            return resolveLookupBehavior(type, page, group, name, columns, path);
 
         case "numeric":
-            return resolveNumericBehavior(resolved, page, group, name, columns, definitions, path);
+            return resolveNumericBehavior(type, page, group, name, columns, definitions, path);
 
         case "temporal":
-            return resolveTemporalBehavior(resolved, page, group, name, columns, definitions, path);
+            return resolveTemporalBehavior(type, page, group, name, columns, definitions, path);
     };
 
 };

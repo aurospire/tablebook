@@ -1,5 +1,5 @@
 import { Result } from "../util";
-import { TableColor, TableColumnType, TableHeaderStyle, TableNumericFormat, TableReference, TableReferenceMap, TableTemporalFormat, TableTheme } from "./types";
+import { TableColor, TableDataType, TableHeaderStyle, TableNumericFormat, TableReference, TableReferenceMap, TableTemporalFormat, TableTheme } from "./types";
 
 /** Checks if a value is a TableReference */
 export const isReference = (value: unknown): value is TableReference => typeof value === 'string' && value.startsWith('@');
@@ -17,5 +17,5 @@ export type TableDefinitionResolver = {
     themes?: TableReferenceLookup<TableTheme>;
     numerics?: TableReferenceLookup<TableNumericFormat>;
     temporals?: TableReferenceLookup<TableTemporalFormat>;
-    types?: TableReferenceLookup<TableColumnType>;
+    types?: TableReferenceLookup<TableDataType>;
 };

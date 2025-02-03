@@ -1,13 +1,15 @@
 import { TableBookProcessIssue } from "../issues";
+import { SheetBehavior, SheetStyle } from "../sheets";
 import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "../sheets/SheetBook";
-import { TableDefinitionResolver } from "../tables";
+import { isReference, TableDefinitionResolver } from "../tables";
 import { TableBook, TableColumn, TableGroup, TablePage, TableReference, TableTheme } from "../tables/types";
 import { ObjectPath, Result } from "../util";
 import { TableDefinitionsManager, TableReferenceRegistry } from "./DefinitionsRegistry";
 import { resolveBehavior } from "./resolveBehavior";
 import { resolveColumns } from "./resolveColumns";
 import { resolveExpression } from "./resolveExpression";
-import { resolveTheme } from "./resolveTheme";
+import { resolveStyle } from "./resolveStyle";
+import { mergeStyles, resolveTheme } from "./resolveTheme";
 
 
 export type TableProcessLogger = {
@@ -107,20 +109,37 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
                         formula = result.value;
                 }
 
-                let behavior;
-                if (column.type !== undefined) {
-                    const result = resolveBehavior(column.type, page.name, group.name, column.name, columns, columnDefinitions, columnPath);
+
+                let behavior: SheetBehavior | undefined;
+
+                let typeStyle: SheetStyle | undefined;
+
+                const typeResult = isReference(column.type) ? bookDefinitions.types.resolve(column.type, columnPath) : Result.success(column.type);
+                
+                if (typeResult.success && typeResult.value.style) {
+                    const typeStyleResult = resolveStyle(typeResult.value.style, columnDefinitions, columnPath);
+
+                    if (typeStyleResult.success)
+                        typeStyle = typeStyleResult.value;
+                    else
+                        issues.push(...typeStyleResult.info);
+                }
+
+                if (typeResult.success) {
+                    const result = resolveBehavior(typeResult.value, page.name, group.name, column.name, columns, columnDefinitions, columnPath);
 
                     if (!result.success)
                         issues.push(...result.info);
                     else
                         behavior = result.value;
                 }
+                else
+                    issues.push(...typeResult.info);
 
                 const resultColumn: SheetColumn = {
                     title: column.name,
                     titleStyle: columnTheme.value!.header,
-                    dataStyle: columnTheme.value!.data,
+                    dataStyle: typeStyle ? mergeStyles(columnTheme.value!.data, typeStyle, false) : columnTheme.value!.data,
                     expression: formula,
                     behavior
                 };

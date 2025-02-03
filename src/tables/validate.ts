@@ -8,7 +8,7 @@ import {
     TableColorRegex,
     TableColumn,
     TableColumnSelector,
-    TableColumnType,
+    TableDataType,
     TableComparisonOperator,
     TableComparisonOperators,
     TableCompoundExpression, TableCompoundExpressionType,
@@ -267,6 +267,7 @@ const TableTemporalFormat: z.ZodType<TableTemporalFormat> = z.array(TableTempora
 const TableTextType: z.ZodType<TableTextType> = z.object({
     kind: z.literal(TableTextTypeKind),
     rule: TableTextRule.optional(),
+    style: TableStyleReference.optional(),
     styles: z.array(TableTextConditionalStyle).optional()
 }).strict();
 
@@ -279,31 +280,34 @@ const TableEnumItem: z.ZodType<TableEnumItem> = z.object({
 
 const TableEnumType: z.ZodType<TableEnumType> = z.object({
     kind: z.literal(TableEnumTypeKind),
+    style: TableStyleReference.optional(),
     items: z.array(TableEnumItem)
 }).strict();
 
 const TableLookupType: z.ZodType<TableLookupType> = z.object({
     kind: z.literal(TableLookupTypeKind),
+    style: TableStyleReference.optional(),
     column: TableColumnSelector
 }).strict();
 
 const TableNumericType: z.ZodType<TableNumericType> = z.object({
     kind: z.literal(TableNumericTypeKind),
-    rule: TableNumericRule.optional(),
+    style: TableStyleReference.optional(),
     styles: z.array(TableNumericConditionalStyle).optional(),
+    rule: TableNumericRule.optional(),
     format: z.union([TableNumericFormat, TableReference]).optional()
 }).strict();
 
 const TableTemporalType: z.ZodType<TableTemporalType> = z.object({
     kind: z.literal(TableTemporalTypeKind),
-    rule: TableTemporalRule.optional(),
+    style: TableStyleReference.optional(),
     styles: z.array(TableTemporalConditionalStyle).optional(),
+    rule: TableTemporalRule.optional(),
     format: z.union([TableTemporalFormat, TableReference]).optional()
 }).strict();
 
 
-
-const TableColumnType: z.ZodType<TableColumnType> = z.union([
+const TableDataType: z.ZodType<TableDataType> = z.union([
     TableTextType,
     TableEnumType,
     TableLookupType,
@@ -318,7 +322,7 @@ const TableDefinitions: z.ZodType<TableDefinitions> = z.object({
     themes: z.record(z.string(), z.union([TableTheme, TableReference])).optional(),
     numerics: z.record(z.string(), z.union([TableNumericFormat, TableReference])).optional(),
     temporals: z.record(z.string(), z.union([TableTemporalFormat, TableReference])).optional(),
-    types: z.record(z.string(), z.union([TableColumnType, TableReference])).optional()
+    types: z.record(z.string(), z.union([TableDataType, TableReference])).optional()
 }).strict();
 
 const TableUnit = z.object({
@@ -329,7 +333,7 @@ const TableUnit = z.object({
 }).strict();
 
 const TableColumn: z.ZodType<TableColumn> = TableUnit.merge(z.object({
-    type: z.union([TableColumnType, TableReference]),
+    type: z.union([TableDataType, TableReference]),
     source: z.string().optional(),
     expression: TableExpression.optional(),
 })).strict();
