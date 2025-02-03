@@ -3,7 +3,7 @@ import { SheetStyle, SheetTitleStyle } from "../sheets";
 import { isReference } from "../tables";
 import { TableReference, TableTheme } from "../tables/types";
 import { ColorObject, ObjectPath, Result } from "../util";
-import { DefinitionsRegistry } from "./DefinitionsRegistry";
+import { TableDefinitionsManager } from "./DefinitionsRegistry";
 import { resolveColor } from "./resolveColor";
 import { resolveStyle } from "./resolveStyle";
 
@@ -36,7 +36,7 @@ export const mergeThemes = (base: SheetTheme, override: SheetTheme): SheetTheme 
 
 export const resolveTheme = (
     theme: TableTheme | TableReference,
-    definitions: DefinitionsRegistry,
+    definitions: TableDefinitionsManager,
     parents: (TableTheme | TableReference)[],
     chain: TableTheme[],
     path: ObjectPath

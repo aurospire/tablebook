@@ -143,25 +143,9 @@ async function main() {
 3. [TableStyle](#3-tablestyle)
 4. [TableHeaderStyle](#4-tableheaderstyle)
 5. [TableTheme](#5-tabletheme)
-6. [Expressions](#6-expressions)
-   - [TableLiteralExpression](#62-tableliteralexpression)
-   - [TableSelectorExpression](#63-tableselectorexpression)
-   - [TableCompoundExpression](#64-tablecompoundexpression)
-   - [TableNegatedExpression](#65-tablenegatedexpression)
-   - [TableFunctionExpression](#66-tablefunctionexpression)
-   - [TableTemplateExpression](#67-tabletemplateexpression)
-7. [TableColumnType](#7-tablecolumntype)
-   - [Text Type](#71-text-type)
-   - [Enum Type](#72-enum-type)
-   - [Lookup Type](#73-lookup-type)
-   - [Numeric Type](#74-numeric-type)
-   - [Temporal Type](#75-temporal-type)
-8. [TableUnit and Hierarchical Structure](#8-tableunit-and-hierarchical-structure)
-    - [TableUnit](#81-tableunit)
-    - [TableColumn](#82-tablecolumn)
-    - [TableGroup](#83-tablegroup)
-    - [TablePage](#84-tablepage)
-    - [TableBook](#85-tablebook)
+6. [TableExpressions](#6-tableexpressions)
+7. [TableDataTypes](#7-tabledatatype)
+8. [TableUnit and Hierarchical Structure](#8-tableunit-and-hierarchical-structure)    
 9. [Result](#9-result)
 10. [TableBookIssue](#10-tablebookissue)   
 11. [tablebook Functions](#11-tablebook-functions)
@@ -186,7 +170,7 @@ A `TableSelector` can reference either the current column and row (`"self"`) or 
 
 #### **Type Definitions**
 ```typescript
-export type TableSelector = 
+type TableSelector = 
   | TableSelfSelector
   | {
       column: TableColumnSelector | TableSelfSelector;
@@ -196,13 +180,13 @@ export type TableSelector =
 
 #### **1.1.1 TableSelfSelector**
 ```typescript
-export type TableSelfSelector = "self";
+type TableSelfSelector = "self";
 ```
 - Refers to the **current column** and/or **row** in context.  
 
 #### **1.1.2 TableColumnSelector**
 ```typescript
-export type TableColumnSelector = {
+type TableColumnSelector = {
   page?: string;  // Optional page.
   group?: string; // Optional group, required if page is included.
   name: string;   // Required column name.
@@ -220,7 +204,7 @@ export type TableColumnSelector = {
 
 #### **1.1.3 TableRowSelector**
 ```typescript
-export type TableRowSelector = 
+type TableRowSelector = 
   | TableUnitSelector
   | TableRangeSelector
   | TableAllSelector
@@ -229,7 +213,7 @@ export type TableRowSelector =
 
 ##### **TableUnitSelector**
 ```typescript
-export type TableUnitSelector = `$${number}` | `+${number}` | `-${number}`;
+type TableUnitSelector = `$${number}` | `+${number}` | `-${number}`;
 ```
 - **`$n`**: Absolute, zero-based row within the data region.  
 - **`+n`**: Row offset forward from the current row.  
@@ -237,7 +221,7 @@ export type TableUnitSelector = `$${number}` | `+${number}` | `-${number}`;
 
 ##### **TableRangeSelector**
 ```typescript
-export type TableRangeSelector = {
+type TableRangeSelector = {
   from: TableUnitSelector;
   to: TableUnitSelector;
 };
@@ -246,7 +230,7 @@ export type TableRangeSelector = {
 
 ##### **TableAllSelector**
 ```typescript
-export type TableAllSelector = "all";
+type TableAllSelector = "all";
 ```
 - Selects all rows in the specified column.
 
@@ -385,7 +369,7 @@ The `TableReference` type enables reusable definitions in `TableBook`. It allows
 
 #### **Definition**
 ```typescript
-export type TableReference = `@${string}`;
+type TableReference = `@${string}`;
 ```
 
 #### **Concept**
@@ -403,14 +387,14 @@ The `TableStyle` type defines visual styling for text and backgrounds. It is a r
 A `TableColor` is a 6-digit hexadecimal color code that defines fixed colors.
 
 ```typescript
-export type TableColor = `#${string}`;
+type TableColor = `#${string}`;
 ```
 
 #### **TableStyle**
 The `TableStyle` type allows customization of text and background appearance.
 
 ```typescript
-export type TableStyle = {
+type TableStyle = {
     fore?: TableColor | TableReference; // Text color.
     back?: TableColor | TableReference; // Background color.
     bold?: boolean;                     // Whether the text is bold.
@@ -429,7 +413,7 @@ The `TableHeaderStyle` type extends `TableStyle` to include border and partition
 #### **4.1 Definition**
 
 ```typescript
-export type TableHeaderStyle = TableStyle & {
+type TableHeaderStyle = TableStyle & {
     beneath?: TableBorder;  // Border beneath the header.
     between?: TableBorder;  // Border between groups or columns.
 };
@@ -443,7 +427,7 @@ The `TableBorder` type defines the appearance of a border.
 
 ##### **Definition**
 ```typescript
-export type TableBorder = {
+type TableBorder = {
     type: TableBorderType;              // The line style of the border.
     color: TableColor | TableReference; // The color of the border.
 };
@@ -452,7 +436,7 @@ export type TableBorder = {
 ##### **TableBorderType**
 Represents the available styles for border lines:
 ```typescript
-export type TableBorderType =
+type TableBorderType =
     "none"  | 
     "thin"  | "medium" | "thick",  // single line style of different thickness
     "dotted"| "dashed" | "double"  // alternative lines styles
@@ -466,7 +450,7 @@ The `TablePartition` type groups together border definitions for beneath and bet
 
 ##### **Definition**
 ```typescript
-export type TablePartition = {
+type TablePartition = {
     beneath?: TableBorder; // Border beneath the header.
     between?: TableBorder; // Border between groups or columns.
 };
@@ -483,7 +467,7 @@ You can apply a theme at different levels of a `TableBook` (book → page → gr
 #### **5.1 Definition**
 
 ```typescript
-export type TableTheme = {
+type TableTheme = {
   inherits?: TableReference[];
   tab?: TableColor | TableReference;
   group?: TableHeaderStyle | TableReference;
@@ -667,14 +651,14 @@ A good starting theme for your TableBook allows you to use different palettes fo
 ---
 ---
 
-### **6. Expressions**
+### **6. TableExpressions**
 
 Expressions in `TableBook` are used to define structured formulas, replacing traditional spreadsheet cell references (e.g., `A1:B5`) with precise column-row relationships via `TableSelectors`. These formulas allow for consistent, column-based computations that translate into spreadsheet formulas during generation.
 
 #### **6.1 Definition**
 
 ```typescript
-export type TableExpression =
+type TableExpression =
   | TableLiteralExpression
   | TableSelectorExpression
   | TableCompoundExpression
@@ -692,7 +676,7 @@ The simplest type of expression, a `TableLiteralExpression`, represents a fixed 
 
 ##### **Definition**
 ```typescript
-export type TableLiteralExpression = {
+type TableLiteralExpression = {
     type: "literal";
     value: string | number | boolean;
 };
@@ -716,7 +700,7 @@ A `TableSelectorExpression` references data in a specific column and row. Instea
 
 ##### **Definition**
 ```typescript
-export type TableSelectorExpression = {
+type TableSelectorExpression = {
     type: "selector";
     selector: TableSelector;
 };
@@ -743,7 +727,7 @@ A `TableCompoundExpression` combines multiple expressions using an operator. It 
 
 ##### **Definition**
 ```typescript
-export type TableCompoundExpression = {
+type TableCompoundExpression = {
     type: "compound";
     op: TableComparisonOperator | TableMergeOperator;
     items: TableExpression[];
@@ -794,7 +778,7 @@ A `TableNegatedExpression` inverts the result of another expression.
 
 ##### **Definition**
 ```typescript
-export type TableNegatedExpression = {
+type TableNegatedExpression = {
     type: "negated";
     item: TableExpression;
 };
@@ -821,7 +805,7 @@ A `TableFunctionExpression` applies a named function to a list of arguments, whi
 
 ##### **Definition**
 ```typescript
-export type TableFunctionExpression = {
+type TableFunctionExpression = {
     type: "function";
     name: string;
     items: TableExpression[];
@@ -851,7 +835,7 @@ A `TableTemplateExpression` represents a formula written as literal text with pl
 ##### **Definition**  
 
 ```typescript
-export type TableTemplateExpression = {
+type TableTemplateExpression = {
     type: "template";
     text: string;                           // Formula text containing placeholders.
     vars?: Record<string, TableExpression>; // Placeholders mapped to expressions.
@@ -894,15 +878,24 @@ This allows for dynamic formula generation while ensuring that every placeholder
 ---
 ---
 
-### **7. TableColumnType**
+### **7. TableDataType**
 
-The `TableColumnType` defines the type of data in a column. It determines how data is validated, formatted, and optionally styled conditionally. There are five main types:
+The `TableDataType` defines the type of data in a column. It determines how data is validated, formatted, and optionally styled conditionally. There are five main types:
 
-1. **Text** (`TableTextType`)
-2. **Enum** (`TableEnumType`)
-3. **Lookup** (`TableLookupType`)
-4. **Numeric** (`TableNumericType`)
-5. **Temporal** (`TableTemporalType`)
+```typescript
+type TableDataType =
+    | TableTextType
+    | TableEnumType
+    | TableLookupType
+    | TableNumericType
+    | TableTemporalType;
+```
+
+Each data type shares the following properties:
+
+- **`kind`** *(required)*: A string that identifies the type of data (e.g., `"text"`, `"enum"`, `"numeric"`).
+- **`style`** *(optional)*: A `TableStyle` or `TableReference` to a style defining how the column should be styled.
+  - This merges with the current theme's data style, with the type's style attributes taking precedence.
 
 ---
 
@@ -910,9 +903,8 @@ The `TableColumnType` defines the type of data in a column. It determines how da
 
 The `TableConditionalStyle` type applies styling to data when a specific rule or condition is met. It is used in conjunction with rules for text, numeric, and temporal types.
 
-##### **Definition**
 ```typescript
-export type TableConditionalStyle<Rule> = {
+type TableConditionalStyle<Rule> = {
     when: Rule;                              // The rule to trigger this style.
     style: TableStyle | TableReference;      // The style to apply if the rule is satisfied.
 };
@@ -931,26 +923,27 @@ Rules (`TableRules`) define how values in a column are validated. Each type (tex
 A `TableCustomRule` defines advanced validation using expressions.
 
 ```typescript
-export type TableCustomRule = {
+type TableCustomRule = {
     type: "custom";
     expression: TableExpression;
 };
 ```
+
 ---
 
 ##### **7.2.2 Text Rules** (`TableTextRule`)
 
-Text rules validate string values. 
+Text rules validate string values.
 
 ```typescript
-export type TableTextRule =
+type TableTextRule =
     | TableMatchRule
     | TableCustomRule;
 ```
 
 ###### **Match Rules**
 ```typescript
-export type TableMatchRule = {
+type TableMatchRule = {
     type: "is" | "contains" | "begins" | "ends";
     value: string;
 };
@@ -968,7 +961,7 @@ const rule: TableTextRule = { type: "contains", value: "Important" };
 Numeric rules validate number values.
 
 ```typescript
-export type TableNumericRule =
+type TableNumericRule =
     | TableComparisonRule<number>
     | TableRangeRule<number>
     | TableCustomRule;
@@ -976,7 +969,7 @@ export type TableNumericRule =
 
 ###### **Comparison Rules**
 ```typescript
-export type TableComparisonRule<T> = {
+type TableComparisonRule<T> = {
     type: "=" | "<>" | ">" | "<" | ">=" | "<=";
     value: T;
 };
@@ -984,7 +977,7 @@ export type TableComparisonRule<T> = {
 
 ###### **Range Rules**
 ```typescript
-export type TableRangeRule<T> = {
+type TableRangeRule<T> = {
     type: "between" | "outside";
     low: T;
     high: T;
@@ -1004,7 +997,7 @@ const rule2: TableNumericRule = { type: "between", low: 5, high: 20 };
 Temporal rules validate date and time values.
 
 ```typescript
-export type TableTemporalRule =
+type TableTemporalRule =
     | TableComparisonRule<TableTemporalString>
     | TableRangeRule<TableTemporalString>
     | TableCustomRule;
@@ -1026,30 +1019,26 @@ const rule: TableTemporalRule = {
 
 #### **7.3 Text Type** (`TableTextType`)
 
-Represents string-based data.
+Represents string-based data.  
 
 ```typescript
-export type TableTextType = {
+type TableTextType = {
     kind: "text";
-    rule?: TableTextRule;
-    styles?: TableConditionalStyle<TableTextRule>[];
+    style?: TableStyle | TableReference;                // Base style
+    rule?: TableTextRule;                               // Validation rule
+    styles?: TableConditionalStyle<TableTextRule>[];    // Conditional styling
 };
 ```
-
 ---
 
 #### **7.4 Enum Type** (`TableEnumType`)
 
-Represents data with a fixed set of allowed values. Each value is defined as an `EnumItem` with optional styling or color to visually distinguish between them.
-
-##### **Definition**
-
+Represents data with a fixed set of allowed values.  
 ```typescript
-export type TableEnumType = {
+type TableEnumType = {
     kind: "enum";
-    description?: string;          // A description of the enum's purpose or usage.
-    style?: TableStyle;            // An optional style base that will apply to each enum item.
-    items: TableEnumItem[];        // The list of allowed values (enum items).
+    style?: TableStyle | TableReference;          // Base style
+    items: TableEnumItem[];                       // Possible values
 };
 ```
 
@@ -1057,74 +1046,44 @@ export type TableEnumType = {
 An `EnumItem` defines an individual value in the enum and supports customizable styles or colors.
 
 ```typescript
-export type TableEnumItem = {
-    name: string;                             // The value of the enum item.
-    description?: string;                     // Optional description for the item.
-    style?: TableStyle | TableReference;      // A style for this item - will merge with base style
-    color?: TableColor | TableReference;      // A shortcut for setting the foreground color
+type TableEnumItem = {
+    name: string;                             // The value of the enum item
+    description?: string;                     // Optional description for the item
+    style?: TableStyle | TableReference;      // Merged with any theme or base style
+    color?: TableColor | TableReference;      // Shorthand for setting the foreground color
 };
 ```
----
 
-##### Style Merging
+###### Style Merging
 
-The final style for an `EnumItem` is created by merging the three styles:
+The final style for an `EnumItem` is created by merging the two styles:
 ```typescript
-(enum.style ?? {}) + (item.style ?? {}) + { fore: item.color }
+(item.style ?? {}) + { fore: item.color }
 ```
 
-
-Example:
-
-if `enum.style` is 
+For example, if `item.style` is 
 ```typescript
-{ bold: true, fore: '#000000 }
+{ bold: true, back: '#fffffff', fore: '#000000' }
 ```
-
-and `item.style` is
-```typescript
-{ italic: true, fore: '#111111 }
-```
-
 and `item.color` is 
 ```typescript
 '#222222'
 ```
-
 The final `EnumItem` style will be
 ```typescript
-{ bold: true, italic: true, fore: '#222222 }
-```
-
----
-
-##### **Example**
-
-This example defines an enum with a description and three items, each with unique colors and optional descriptions:
-
-```json
-{
-  "kind": "enum",
-  "description": "Approval status for items in the report.",
-  "style": { "bold": true },
-  "items": [
-    { "name": "Approved", "description": "Item was accepted.", "color": "#00FF00" },
-    { "name": "Pending",  "description": "Item is under review.", "color": "#FFFF00" },
-    { "name": "Rejected", "description": "Item was denied.", "style": { "italic": true }, "color": "#FF0000" }
-  ]
-}
+{ bold: true,  back: '#fffffff', fore: '#222222 }
 ```
 
 ---
 
 #### **7.5 Lookup Type** (`TableLookupType`)
 
-References valid values from another column.
-
+References valid values from another column.  
 ```typescript
-export type TableLookupType = {
+type TableLookupType = {
     kind: "lookup";
-    column: TableColumnSelector;
+    style?: TableStyle | TableReference;        // Base style
+    column: TableColumnSelector;               // Column referencing valid values
 };
 ```
 
@@ -1132,38 +1091,29 @@ export type TableLookupType = {
 
 #### **7.6 Numeric Type** (`TableNumericType`)
 
-The `TableNumericType` represents numerical data, allowing for precise control over validation, formatting, and conditional styling. It is one of the most customizable column types in `TableBook`.
-
----
-
-##### **Definition**
+Represents numerical data, allowing for validation, formatting, and conditional styling.  
 
 ```typescript
-export type TableNumericType = {
+type TableNumericType = {
     kind: "numeric";
-    rule?: TableNumericRule;                            // Validation rules for numeric values.
-    styles?: TableConditionalStyle<TableNumericRule>[]; // Conditional styling based on rules.
-    format?: TableNumericFormat | TableReference;       // Formatting options for numeric values.
+    style?: TableStyle | TableReference;               // Base style
+    rule?: TableNumericRule;                           // Validation rule
+    styles?: TableConditionalStyle<TableNumericRule>[];// Conditional styling
+    format?: TableNumericFormat | TableReference;      // Formatting options
 };
 ```
-
-- **`rule`**: Validates numeric values with comparison, range, or custom rules.
-- **`styles`**: Applies conditional styles when a numeric rule is satisfied.
-- **`format`**: Controls how numbers are displayed.
-
 ---
 
 ##### **7.6.1 TableBaseNumericFormat**
 
-All numeric formats (`number`, `percent`, `currency`) inherit from the `TableBaseNumericFormat`, which defines general options for displaying numbers.
+All numeric formats (`number`, `percent`, `currency`) inherit from the same base format options.
 
-###### **Definition**
 ```typescript
-export type TableBaseNumericFormat<Type extends string> = {
-    type: Type;                               // The format type (e.g., "number", "percent").
-    integer?: number | TableDigitPlaceholder; // Formatting for digits before the decimal point, number is shorthand for { fixed: number; }
-    decimal?: number | TableDigitPlaceholder; // Formatting for digits after the decimal point, number is shorthand for { fixed: number; }
-    commas?: boolean;                         // Whether to separate thousands with commas.
+type TableBaseNumericFormat<Type extends string> = {
+    type: Type;                               // The format type (e.g., "number", "percent")
+    integer?: number | TableDigitPlaceholder; // Formatting for digits before the decimal
+    decimal?: number | TableDigitPlaceholder; // Formatting for digits after the decimal
+    commas?: boolean;                         // Whether to separate thousands with commas
 };
 ```
 
@@ -1173,18 +1123,17 @@ export type TableBaseNumericFormat<Type extends string> = {
 
 `TableDigitPlaceholder` controls how digits are displayed using placeholder characters:
 
-| Placeholder | Behavior                               |
-|-------------|---------------------------------------|
-| `'0'`       | Fixed digit: always shows a digit, even if it's `0`. |
-| `'#'`       | Flexible digit: shows a digit if present, or nothing otherwise. |
-| `'?'`       | Aligning digit: shows a digit if present, or a space for alignment. |
+| Placeholder | Behavior                                                   |
+|-------------|------------------------------------------------------------|
+| `'0'`       | Fixed digit: always shows a digit, even if it's `0`.       |
+| `'#'`       | Flexible digit: shows a digit if present, or nothing.      |
+| `'?'`       | Aligning digit: shows a digit if present, or a space.      |
 
-###### **Definition**
 ```typescript
-export type TableDigitPlaceholder = {
-    fixed?: number;  // Number of '0' placeholders.
-    flex?: number;   // Number of '#' placeholders.
-    align?: number;  // Number of '?' placeholders.
+type TableDigitPlaceholder = {
+    fixed?: number;  // Number of '0' placeholders
+    flex?: number;   // Number of '#' placeholders
+    align?: number;  // Number of '?' placeholders
 };
 ```
 
@@ -1198,46 +1147,45 @@ const placeholder: TableDigitPlaceholder = { fixed: 2, flex: 3 };
 
 ##### **7.6.3 Numeric Formats**
 
-There are three specific numeric formats, each inheriting from `TableBaseNumericFormat`:
+There are three specific numeric formats, each extending the base numeric format:
 
 1. **Number Format**
+
     ```typescript
-    export type TableNumberFormat = TableBaseNumericFormat<"number">;
+    type TableNumberFormat = TableBaseNumericFormat<"number">;
     ```
-    Displays numbers with three fixed digits before the decimal and up to two digits after the decimal, with thousands separators.
+    Displays numbers with optional integer/decimal placeholders and thousands separators.
 
 2. **Percent Format**
+
     ```typescript
-    export type TablePercentFormat = TableBaseNumericFormat<"percent">;
+    type TablePercentFormat = TableBaseNumericFormat<"percent">;
     ```
-    Displays percentages with one digit before and one digit after the decimal.
+    Displays percentages (e.g., `0.75` as `75%`).
 
 3. **Currency Format**
+
     ```typescript
-    export type TableCurrencyFormat = TableBaseNumericFormat<"currency"> & {
-        symbol?: string;                // The currency symbol (e.g., "$"), defaults to '$'
-        position?: "prefix" | "suffix"; // Whether the symbol appears before or after the value, defaults to 'prefix'
+    type TableCurrencyFormat = TableBaseNumericFormat<"currency"> & {
+        symbol?: string;                // The currency symbol, e.g. "$"
+        position?: "prefix" | "suffix"; // Symbol placement, defaults to 'prefix'
     };
     ```
-
-    Displays currency values like `$1234.56`, with defaulting to two fixed decimal places.
+    Displays currency values like `$1234.56`, typically with two decimal places.
 
 ---
 
 #### **7.7 Temporal Type** (`TableTemporalType`)
 
-The `TableTemporalType` represents date and time data, with flexible validation rules and customizable formatting. It simplifies handling ISO-compliant temporal values.
-
----
-
-##### **Definition**
+Represents date and time data, with flexible validation and customizable formatting.  
 
 ```typescript
-export type TableTemporalType = {
+type TableTemporalType = {
     kind: "temporal";
-    rule?: TableTemporalRule;                             // Validation rules for temporal values.
-    styles?: TableConditionalStyle<TableTemporalRule>[];  // Conditional styling based on rules.
-    format?: TableTemporalFormat | TableReference;        // Formatting for temporal values.
+    style?: TableStyle | TableReference;                // Base style
+    rule?: TableTemporalRule;                           // Validation rule
+    styles?: TableConditionalStyle<TableTemporalRule>[];// Conditional styling
+    format?: TableTemporalFormat | TableReference;      // Formatting
 };
 ```
 
@@ -1245,7 +1193,7 @@ export type TableTemporalType = {
 
 ##### **7.7.1 Temporal Rules**
 
-Temporal rules validate date and time values. They are similar to numeric rules but operate on temporal strings (`YYYY-MM-DD`).
+Temporal rules validate date and time values. They function similarly to numeric rules but operate on temporal strings (`YYYY-MM-DD`).
 
 **Example Rules:**
 ```typescript
@@ -1267,25 +1215,20 @@ const rangeRule: TableTemporalRule = {
 
 A `TableTemporalUnit` defines a single element of a temporal format, such as a year, month, day, or time component. Each unit can optionally specify a `length`, which determines whether the unit is displayed in a short or long format.
 
----
-
-###### **Definition**
 ```typescript
-export type TableTemporalUnit = {
-    type: "year"       // The year of the date (e.g., 2025 or 25).
-         | "month"     // Numeric month (e.g., 01 or 1).
-         | "monthname" // Full or abbreviated month name (e.g., January or Jan).
-         | "weekday"   // Full or abbreviated weekday name (e.g., Monday or Mon).
-         | "day"       // Day of the month (e.g., 27 or 7).
-         | "hour"      // Hour in 12-hour or 24-hour format (e.g., 03 or 3).
-         | "minute"    // Minute of the hour (e.g., 45 or 5).
-         | "second"    // Second of the minute (e.g., 30 or 3).
-         | "meridiem"; // AM/PM designator (e.g., AM or a).
-    length?: "short" | "long";  // Determines the format for the unit. See below.
+type TableTemporalUnit = {
+    type: "year"
+         | "month"
+         | "monthname"
+         | "weekday"
+         | "day"
+         | "hour"
+         | "minute"
+         | "second"
+         | "meridiem";
+    length?: "short" | "long";
 };
 ```
-
----
 
 ###### **Unit Type Details**
 
@@ -1303,10 +1246,7 @@ export type TableTemporalUnit = {
 
 ---
 
-
 ###### **Example Temporal Formats**
-
-Here are some complete examples of `TableTemporalFormat` using `TableTemporalUnit`:
 
 1. **ISO Date Format**
    ```json
@@ -1353,7 +1293,7 @@ The `TableUnit` type provides the foundation for defining a `TableBook`. This se
 
 ---
 
-### **8.1 TableDefinitions**
+#### **8.1 TableDefinitions**
 
 A `TableUnit` can optionally declare `definitions` that store **reusable, named elements** such as colors, styles, themes, numeric/temporal formats, and column types. Each level (**column, group, page, book**) can define its own `definitions`, and references to these definitions cascade **upward** when a match isn't found locally.
 
@@ -1368,18 +1308,18 @@ This design allows for **cleaner, DRY (Don’t Repeat Yourself) configurations**
 
 ---
 
-#### **8.1.1 Definition**
+##### **8.1.1 Definition**
 
 ```typescript
-export type TableReferenceMap<T> = Record<string, T | TableReference>;
+type TableReferenceMap<T> = Record<string, T | TableReference>;
 
-export type TableDefinitions = {
+type TableDefinitions = {
     colors?: TableReferenceMap<TableColor>;
     styles?: TableReferenceMap<TableHeaderStyle>;
     themes?: TableReferenceMap<TableTheme>;
     numerics?: TableReferenceMap<TableNumericFormat>;
     temporals?: TableReferenceMap<TableTemporalFormat>;    
-    types?: TableReferenceMap<TableColumnType>;    
+    types?: TableReferenceMap<TableDataType>;    
 };
 ```
 
@@ -1396,7 +1336,7 @@ This enables:
 
 ---
 
-#### **8.1.2 Example**
+##### **8.1.2 Example**
 
 ```json
 {
@@ -1434,7 +1374,7 @@ This enables:
 }
 ```
 
-#### **8.1.3 Explanation of Example**
+##### **8.1.3 Explanation of Example**
 - **Color Reference (`@alert`)**: `"alert"` refers to `"danger"`, meaning `"alert"` will resolve to `#FF0000`.
 - **Style Inheritance (`@alertHeader`)**: `"alertHeader"` references `"alert"` for its foreground color.
 - **Theme Inheritance (`@corporate`)**: The `"corporate"` theme inherits from `"@blue"` and applies `"@boldHeader"` to headers.
@@ -1444,7 +1384,7 @@ This enables:
 
 ---
 
-### **8.1.4 Key Benefits**
+##### **8.1.4 Key Benefits**
 - **Reusability**: Any definition can be **used multiple times** without repetition.
 - **Consistency**: Ensures **standardized** styling, formatting, and data types across the `TableBook`.
 - **Modular Structure**: Small, **composable** definitions allow for easier customization and scaling.
@@ -1452,14 +1392,14 @@ This enables:
 
 ---
 
-### **8.2 TableUnit**
+#### **8.2 TableUnit**
 
 All elements in a `TableBook` (columns, groups, pages, and the book itself) extend `TableUnit`. It holds common properties like a name, optional theme, an optional description, and the optional `definitions`.
 
-#### **8.2.1 Definition**
+##### **8.2.1 Definition**
 
 ```typescript
-export type TableUnit = {
+type TableUnit = {
   name: string;                        // Unique identifier.
   theme?: TableTheme | TableReference; // Optional theme for this unit.
   description?: string;                // Optional explanation/purpose.
@@ -1473,21 +1413,21 @@ export type TableUnit = {
 
 ---
 
-### **8.3 TableColumn**
+#### **8.3 TableColumn**
 
 A `TableColumn` represents the smallest unit in a `TableBook`. It extends `TableUnit` and includes properties for data typing and optional expressions.
 
-#### **8.3.1 Definition**
+##### **8.3.1 Definition**
 
 ```typescript
-export type TableColumn = TableUnit & {
-  type: TableColumnType | TableReference;      // The data type of the column.
+type TableColumn = TableUnit & {
+  type: TableDataType | TableReference;      // The data type of the column.
   source?: string;                             // Optional metadata about the column's data source.
   expression?: TableExpression<TableSelector>; // Optional expression for computed values.
 };
 ```
 
-#### **8.3.2 Example**
+##### **8.3.2 Example**
 
 ```json
 {
@@ -1503,19 +1443,19 @@ export type TableColumn = TableUnit & {
 
 ---
 
-### **8.4 TableGroup**
+#### **8.4 TableGroup**
 
 A `TableGroup` organizes multiple `TableColumn` elements into a logical set (e.g., financial columns vs. operational columns). Groups also extend `TableUnit`, so they can have their own definitions, theme, or description.
 
-#### **8.4.1 Definition**
+##### **8.4.1 Definition**
 
 ```typescript
-export type TableGroup = TableUnit & {
+type TableGroup = TableUnit & {
   columns: TableColumn[];
 };
 ```
 
-#### **8.4.2 Example**
+##### **8.4.2 Example**
 
 ```json
 {
@@ -1529,20 +1469,20 @@ export type TableGroup = TableUnit & {
 
 ---
 
-### **8.5 TablePage**
+#### **8.5 TablePage**
 
 A `TablePage` represents a **single sheet** within a `TableBook`. Every page has **one table** made up of groups and columns.
 
-#### **8.5.1 Definition**
+##### **8.5.1 Definition**
 
 ```typescript
-export type TablePage = TableUnit & {
+type TablePage = TableUnit & {
   groups: TableGroup[];
   rows: number;         // Number of Rows in the Table
 };
 ```
 
-#### **8.5.2 Example**
+##### **8.5.2 Example**
 
 ```json
 {
@@ -1561,19 +1501,19 @@ export type TablePage = TableUnit & {
 
 ---
 
-### **8.6 TableBook**
+#### **8.6 TableBook**
 
 A `TableBook` is the **root** container, holding an array of pages. It extends `TableUnit` so it can also specify **global** definitions, themes, or descriptions.
 
-#### **8.6.1 Definition**
+##### **8.6.1 Definition**
 
 ```typescript
-export type TableBook = TableUnit & {
+type TableBook = TableUnit & {
   pages: TablePage[];
 };
 ```
 
-#### **8.6.2 Example**
+##### **8.6.2 Example**
 
 ```json
 {
@@ -1609,7 +1549,7 @@ export type TableBook = TableUnit & {
 
 ---
 
-### **Key Takeaways**
+#### **Key Takeaways**
 1. **Local Definitions at Every Level**: Each `TableUnit` can define its own `definitions`, enabling flexible, localized overrides or additions.
 2. **Upward Cascading**: If a referenced definition isn’t found locally, the search continues up the hierarchy.
 3. **Consistent Column-Based Design**: Each page holds exactly one table, defined by groups and columns, with row count determined by the page’s `rows` property.
@@ -1626,7 +1566,7 @@ The `Result` type represents the outcome of an operation, which can either succe
 
 #### **Definition**
 ```typescript
-export type Result<T, I> =
+type Result<T, I> =
     | { success: true; value: T }
     | { success: false; info: I; value?: T };
 ```
@@ -1669,7 +1609,7 @@ The `TableBookIssue` type represents errors or warnings encountered while workin
 
 #### **Definition**
 ```typescript
-export type TableBookIssue = 
+type TableBookIssue = 
     | TableBookParseIssue
     | TableBookValidateIssue
     | TableBookProcessIssue
@@ -1867,15 +1807,15 @@ This enables support for prebuilt definitions (e.g., palettes) or custom type de
 
 ##### **Definition**
 ```typescript
-export type TableResolveReference<T> = (name: string) => Result<T, string>;
+type TableResolveReference<T> = (name: string) => Result<T, string>;
 
-export type TableDefinitionResolver = {
+type TableDefinitionResolver = {
     colors?: TableResolveReference<TableColor>;
     styles?: TableResolveReference<TableStyle>;
     themes?: TableResolveReference<TableTheme>;    
     numerics?: TableResolveReference<TableNumericFormat>;
     temporals?: TableResolveReference<TableTemporalFormat>;    
-    types?: TableResolveReference<TableColumnType>;
+    types?: TableResolveReference<TableDataType>;
 };
 ```
 
@@ -1900,7 +1840,7 @@ Tracks processing progress at each level of the hierarchy.
 
 ##### **Definition**
 ```typescript
-export type TableProcessLogger = {
+type TableProcessLogger = {
     book?: (book: TableBook) => void;
     page?: (page: TablePage) => void;
     group?: (group: TableGroup) => void;

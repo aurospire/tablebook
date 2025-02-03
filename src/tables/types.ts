@@ -1,121 +1,9 @@
-/* Overview */
-// Types for TableBook - a declarative schema (like DDL for databases) for one-time spreadsheet generation.
-// Each "page" has one table with at least one column group.
-// TableBook implements a powerful table paradigm - a strict subset of spreadsheets with only vertical relationships.
-// Data relationships and computations are column-based - no cell addresses or horizontal references.
-// Ideally every Table theme should use its own palette.
-// LLMs or UIs can create in JSON or YAML to be parsed into TableBook for processing.
-/**
- * TableBook Type System
- * A declarative schema (like DDL for databases) for one-time spreadsheet generation.
- * 
- * Key Concepts:
- * - Implements a table paradigm that is a strict subset of spreadsheets with only vertical relationships
- * - Data relationships and computations are column-based - no cell addresses or horizontal references
- * - Each page has one table with at least one column group
- * - Group headers are hidden in output if there's only one in a table
- * 
- * Design Principles:
- * - Standard Palettes should be ALWAYS BE USED over custom colors and themes
- * - If wanting to utilize a custom theme, it should be defined in the definitions object.
- * - Every Table theme should ideally use its own theme, but can inherit from others.
- * - LLMs or UIs can create in JSON or YAML to be parsed into TableBook
- * 
- * References:
- * - References are identified by their context and must **always begin with `@`** to denote a link 
- *   to the definitions object in the root TableBook object (e.g., styles, themes, formats).
- * 
- * Contextual Examples:
- * - **Themes**:
- *   - `"theme": "@business"` refers to a theme in `definitions.themes`.
- *   - `"inherits": ["@basic"]` refers to the `basic` theme defined in `definitions.themes`. it can inherit from multiple themes, with each theme overriding the previous one's properties.
- * - **Colors**:
- *   - `"fore": "@green"` references the `green` color from `definitions.colors`.
- * - **Styles**:
- *   - `"style": "@header"` refers to a predefined style in `definitions.styles`.
- * - **Type**:
- *   - `"type": "@currency"` references a format in `definitions.types`. (we see that each type has its own namespace)
- * - **Formats**:
- *   - `"format": "@currency"` references a format in `definitions.formats.numeric`. (if the parent type is numeric)
- * 
- * Theme Inheritance:
- * - Themes cascade down through the structure (TableBook -> TablePage -> TableGroup -> TableColumn)
- * - Each level can override the theme from its parent by providing an explicit theme
- * - undefined/missing theme does not override parent theme
- * - Multiple themes can be combined using the inherits array using a deep order-matters override
- * 
- * Formatting Controls:
- * Number formats use placeholder characters to control digit display:
- * - '0': fixed - Always shows digit, displays 0 if no value
- * - '#': flex - Shows digit if present, shows nothing if no value
- * - '?': align - Shows digit if present, shows blank space if no value
- * 
- * Data Selection:
- * The selector system enables precise targeting of data within tables using column and row references:
- * Since TableBook is column-based, all data selection is done by selecting subsets of named columns.
- * Columns are selected by name, and rows are selected by position or range within the column, either absolute or relative.
- * 
- * Column Selection:
- * - Made up of three parts: page, group, and column
- * - If page or group is missing, it refers to the current page or group
- * - ex: { page: "Sales", group: "Revenue", name: "Price" } - fully qualified
- * - ex: { group: "Revenue", name: "Price" } - within the current page
- * - ex: { name: "Price" } - within the current page and group
- * 
- * Row Selection:
- * - Rows are 0-based, with negative values not allowed
- * - Absolute position: "$n" refers to nth row (1-based)
- * - Relative forward: "+n" refers to n rows after current
- * - Relative backward: "-n" refers to n rows before current
- * - Range between positions: { from: "$1", to: "$5" } includes rows 1-5
- * - Range between relative positions: { from: "+1", to: "+5" } includes rows 1-5 after current
- * - 'self' refers to current row in scope
- * - 'all' refers to all rows in scope
- * 
- * Data Selection:
- * - Full column: { column: { name: "Price" }, row: "all" }
- * - Single cell: { column: { name: "Price" }, row: "$5" }
- * - Cell range: { column: { name: "Price" }, row: { from: "$1", to: "$5" } }
- * - Relative cells: { column: { name: "Price" }, row: "+1" }
- * - Different column, Same row { column: { group: 'Identity", name: "Id" }, row: "self" }
- * - Same column, Different row { column: "self", row: "$5" }
- * - Current cell: "self" // Only useful for validation/conditional formatting custom expressions
- * 
- * Expressions:
- * - Require full DataSelectors - not simply ColumnSelectors.
- * - Can be compound, negated, function, selector, or raw.
- * 
- * Types are documented with JSON Schema patterns:
- * {
- *   "TableReference": {
- *     "pattern": "^@.+$",
- *     "description": "References start with @ followed by any characters"
- *   },
- *   "TableUnitName": {
- *     "pattern": "^[A-Z][A-Za-z0-9_]*$", 
- *     "description": "Must start with uppercase, followed by alphanumeric or underscore"
- *   },
- *   "TableTemporalString": {
- *     "pattern": "^\\d{4}-\\d{2}-\\d{2}",
- *     "description": "ISO format for dates and times"
- *   },
- *   "TableColor": {
- *     "pattern": "^#[A-Fa-f0-9]{6}$",
- *     "description": "6-digit hex color code"
- *   },
- *   "TableUnitSelector": {
- *     "pattern": "^[$+\\-]\\d+$",
- *     "description": "Absolute ($) or relative (+/-) row index"
- *   }
- * }
- */
-
 /* Reference */
 /** Regex pattern for validating Reference strings. Must start with @ followed by allowed characters */
 export const TableReferenceRegex = /^@(.+)$/;
 
 /** Type for referencing context-dependent items (color, style, theme, type) defined in TableBook */
-export type TableReference<T extends string = string> = `@${T}`;
+export type TableReference = `@${string}`;
 
 
 /* Data Selection */
@@ -437,6 +325,11 @@ export type TableTemporalFormat = TableTemporalItem[];
 
 
 /* Data Types */
+export type TableDataTypeBase<Kind extends string> ={    
+    kind: Kind;
+    /** Optional base style for the column, will merge with theme data style */
+    style?: TableStyle | TableReference;
+}
 
 /** Identifies a text type in the type system */
 export const TableTextTypeKind = 'text';
@@ -444,12 +337,11 @@ export const TableTextTypeKind = 'text';
  * Text data type for string values
  * Supports validation rules, conditional styling, and computed expressions
  */
-export type TableTextType = {
-    kind: typeof TableTextTypeKind;
-    /** Optional validation rule for the text content */
-    rule?: TableTextRule;
+export type TableTextType = TableDataTypeBase<typeof TableTextTypeKind> & {    
     /** Optional array of conditional styles based on text rules */
     styles?: TableConditionalStyle<TableTextRule>[];
+    /** Optional validation rule for the text content */
+    rule?: TableTextRule;
 };
 
 /** 
@@ -466,16 +358,8 @@ export type TableEnumItem = {
 
 /** Identifies an enum type in the type system */
 export const TableEnumTypeKind = 'enum';
-/** 
- * Enumerated data type with a fixed set of possible values
- * Each value can have its own style
- */
-export type TableEnumType = {
-    kind: typeof TableEnumTypeKind;
-
-    /** Optional base style for Enum items */
-    style?: TableStyle | TableReference;
-
+/** Enumerated data type with a fixed set of possible values */
+export type TableEnumType = TableDataTypeBase<typeof TableEnumTypeKind> & {
     /** Array of valid values for this enum */
     items: TableEnumItem[];
 };
@@ -483,12 +367,8 @@ export type TableEnumType = {
 
 /** Identifies a lookup type in the type system */
 export const TableLookupTypeKind = 'lookup';
-/** 
- * Lookup data type that references valid values from another column
- * Useful for maintaining consistency and relationships between columns
- */
-export type TableLookupType = {
-    kind: typeof TableLookupTypeKind;
+/** A data type that restricts values to those present in a specified column. */
+export type TableLookupType = TableDataTypeBase<typeof TableLookupTypeKind> & {    
     /** Column containing the valid values for this lookup */
     column: TableColumnSelector;
 };
@@ -496,42 +376,33 @@ export type TableLookupType = {
 
 /** Identifies a numeric type in the type system */
 export const TableNumericTypeKind = 'numeric';
-/** 
- * Numeric data type for numbers and calculations
- * Supports formatting options, validation rules, and computed expressions
- */
-export type TableNumericType = {
-    kind: typeof TableNumericTypeKind;
-    /** Optional validation rule for the numeric value */
-    rule?: TableNumericRule;
+/** Numeric data type for numbers, currency, percent */
+export type TableNumericType = TableDataTypeBase<typeof TableNumericTypeKind> & {
     /** Optional array of conditional styles based on numeric rules */
     styles?: TableConditionalStyle<TableNumericRule>[];
+    /** Optional validation rule for the numeric value */
+    rule?: TableNumericRule;
     /** Optional formatting for how the number should be displayed */
     format?: TableNumericFormat | TableReference;
 };
 
 /** Identifies a temporal type in the type system */
 export const TableTemporalTypeKind = 'temporal';
-/** 
- * Temporal data type for dates and times
- * Supports multiple format options, validation rules, and computed expressions
- */
-export type TableTemporalType = {
-    kind: typeof TableTemporalTypeKind;
-    /** Optional validation rule for the temporal value */
-    rule?: TableTemporalRule;
+/** Temporal data type for dates and times */
+export type TableTemporalType = TableDataTypeBase<typeof TableTemporalTypeKind> & {    
     /** Optional array of conditional styles based on temporal rules */
     styles?: TableConditionalStyle<TableTemporalRule>[];
+    /** Optional validation rule for the temporal value */
+    rule?: TableTemporalRule;
     /** Optional formatting for how the date/time should be displayed */
     format?: TableTemporalFormat | TableReference;
 };
-
 
 /** 
  * Union of all possible data types in the system
  * Can be a concrete type definition or a reference to a predefined type
  */
-export type TableColumnType = TableTextType | TableEnumType | TableLookupType | TableNumericType | TableTemporalType;
+export type TableDataType = TableTextType | TableEnumType | TableLookupType | TableNumericType | TableTemporalType;
 
 
 
@@ -553,7 +424,7 @@ export type TableDefinitions = {
     /** Custom temporal format definitions */
     temporals?: TableReferenceMap<TableTemporalFormat>;    
     /** Reusable type definitions */
-    types?: TableReferenceMap<TableColumnType>;    
+    types?: TableReferenceMap<TableDataType>;    
 };
 
 /** Regex pattern validating table unit names: must start with uppercase, followed by alphanumeric */
@@ -580,7 +451,7 @@ export type TableUnit = {
 */
 export type TableColumn = TableUnit & {
     /** Data type defining the content and behavior of this column */
-    type: TableColumnType | TableReference;
+    type: TableDataType | TableReference;
     /** Optional metadata describing where the column's data comes from */
     source?: string;
     /** Optional expression to compute the value */

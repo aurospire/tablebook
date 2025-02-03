@@ -1,6 +1,6 @@
 import { TableBookProcessIssue } from "../issues";
-import { isReference, TableDefinitionResolver, TableReferenceResolver } from "../tables/references";
-import { TableColor, TableColumnType, TableDefinitions, TableHeaderStyle, TableNumericFormat, TableReference, TableReferenceMap, TableTemporalFormat, TableTheme } from "../tables/types";
+import { isReference, TableDefinitionResolver, TableReferenceLookup, TableReferenceResolver } from "../tables/references";
+import { TableColor, TableDataType, TableDefinitions, TableHeaderStyle, TableNumericFormat, TableReference, TableReferenceMap, TableTemporalFormat, TableTheme } from "../tables/types";
 import { ObjectPath, Result } from "../util";
 
 type RegistryResolver<T> = (ref: TableReference, path: ObjectPath) => Result<T, TableBookProcessIssue[]>;
@@ -10,43 +10,58 @@ const emptyResolver: RegistryResolver<any> = (ref, path) =>
 
 const arrayResolver = <T>(
     refs: TableReferenceMap<T>,
-    resolvers: TableReferenceResolver<T>[] = []
+    lookups: TableReferenceLookup<T>[] = []
 ): RegistryResolver<T> => (ref, path) => {
     const name = ref.slice(1);
     const issues: TableBookProcessIssue[] = [];
 
-    for (const resolver of resolvers) {
-        const result = resolver(name);
+    for (const resolver of lookups) {
+        if (typeof resolver === 'function') {
+            const result = resolver(name);
 
-        if (result.success) {
-            refs[name] = result.value;
+            if (result.success) {
+                refs[name] = result.value;
 
-            return result;
-        } else
-            issues.push({ type: 'processing', message: result.info, path, data: ref });
+                return result;
+            }
+            else
+                issues.push({ type: 'processing', message: result.info, path, data: ref });
+
+        }
+        else {
+            const result = resolver[name];
+
+            if (result !== undefined) {
+                refs[name] = result;
+
+                return Result.success(result);
+            }
+            else
+                issues.push({ type: 'processing', message: 'Missing reference', path, data: ref });
+        }
     }
 
-    return emptyResolver(ref, path);
+    return Result.failure(issues);
 };
 
-const registryResolver = <T>(registry: ReferenceRegistry<T>): RegistryResolver<T> => (ref, path) => registry.resolve(ref, path);
+const registryResolver = <T>(registry: TableReferenceRegistry<T>): RegistryResolver<T> => (ref, path) => registry.resolve(ref, path);
 
 
-export class ReferenceRegistry<T> {
+export class TableReferenceRegistry<T> {
     #refs: TableReferenceMap<T>;
     #resolver: RegistryResolver<T>;
 
-    constructor(refs: TableReferenceMap<T> | undefined, resolvers?: (TableReferenceResolver<T> | undefined)[]) {
+    constructor(refs: TableReferenceMap<T> | undefined, lookups?: (TableReferenceLookup<T> | undefined)[]) {
         this.#refs = { ...(refs ?? {}) };
 
-        this.#resolver = resolvers?.length
-            ? arrayResolver(this.#refs, resolvers.filter((fn): fn is TableReferenceResolver<T> => fn !== undefined))
+        this.#resolver = lookups?.length
+            ? arrayResolver(this.#refs, lookups.filter((lookup): lookup is TableReferenceLookup<T> => lookup !== undefined))
             : emptyResolver;
     }
 
-    overlay(refs?: TableReferenceMap<T>): ReferenceRegistry<T> {
+    overlay(refs?: TableReferenceMap<T>): TableReferenceRegistry<T> {
         if (refs) {
-            const resolver = new ReferenceRegistry(refs);
+            const resolver = new TableReferenceRegistry(refs);
 
             resolver.#resolver = registryResolver(this);
 
@@ -83,15 +98,15 @@ export class ReferenceRegistry<T> {
 }
 
 export type TableDefinitionsRegistry = {
-    colors: ReferenceRegistry<TableColor>;
-    styles: ReferenceRegistry<TableHeaderStyle>;
-    themes: ReferenceRegistry<TableTheme>;
-    numerics: ReferenceRegistry<TableNumericFormat>;
-    temporals: ReferenceRegistry<TableTemporalFormat>;
-    types: ReferenceRegistry<TableColumnType>;
+    colors: TableReferenceRegistry<TableColor>;
+    styles: TableReferenceRegistry<TableHeaderStyle>;
+    themes: TableReferenceRegistry<TableTheme>;
+    numerics: TableReferenceRegistry<TableNumericFormat>;
+    temporals: TableReferenceRegistry<TableTemporalFormat>;
+    types: TableReferenceRegistry<TableDataType>;
 };
 
-export class DefinitionsRegistry implements TableDefinitionsRegistry {
+export class TableDefinitionsManager implements TableDefinitionsRegistry {
     #registries: TableDefinitionsRegistry;
 
     constructor(registries: TableDefinitionsRegistry) {
@@ -99,20 +114,20 @@ export class DefinitionsRegistry implements TableDefinitionsRegistry {
     }
 
     static new(defintions?: TableDefinitions, resolvers?: TableDefinitionResolver[]) {
-        return new DefinitionsRegistry({
-            colors: new ReferenceRegistry(defintions?.colors, resolvers?.map(r => r.colors)),
-            styles: new ReferenceRegistry(defintions?.styles, resolvers?.map(r => r.styles)),
-            themes: new ReferenceRegistry(defintions?.themes, resolvers?.map(r => r.themes)),
-            numerics: new ReferenceRegistry(defintions?.numerics, resolvers?.map(r => r.numerics)),
-            temporals: new ReferenceRegistry(defintions?.temporals, resolvers?.map(r => r.temporals)),
-            types: new ReferenceRegistry(defintions?.types, resolvers?.map(r => r.types)),
+        return new TableDefinitionsManager({
+            colors: new TableReferenceRegistry(defintions?.colors, resolvers?.map(r => r.colors)),
+            styles: new TableReferenceRegistry(defintions?.styles, resolvers?.map(r => r.styles)),
+            themes: new TableReferenceRegistry(defintions?.themes, resolvers?.map(r => r.themes)),
+            numerics: new TableReferenceRegistry(defintions?.numerics, resolvers?.map(r => r.numerics)),
+            temporals: new TableReferenceRegistry(defintions?.temporals, resolvers?.map(r => r.temporals)),
+            types: new TableReferenceRegistry(defintions?.types, resolvers?.map(r => r.types)),
         });
     }
 
 
-    overlay(definitions?: TableDefinitions): DefinitionsRegistry {
+    overlay(definitions?: TableDefinitions): TableDefinitionsManager {
         return definitions
-            ? new DefinitionsRegistry({
+            ? new TableDefinitionsManager({
                 colors: this.#registries.colors.overlay(definitions.colors),
                 styles: this.#registries.styles.overlay(definitions.styles),
                 themes: this.#registries.themes.overlay(definitions.themes),
