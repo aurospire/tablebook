@@ -37,7 +37,7 @@ export const mergeThemes = (base: SheetTheme, override: SheetTheme): SheetTheme 
 export const resolveTheme = (
     theme: TableTheme | TableReference,
     definitions: TableDefinitionsManager,
-    parents: (TableTheme | TableReference)[],
+    parents: SheetTheme[],
     chain: TableTheme[],
     path: ObjectPath
 ): Result<SheetTheme, TableBookProcessIssue[]> => {
@@ -66,16 +66,9 @@ export const resolveTheme = (
         data: {}
     };
 
-    for (let i = 0; i < parents.length; i++) {
-        const parent = parents[i];
+    for (const parent of parents)
+        result = mergeThemes(result, parent);
 
-        const resolvedParent = resolveTheme(parent, definitions, [], [], path);
-
-        if (resolvedParent.success)
-            result = mergeThemes(result, resolvedParent.value);
-        else
-            issues.push(...resolvedParent.info);
-    }
 
     if (resolved.inherits) {
         const branchChain = [...chain, resolved];

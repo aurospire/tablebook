@@ -10,7 +10,7 @@ import { resolveBehavior } from "./resolveBehavior";
 import { resolveColumns } from "./resolveColumns";
 import { resolveExpression } from "./resolveExpression";
 import { resolveStyle } from "./resolveStyle";
-import { mergeStyles, resolveTheme } from "./resolveTheme";
+import { mergeStyles, resolveTheme, SheetTheme } from "./resolveTheme";
 
 
 export type TableProcessLogger = {
@@ -40,6 +40,7 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
     // Reify definitions
     const bookDefinitions = TableDefinitionsManager.new(book.definitions, resolvers);
 
+    const bookTheme = resolveTheme(book.theme ?? {}, bookDefinitions, [], [], []);
 
     for (let p = 0; p < book.pages.length; p++) {
         const pagePath: ObjectPath = ['pages', p];
@@ -48,7 +49,7 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
 
         const pageDefinitions = bookDefinitions.overlay(page.definitions);
 
-        const pageParents: (TableTheme | TableReference)[] = book.theme ? [book.theme] : [];
+        const pageParents: SheetTheme[] = bookTheme.success ? [bookTheme.value] : [];
 
         const pageTheme = resolveTheme(page.theme ?? {}, pageDefinitions, pageParents, [], pagePath);
 
@@ -57,7 +58,7 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
 
         const resultPage: SheetPage = {
             title: page.name,
-            tabColor: pageTheme.value!.tab ?? undefined,
+            tabColor: pageTheme.value?.tab ?? undefined,
             rows: page.rows,
             groups: []
         };
@@ -71,7 +72,7 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
 
             const groupDefinitions = pageDefinitions.overlay(group.definitions);
 
-            const groupParents = [...pageParents, ...(page.theme ? [page.theme] : [])];
+            const groupParents = pageTheme.success ? [...pageParents, pageTheme.value] : pageParents;
 
             const groupTheme = resolveTheme(group.theme ?? {}, groupDefinitions, groupParents, [], groupPath);
 
@@ -80,7 +81,7 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
 
             const resultGroup: SheetGroup = {
                 title: group.name,
-                titleStyle: groupTheme.value!.group,
+                titleStyle: groupTheme.value?.group ?? {},
                 columns: []
             };
 
@@ -93,7 +94,7 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
 
                 const columnDefinitions = groupDefinitions.overlay(column.definitions);
 
-                const columnParents = [...groupParents, ...(group.theme ? [group.theme] : [])];
+                const columnParents = groupTheme.success ? [...groupParents, groupTheme.value] : groupParents;
 
                 const columnTheme = resolveTheme(column.theme ?? {}, columnDefinitions, columnParents, [], columnPath);
                 if (!columnTheme.success)
@@ -117,7 +118,7 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
 
                 const typeResult = isReference(column.type)
                     ? columnDefinitions.types.resolve(column.type, columnPath)
-                    : Result.success(column.type);                
+                    : Result.success(column.type);
 
                 if (typeResult.success) {
                     if (typeResult.value.style) {
