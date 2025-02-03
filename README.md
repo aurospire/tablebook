@@ -906,8 +906,28 @@ The `TableConditionalStyle` type applies styling to data when a specific rule or
 ```typescript
 type TableConditionalStyle<Rule> = {
     when: Rule;                              // The rule to trigger this style.
-    style: TableStyle | TableReference;      // The style to apply if the rule is satisfied.
+    style?: TableStyle | TableReference;     // The optional style to apply if the rule is satisfied.
+    color?: TableColor | TableReference;     // The optional forecolor shorthand to apply if the rule is satisfied
 };
+```
+###### Style Merging
+
+The final style for an `TableConditionalStyle` (and `EnumItem`) is created from the style and/or color.
+```typescript
+(item.style ?? {}) + { fore: item.color }
+```
+
+For example, if `item.style` is 
+```typescript
+{ bold: true, back: '#fffffff', fore: '#000000' }
+```
+and `item.color` is 
+```typescript
+'#222222'
+```
+The final `EnumItem` style will be
+```typescript
+{ bold: true,  back: '#fffffff', fore: '#222222 }
 ```
 
 ---
@@ -1025,8 +1045,8 @@ Represents string-based data.
 type TableTextType = {
     kind: "text";
     style?: TableStyle | TableReference;                // Base style
-    rule?: TableTextRule;                               // Validation rule
     styles?: TableConditionalStyle<TableTextRule>[];    // Conditional styling
+    rule?: TableTextRule;                               // Validation rule
 };
 ```
 ---
@@ -1044,36 +1064,16 @@ type TableEnumType = {
 
 ##### **Enum Item**
 An `EnumItem` defines an individual value in the enum and supports customizable styles or colors.
+Conditional styling and validation is build in
 
 ```typescript
 type TableEnumItem = {
     name: string;                             // The value of the enum item
     description?: string;                     // Optional description for the item
-    style?: TableStyle | TableReference;      // Merged with any theme or base style
-    color?: TableColor | TableReference;      // Shorthand for setting the foreground color
+    style?: TableStyle | TableReference;      // The optional style to apply for the enum item.
+    color?: TableColor | TableReference;      // The optional forecolor shorthand to apply for the enum itm
 };
 ```
-
-###### Style Merging
-
-The final style for an `EnumItem` is created by merging the two styles:
-```typescript
-(item.style ?? {}) + { fore: item.color }
-```
-
-For example, if `item.style` is 
-```typescript
-{ bold: true, back: '#fffffff', fore: '#000000' }
-```
-and `item.color` is 
-```typescript
-'#222222'
-```
-The final `EnumItem` style will be
-```typescript
-{ bold: true,  back: '#fffffff', fore: '#222222 }
-```
-
 ---
 
 #### **7.5 Lookup Type** (`TableLookupType`)
@@ -1082,8 +1082,9 @@ References valid values from another column.
 ```typescript
 type TableLookupType = {
     kind: "lookup";
-    style?: TableStyle | TableReference;        // Base style
-    column: TableColumnSelector;               // Column referencing valid values
+    style?: TableStyle | TableReference;                // Base style
+    styles?: TableConditionalStyle<TableTextRule>[];    // Conditional styling
+    column: TableColumnSelector;                        // Column referencing valid values
 };
 ```
 
@@ -1097,8 +1098,8 @@ Represents numerical data, allowing for validation, formatting, and conditional 
 type TableNumericType = {
     kind: "numeric";
     style?: TableStyle | TableReference;               // Base style
-    rule?: TableNumericRule;                           // Validation rule
     styles?: TableConditionalStyle<TableNumericRule>[];// Conditional styling
+    rule?: TableNumericRule;                           // Validation rule
     format?: TableNumericFormat | TableReference;      // Formatting options
 };
 ```
@@ -1183,8 +1184,8 @@ Represents date and time data, with flexible validation and customizable formatt
 type TableTemporalType = {
     kind: "temporal";
     style?: TableStyle | TableReference;                // Base style
-    rule?: TableTemporalRule;                           // Validation rule
     styles?: TableConditionalStyle<TableTemporalRule>[];// Conditional styling
+    rule?: TableTemporalRule;                           // Validation rule
     format?: TableTemporalFormat | TableReference;      // Formatting
 };
 ```

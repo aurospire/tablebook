@@ -2,15 +2,72 @@ import { DateTime } from "luxon";
 import { TableBookProcessIssue } from "../issues";
 import { SheetBehavior, SheetConditionalStyle, SheetRule, SheetStyle } from "../sheets";
 import { isReference } from "../tables";
-import { TableColor, TableDataType, TableComparisonRule, TableEnumType, TableLookupType, TableNumericFormat, TableNumericType, TableReference, TableStyle, TableTemporalFormat, TableTemporalString, TableTemporalType, TableTextType } from "../tables/types";
+import { TableColor, TableComparisonRule, TableDataType, TableEnumType, TableLookupType, TableNumericFormat, TableNumericType, TableReference, TableStyle, TableTemporalFormat, TableTemporalString, TableTemporalType, TableTextType } from "../tables/types";
 import { ObjectPath, Result } from "../util";
-import { TableDefinitionsManager, TableReferenceRegistry } from "./DefinitionsRegistry";
+import { TableDefinitionsManager } from "./DefinitionsRegistry";
 import { resolveColor } from "./resolveColor";
 import { ResolvedColumn } from "./resolveColumns";
 import { resolveExpression } from "./resolveExpression";
 import { resolveSelector } from "./resolveSelector";
 import { resolveStyle } from "./resolveStyle";
-import { mergeStyles } from "./resolveTheme";
+
+
+const resolveStyleAndColor = (
+    style: TableStyle | TableReference | undefined,
+    color: TableColor | TableReference | undefined,
+    definitions: TableDefinitionsManager,
+    path: ObjectPath
+): Result<SheetStyle | undefined, TableBookProcessIssue[]> => {
+    const issues: TableBookProcessIssue[] = [];
+
+    let sheetStyle: SheetStyle | undefined;
+
+    const styleResult = style ? resolveStyle(style, definitions, path) : Result.success(undefined);
+
+    const colorResult = color ? resolveColor(color, definitions, path) : Result.success(undefined);
+
+    if (styleResult.success)
+        sheetStyle = styleResult.value;
+    else
+        issues.push(...styleResult.info);
+
+    if (colorResult.success) {
+        sheetStyle = sheetStyle ?? {};
+        sheetStyle.fore = colorResult.value;
+    }
+    else
+        issues.push(...colorResult.info);
+
+    return issues.length === 0 ? Result.success(sheetStyle) : Result.failure(issues, sheetStyle);
+};
+
+
+
+const resolveTextRule = (
+    rule: TableTextType['rule'] & {},
+    page: string, group: string, name: string,
+    columns: Map<string, ResolvedColumn>,
+    path: ObjectPath,
+): Result<SheetRule, TableBookProcessIssue[]> => {
+    // Custom Rule
+    if (rule.type === 'custom') {
+        const result = resolveExpression(rule.expression, page, group, name, columns, path);
+        if (result.success)
+            return Result.success({
+                type: 'formula',
+                expression: result.value
+            });
+        else
+            return Result.failure(result.info);
+    }
+    // Text Comparison Rule
+    else {
+        return Result.success({
+            type: rule.type,
+            value: rule.value
+        });
+    }
+};
 
 const resolveNumericRule = (
     rule: TableNumericType['rule'] & {},
@@ -47,7 +104,9 @@ const resolveNumericRule = (
     }
 };
 
-const resolveTemporalString = (value: TableTemporalString): DateTime => {
+const resolveTemporalString = (
+    value: TableTemporalString
+): DateTime => {
     return DateTime.fromISO(value);
 };
 
@@ -86,77 +145,86 @@ const resolveTemporalRule = (
     }
 };
 
+
+const resolveTextConditionalStyle = (
+    styles: TableTextType['styles'] & {},
+    page: string, group: string, name: string,
+    columns: Map<string, ResolvedColumn>,
+    definitions: TableDefinitionsManager,
+    path: ObjectPath
+): Result<SheetConditionalStyle[] | undefined, TableBookProcessIssue[]> => {
+
+    const issues: TableBookProcessIssue[] = [];
+
+    const result = styles.map((style): SheetConditionalStyle | undefined => {
+        const styleIssues: TableBookProcessIssue[] = [];
+
+        let rule: SheetRule | undefined;
+
+        if (style.when.type === 'custom') {
+            const result = resolveExpression(style.when.expression, page, group, name, columns, path);
+            if (result.success)
+                rule = {
+                    type: 'formula',
+                    expression: result.value
+                };
+            else
+                styleIssues.push(...result.info);
+        }
+        else {
+            rule = {
+                type: style.when.type,
+                value: style.when.value
+            };
+        }
+
+        const styleResult = resolveStyleAndColor(style.style, style.color, definitions, path);
+
+        if (!styleResult.success)
+            styleIssues.push(...styleResult.info);
+
+        if (styleIssues.length > 0) {
+            issues.push(...styleIssues);
+        }
+        else {
+            return {
+                when: rule!,
+                style: styleResult.value!
+            };
+        }
+    }).filter((value): value is SheetConditionalStyle => value !== undefined);
+
+    return issues.length === 0 ? Result.success(result) : Result.failure(issues, result);
+};
+
+
 const resolveTextBehavior = (
-    resolved: TableTextType,
+    type: TableTextType,
     page: string, group: string, name: string,
     columns: Map<string, ResolvedColumn>,
     definitions: TableDefinitionsManager,
     path: ObjectPath
 ): Result<SheetBehavior, TableBookProcessIssue[]> => {
-
-    let resolvedRule: SheetRule | undefined;
-
     const issues: TableBookProcessIssue[] = [];
 
-    if (resolved.rule) {
-        if (resolved.rule.type === 'custom') {
-            const result = resolveExpression(resolved.rule.expression, page, group, name, columns, path);
-            if (result.success)
-                resolvedRule = {
-                    type: 'formula',
-                    expression: result.value
-                };
-            else
-                issues.push(...result.info);
-        }
-        else {
-            resolvedRule = {
-                type: resolved.rule.type,
-                value: resolved.rule.value
-            };
-        }
+    let resolvedRule: SheetRule | undefined;
+    if (type.rule) {
+        const result = resolveTextRule(type.rule, page, group, name, columns, path);
+
+        if (result.success)
+            resolvedRule = result.value;
+        else
+            issues.push(...result.info);
     }
 
     let resolvedStyles: SheetConditionalStyle[] | undefined;
+    if (type.styles) {
+        const styleResult = resolveTextConditionalStyle(type.styles, page, group, name, columns, definitions, path);
 
-    if (resolved.styles) {
-        resolved.styles.map((style): SheetConditionalStyle | undefined => {
-            const styleIssues: TableBookProcessIssue[] = [];
-
-            let rule: SheetRule | undefined;
-
-            if (style.when.type === 'custom') {
-                const result = resolveExpression(style.when.expression, page, group, name, columns, path);
-                if (result.success)
-                    rule = {
-                        type: 'formula',
-                        expression: result.value
-                    };
-                else
-                    styleIssues.push(...result.info);
-            }
-            else {
-                rule = {
-                    type: style.when.type,
-                    value: style.when.value
-                };
-            }
-
-            const applyResult = resolveStyle(style.style, definitions, path);
-
-            if (!applyResult.success)
-                styleIssues.push(...applyResult.info);
-
-            if (styleIssues.length > 0) {
-                issues.push(...styleIssues);
-            }
-            else {
-                return {
-                    when: rule!,
-                    style: applyResult.value!
-                };
-            }
-        });
+        if (styleResult.success)
+            resolvedStyles = styleResult.value;
+        else
+            issues.push(...styleResult.info);
     }
 
     const behavior: SheetBehavior = {
@@ -168,7 +236,43 @@ const resolveTextBehavior = (
     return issues.length === 0 ? Result.success(behavior) : Result.failure(issues, behavior);
 };
 
-export const resolveEnumBehavior = (
+const resolveLookupBehavior = (
+    type: TableLookupType,
+    page: string, group: string, name: string,
+    columns: Map<string, ResolvedColumn>,
+    definitions: TableDefinitionsManager,
+    path: ObjectPath
+): Result<SheetBehavior, TableBookProcessIssue[]> => {
+    const issues: TableBookProcessIssue[] = [];
+
+    let result = resolveSelector({ column: type.column, rows: 'all' }, columns, page, group, name, path);
+
+    if (!result.success)
+        issues.push(...result.info);
+
+    let resolvedStyles: SheetConditionalStyle[] | undefined;
+    if (type.styles) {
+        const styleResult = resolveTextConditionalStyle(type.styles, page, group, name, columns, definitions, path);
+
+        if (styleResult.success)
+            resolvedStyles = styleResult.value;
+        else
+            issues.push(...styleResult.info);
+    }
+
+    const behavior: SheetBehavior = {
+        kind: 'text',
+        styles: resolvedStyles,
+        rule: {
+            type: 'lookup',
+            values: result.value!
+        },
+    };
+
+    return issues.length === 0 ? Result.success(behavior) : Result.failure(issues, behavior);
+};
+
+const resolveEnumBehavior = (
     type: TableEnumType,
     definitions: TableDefinitionsManager,
     path: ObjectPath
@@ -181,30 +285,16 @@ export const resolveEnumBehavior = (
             if (typeof item === 'string' || (item.style === undefined && item.color === undefined))
                 return undefined;
 
-            // Resolve the style
-            let style: SheetStyle | undefined;
+            const styleResult = resolveStyleAndColor(item.style, item.color, definitions, path);
 
-            const styleResult = item.style ? resolveStyle(item.style, definitions, path) : Result.success(undefined);
-
-            if (styleResult.success)
-                style = styleResult.value;
-            else
+            if (!styleResult.success)
                 issues.push(...styleResult.info);
 
+            return {
+                when: { type: 'is', value: item.name },
+                style: styleResult.success ? styleResult.value ?? {} : {}
+            };
 
-            const colorResult = item.color ? resolveColor(item.color, definitions, path) : Result.success(undefined);
-
-            if (colorResult.success)
-                style = { ...(style ?? {}), fore: colorResult.value };
-            else
-                issues.push(...colorResult.info);
-
-            if (style) {
-                return {
-                    when: { type: 'is', value: item.name },
-                    style: style
-                };
-            }
         }).filter((value): value is SheetConditionalStyle => value !== undefined),
         rule: {
             type: 'enum',
@@ -213,26 +303,6 @@ export const resolveEnumBehavior = (
     };
 
     return issues.length === 0 ? Result.success(behavior) : Result.failure(issues, behavior);
-};
-
-const resolveLookupBehavior = (
-    type: TableLookupType,
-    page: string, group: string, name: string,
-    columns: Map<string, ResolvedColumn>,
-    path: ObjectPath
-): Result<SheetBehavior, TableBookProcessIssue[]> => {
-    let result = resolveSelector({ column: type.column, rows: 'all' }, columns, page, group, name, path);
-
-    if (!result.success)
-        return Result.failure(result.info);
-    else
-        return Result.success({
-            kind: 'text',
-            rule: {
-                type: 'lookup',
-                values: result.value
-            }
-        });
 };
 
 const resolveNumericBehavior = (
@@ -278,10 +348,10 @@ const resolveNumericBehavior = (
             if (!ruleResult.success)
                 styleIssues.push(...ruleResult.info);
 
-            const applyResult = resolveStyle(style.style, definitions, path);
+            const styleResult = resolveStyleAndColor(style.style, style.color, definitions, path);
 
-            if (!applyResult.success)
-                styleIssues.push(...applyResult.info);
+            if (!styleResult.success)
+                styleIssues.push(...styleResult.info);
 
             if (styleIssues.length > 0) {
                 issues.push(...styleIssues);
@@ -289,7 +359,7 @@ const resolveNumericBehavior = (
             else {
                 return {
                     when: ruleResult.value!,
-                    style: applyResult.value!
+                    style: styleResult.value!
                 };
             }
         }).filter((value): value is SheetConditionalStyle => value !== undefined);
@@ -304,7 +374,6 @@ const resolveNumericBehavior = (
 
     return issues.length === 0 ? Result.success(behavior) : Result.failure(issues, behavior);
 };
-
 
 const resolveTemporalBehavior = (
     type: TableTemporalType,
@@ -349,10 +418,10 @@ const resolveTemporalBehavior = (
             if (!ruleResult.success)
                 styleIssues.push(...ruleResult.info);
 
-            const applyResult = resolveStyle(style.style, definitions, path);
+            const styleResult = resolveStyleAndColor(style.style, style.color, definitions, path);
 
-            if (!applyResult.success)
-                styleIssues.push(...applyResult.info);
+            if (!styleResult.success)
+                styleIssues.push(...styleResult.info);
 
             if (styleIssues.length > 0) {
                 issues.push(...styleIssues);
@@ -360,7 +429,7 @@ const resolveTemporalBehavior = (
             else {
                 return {
                     when: ruleResult.value!,
-                    style: applyResult.value!
+                    style: styleResult.value!
                 };
             }
         }).filter((value): value is SheetConditionalStyle => value !== undefined);
@@ -375,6 +444,7 @@ const resolveTemporalBehavior = (
 
     return issues.length === 0 ? Result.success(behavior) : Result.failure(issues, behavior);
 };
+
 
 export const resolveBehavior = (
     type: TableDataType,
@@ -392,7 +462,7 @@ export const resolveBehavior = (
             return resolveEnumBehavior(type, definitions, path);
 
         case "lookup":
-            return resolveLookupBehavior(type, page, group, name, columns, path);
+            return resolveLookupBehavior(type, page, group, name, columns, definitions, path);
 
         case "numeric":
             return resolveNumericBehavior(type, page, group, name, columns, definitions, path);

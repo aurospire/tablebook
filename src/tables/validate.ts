@@ -213,7 +213,8 @@ const TableTextRule: z.ZodType<TableTextRule> = z.union([TableMatchRule, TableCu
 const makeConditionalStyle = <Rule extends z.ZodType<any>>(rule: Rule) => {
     return z.object({
         when: rule,
-        style: TableStyleReference
+        style: TableStyleReference.optional(),
+        color: TableColorReference.optional()
     }).strict();
 };
 
@@ -281,12 +282,14 @@ const TableEnumItem: z.ZodType<TableEnumItem> = z.object({
 const TableEnumType: z.ZodType<TableEnumType> = z.object({
     kind: z.literal(TableEnumTypeKind),
     style: TableStyleReference.optional(),
+    styles: z.array(TableTextConditionalStyle).optional(),
     items: z.array(TableEnumItem)
 }).strict();
 
 const TableLookupType: z.ZodType<TableLookupType> = z.object({
     kind: z.literal(TableLookupTypeKind),
     style: TableStyleReference.optional(),
+    styles: z.array(TableTextConditionalStyle).optional(),
     column: TableColumnSelector
 }).strict();
 

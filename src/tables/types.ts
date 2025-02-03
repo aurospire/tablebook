@@ -249,7 +249,10 @@ export type TableTextRule = TableMatchRule | TableCustomRule;
 /** Defines a style to apply when a rule condition is met */
 export type TableConditionalStyle<Rule> = {
     when: Rule;
-    style: TableStyle | TableReference;
+    /** Style to apply when the rule is true */
+    style?: TableStyle | TableReference;
+    /** Foreground color to apply when the rule is true, if style is provided - overrides style.fore */
+    color?: TableColor | TableReference;
 };
 
 /* Numeric Formats */
@@ -325,11 +328,11 @@ export type TableTemporalFormat = TableTemporalItem[];
 
 
 /* Data Types */
-export type TableDataTypeBase<Kind extends string> ={    
+export type TableDataTypeBase<Kind extends string> = {
     kind: Kind;
     /** Optional base style for the column, will merge with theme data style */
     style?: TableStyle | TableReference;
-}
+};
 
 /** Identifies a text type in the type system */
 export const TableTextTypeKind = 'text';
@@ -337,7 +340,7 @@ export const TableTextTypeKind = 'text';
  * Text data type for string values
  * Supports validation rules, conditional styling, and computed expressions
  */
-export type TableTextType = TableDataTypeBase<typeof TableTextTypeKind> & {    
+export type TableTextType = TableDataTypeBase<typeof TableTextTypeKind> & {
     /** Optional array of conditional styles based on text rules */
     styles?: TableConditionalStyle<TableTextRule>[];
     /** Optional validation rule for the text content */
@@ -368,9 +371,11 @@ export type TableEnumType = TableDataTypeBase<typeof TableEnumTypeKind> & {
 /** Identifies a lookup type in the type system */
 export const TableLookupTypeKind = 'lookup';
 /** A data type that restricts values to those present in a specified column. */
-export type TableLookupType = TableDataTypeBase<typeof TableLookupTypeKind> & {    
+export type TableLookupType = TableDataTypeBase<typeof TableLookupTypeKind> & {
     /** Column containing the valid values for this lookup */
     column: TableColumnSelector;
+    /** Optional array of conditional styles based on text rules */
+    styles?: TableConditionalStyle<TableTextRule>[];
 };
 
 
@@ -389,7 +394,7 @@ export type TableNumericType = TableDataTypeBase<typeof TableNumericTypeKind> & 
 /** Identifies a temporal type in the type system */
 export const TableTemporalTypeKind = 'temporal';
 /** Temporal data type for dates and times */
-export type TableTemporalType = TableDataTypeBase<typeof TableTemporalTypeKind> & {    
+export type TableTemporalType = TableDataTypeBase<typeof TableTemporalTypeKind> & {
     /** Optional array of conditional styles based on temporal rules */
     styles?: TableConditionalStyle<TableTemporalRule>[];
     /** Optional validation rule for the temporal value */
@@ -403,7 +408,6 @@ export type TableTemporalType = TableDataTypeBase<typeof TableTemporalTypeKind> 
  * Can be a concrete type definition or a reference to a predefined type
  */
 export type TableDataType = TableTextType | TableEnumType | TableLookupType | TableNumericType | TableTemporalType;
-
 
 
 /* Table Structures */
@@ -422,9 +426,9 @@ export type TableDefinitions = {
     /** Custom numeric format definitions */
     numerics?: TableReferenceMap<TableNumericFormat>;
     /** Custom temporal format definitions */
-    temporals?: TableReferenceMap<TableTemporalFormat>;    
+    temporals?: TableReferenceMap<TableTemporalFormat>;
     /** Reusable type definitions */
-    types?: TableReferenceMap<TableDataType>;    
+    types?: TableReferenceMap<TableDataType>;
 };
 
 /** Regex pattern validating table unit names: must start with uppercase, followed by alphanumeric */
