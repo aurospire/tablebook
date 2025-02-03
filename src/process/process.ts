@@ -1,10 +1,11 @@
+import { inspect } from "util";
 import { TableBookProcessIssue } from "../issues";
 import { SheetBehavior, SheetStyle } from "../sheets";
 import { SheetBook, SheetColumn, SheetGroup, SheetPage } from "../sheets/SheetBook";
 import { isReference, TableDefinitionResolver } from "../tables";
 import { TableBook, TableColumn, TableGroup, TablePage, TableReference, TableTheme } from "../tables/types";
 import { ObjectPath, Result } from "../util";
-import { TableDefinitionsManager, TableReferenceRegistry } from "./DefinitionsRegistry";
+import { TableDefinitionsManager } from "./DefinitionsRegistry";
 import { resolveBehavior } from "./resolveBehavior";
 import { resolveColumns } from "./resolveColumns";
 import { resolveExpression } from "./resolveExpression";
@@ -114,18 +115,20 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
 
                 let typeStyle: SheetStyle | undefined;
 
-                const typeResult = isReference(column.type) ? bookDefinitions.types.resolve(column.type, columnPath) : Result.success(column.type);
-                
-                if (typeResult.success && typeResult.value.style) {
-                    const typeStyleResult = resolveStyle(typeResult.value.style, columnDefinitions, columnPath);
-
-                    if (typeStyleResult.success)
-                        typeStyle = typeStyleResult.value;
-                    else
-                        issues.push(...typeStyleResult.info);
-                }
+                const typeResult = isReference(column.type)
+                    ? columnDefinitions.types.resolve(column.type, columnPath)
+                    : Result.success(column.type);                
 
                 if (typeResult.success) {
+                    if (typeResult.value.style) {
+                        const typeStyleResult = resolveStyle(typeResult.value.style, columnDefinitions, columnPath);
+
+                        if (typeStyleResult.success)
+                            typeStyle = typeStyleResult.value;
+                        else
+                            issues.push(...typeStyleResult.info);
+                    }
+
                     const result = resolveBehavior(typeResult.value, page.name, group.name, column.name, columns, columnDefinitions, columnPath);
 
                     if (!result.success)
@@ -133,8 +136,9 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
                     else
                         behavior = result.value;
                 }
-                else
+                else {
                     issues.push(...typeResult.info);
+                }
 
                 const resultColumn: SheetColumn = {
                     title: column.name,

@@ -106,7 +106,8 @@ export const StandardPaletteResolver = (): TableDefinitionResolver => ({
 
             return Result.success(theme);
         } else {
-            return Result.failure(`Standard theme not found.`);
+            // return Result.failure(`Standard theme not found.`);
+            return Result.failure(undefined);
         }
     }
 });

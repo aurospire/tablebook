@@ -24,9 +24,9 @@ const arrayResolver = <T>(
 
                 return result;
             }
-            else
+            else if (result.info !== undefined) {
                 issues.push({ type: 'processing', message: result.info, path, data: ref });
-
+            }
         }
         else {
             const result = resolver[name];
@@ -36,12 +36,10 @@ const arrayResolver = <T>(
 
                 return Result.success(result);
             }
-            else
-                issues.push({ type: 'processing', message: 'Missing reference', path, data: ref });
         }
     }
 
-    return Result.failure(issues);
+    return issues.length ? Result.failure(issues) : emptyResolver(ref, path);
 };
 
 const registryResolver = <T>(registry: TableReferenceRegistry<T>): RegistryResolver<T> => (ref, path) => registry.resolve(ref, path);
