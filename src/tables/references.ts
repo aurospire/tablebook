@@ -5,7 +5,7 @@ import { TableColor, TableDataType, TableHeaderStyle, TableNumericFormat, TableR
 export const isReference = (value: unknown): value is TableReference => typeof value === 'string' && value.startsWith('@');
 
 /** A function that resolves a table reference by name */
-export type TableReferenceResolver<T> = (name: string) => Result<T, string>;
+export type TableReferenceResolver<T> = (name: string) => Result<T, string | undefined>;
 
 /** A lookup for table references, either a map or a resolver function */
 export type TableReferenceLookup<T> = Record<string, T> | TableReferenceResolver<T>;
