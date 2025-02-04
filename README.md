@@ -409,7 +409,7 @@ type TableStyle = {
 
 ### **4. TableHeaderStyle**
 
-The `TableHeaderStyle` type extends `TableStyle` to include border and partition options. It is specifically used for styling table headers, such as group or column headers, to enhance visual structure.
+The `TableHeaderStyle` type extends `TableStyle` to include border options. It is specifically used for styling table headers, such as group or column headers, to enhance visual structure.
 
 ---
 
@@ -445,20 +445,6 @@ type TableBorderType =
     "dotted"| "dashed" | "double"  // alternative lines styles
     ;
 ```
----
-
-#### **4.3 TablePartition**
-
-The `TablePartition` type groups together border definitions for beneath and between partitions, allowing granular control of the appearance of header styles.
-
-##### **Definition**
-```typescript
-type TablePartition = {
-    beneath?: TableBorder; // Border beneath the header.
-    between?: TableBorder; // Border between groups or columns.
-};
-```
-
 ---
 ---
 
