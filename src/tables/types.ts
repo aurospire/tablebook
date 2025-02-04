@@ -432,7 +432,7 @@ export type TableDefinitions = {
 };
 
 /** Regex pattern validating table unit names: must start with uppercase, followed by alphanumeric */
-export const TableUnitNameRegex = /^[A-Z][A-Za-z0-9_]+$/;
+export const TableUnitNameRegex = /^[A-Z][A-Za-z0-9_]*$/;
 
 /** 
 * Base type for all table structural elements (column, group, page)
