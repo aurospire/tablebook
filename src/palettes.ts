@@ -1,32 +1,35 @@
-import { TableTheme } from "./tables";
-import { TableDefinitionResolver } from "./tables";
+import { TableDefinitionResolver, TableTheme } from "./tables";
 import { ColorHex, Result } from "./util";
 
 /**
- * Creates a four-shade color palette.
+ * Creates a five-shade color palette.
  * @param darkest - The darkest shade, used for `group.back`.
  * @param dark - A dark shade, used for `header.back`.
- * @param main - The main shade, used for `tab` and `color`.
+ * @param main - The base shade, used for `tab` and `color`.
+ * @param light - A light shade, used for conditional styling.
  * @param lightest - The lightest shade, used for `data.back`.
- * @returns A palette object containing the four shades.
+ * @returns A palette object containing the five shades.
  */
 const palette = (
     darkest: ColorHex,
     dark: ColorHex,
-    main: ColorHex,
+    base: ColorHex,
+    light: ColorHex,
     lightest: ColorHex
-): StandardPalette => ({ darkest, dark, main, lightest });
+): StandardPalette => ({ darkest, dark, base, light, lightest });
 
 /**
- * Represents a four-shade color palette used for theming.
+ * Represents a five-shade color palette used for theming.
  */
 export type StandardPalette = {
     /** The darkest shade, typically used for `group.back`. */
     darkest: ColorHex;
     /** A dark shade, typically used for `header.back`. */
     dark: ColorHex;
-    /** The main shade, typically used for `tab` and `color`. */
-    main: ColorHex;
+    /** The base shade, typically used for `tab` and `color`. */
+    base: ColorHex;
+    /** A light shade, typically used for conditional styling. */
+    light: ColorHex;
     /** The lightest shade, typically used for `data.back`. */
     lightest: ColorHex;
 };
@@ -37,77 +40,123 @@ export type StandardPalette = {
  */
 export const StandardPalettes = {
     // Reds
-    pink: palette('#741F3F', '#C0315A', '#E84E76', '#FFD6E0'), // True rose pink
-    cranberry: palette('#4C0D1C', '#721026', '#A31432', '#F4C2C9'), // Deep burgundy-cranberry
-    red: palette('#660000', '#880000', '#C32222', '#F8C5C5'), // Classic red shades
-
+    pink: palette('#741F3F', '#C0315A', '#E84E76', '#FFA3B9', '#FFD6E0'),
+    cranberry: palette('#4C0D1C', '#721026', '#A31432', '#E6A1A9', '#F4C2C9'),
+    red: palette('#660000', '#880000', '#C32222', '#F19999', '#F8C5C5'),
 
     // Oranges and Yellows
-    rust: palette('#8B3103', '#B54D18', '#D65C2B', '#F7D5BC'), // Deep orange-brown
-    orange: palette('#783F04', '#B45F06', '#E6751A', '#FDD9BC'), // Bold orange shades
-    yellow: palette('#856500', '#BF9000', '#E6AC1E', '#FFF2C4'), // Golden yellow tones
-
+    rust: palette('#8B3103', '#B54D18', '#D65C2B', '#F3B28E', '#F7D5BC'),
+    orange: palette('#783F04', '#B45F06', '#E6751A', '#FFBA8C', '#FDD9BC'),
+    yellow: palette('#856500', '#BF9000', '#E6AC1E', '#FFE494', '#FFF2C4'),
 
     // Greens
-    green: palette('#294E13', '#38761D', '#4B9022', '#D6E8CE'), // Deep forest green
-    moss: palette('#1E4D2B', '#3A7A47', '#519563', '#D4E8D1'), // Cool earthy green
-    sage: palette('#38471F', '#596F34', '#788F4A', '#DCEADF'), // Muted green tones
-
+    green: palette('#294E13', '#38761D', '#4B9022', '#A7CF9B', '#D6E8CE'),
+    moss: palette('#1E4D2B', '#3A7A47', '#519563', '#9FC7A0', '#D4E8D1'),
+    sage: palette('#38471F', '#596F34', '#788F4A', '#B8CBA3', '#DCEADF'),
 
     // Blues
-    teal: palette('#004548', '#006E6E', '#008F8F', '#D1F0EC'), // Deep blue-green
-    slate: palette('#2A4545', '#366060', '#507878', '#DEE8E8'), // Muted gray-blue
-    cyan: palette('#0C343D', '#134F5C', '#1B657A', '#CBE5E8'), // Fresh blue-green
-    blue: palette('#073763', '#0B5394', '#1763B8', '#CEE2F0'), // Classic blue shades
-    azure: palette('#123A75', '#1E5BAA', '#2D70C8', '#D0E2F4'), // Bright sky blue
-    skyblue: palette('#004080', '#0066CC', '#2E8FEA', '#D0E6F8'), // Light sky blue
-
+    teal: palette('#004548', '#006E6E', '#008F8F', '#8CD1CD', '#D1F0EC'),
+    slate: palette('#2A4545', '#366060', '#507878', '#AFC6C6', '#DEE8E8'),
+    cyan: palette('#0C343D', '#134F5C', '#1B657A', '#89BEC6', '#CBE5E8'),
+    blue: palette('#073763', '#0B5394', '#1763B8', '#8BB6DE', '#CEE2F0'),
+    azure: palette('#123A75', '#1E5BAA', '#2D70C8', '#8DB6E6', '#D0E2F4'),
+    skyblue: palette('#004080', '#0066CC', '#2E8FEA', '#8CBEF3', '#D0E6F8'),
 
     // Purples
-    lavender: palette('#3F3677', '#5F51B7', '#776CCF', '#DAD5F2'), // Soft lavender tones
-    indigo: palette('#20124D', '#351C75', '#483CA4', '#D5D0E3'), // Deep blue-purple
-    purple: palette('#2D0A53', '#4B0082', '#6A0DAD', '#E6D5FF'), // Rich royal purple
-    plum: palette('#4E1A45', '#6C3483', '#8E4FA8', '#E7D0EA'), // Warm purple-pink
-    mauve: palette('#682F42', '#8D4659', '#A85475', '#F5D4DC'), // Dusky purple-pink
-
+    lavender: palette('#3F3677', '#5F51B7', '#776CCF', '#B5AAE6', '#DAD5F2'),
+    indigo: palette('#20124D', '#351C75', '#483CA4', '#A69FC4', '#D5D0E3'),
+    purple: palette('#2D0A53', '#4B0082', '#6A0DAD', '#B68EFF', '#E6D5FF'),
+    plum: palette('#4E1A45', '#6C3483', '#8E4FA8', '#C69DD1', '#E7D0EA'),
+    mauve: palette('#682F42', '#8D4659', '#A85475', '#E09FB0', '#F5D4DC'),
 
     // Neutrals    
-    coral: palette('#762F2F', '#AF4A4A', '#D36868', '#FFE0DC'), // Warm reddish-pink
-    terracotta: palette('#713F2D', '#9C5F4E', '#C87561', '#FAD9CE'), // Earthy orange-red
-    bronze: palette('#5D4037', '#895D4D', '#A6705F', '#EAD6C7'), // Metallic brown
-    sand: palette('#6A5D47', '#8C755D', '#B5937A', '#EDE0D2'), // Warm beige tones
-    taupe: palette('#483C32', '#6B5D4F', '#857667', '#E5DBD1'), // Neutral brown-gray
-    gray: palette('#3B3B3B', '#656565', '#7E7E7E', '#E8E8E8'), // Neutral gray shades
-    charcoal: palette('#2A2A2A', '#4D4D4D', '#676767', '#E2E2E2'), // Deep gray tones
+    coral: palette('#762F2F', '#AF4A4A', '#D36868', '#FFB3AB', '#FFE0DC'),
+    terracotta: palette('#713F2D', '#9C5F4E', '#C87561', '#F2AE9C', '#FAD9CE'),
+    bronze: palette('#5D4037', '#895D4D', '#A6705F', '#D1B19E', '#EAD6C7'),
+    sand: palette('#6A5D47', '#8C755D', '#B5937A', '#D9C2AB', '#EDE0D2'),
+    taupe: palette('#483C32', '#6B5D4F', '#857667', '#C4B5A6', '#E5DBD1'),
+    gray: palette('#3B3B3B', '#656565', '#7E7E7E', '#BFBFBF', '#E8E8E8'),
+    charcoal: palette('#2A2A2A', '#4D4D4D', '#676767', '#B3B3B3', '#E2E2E2'),
 } as const;
 
+
 /**
- * Creates a resolver for standard palettes, providing built-in themes based on palette names.
- * @returns A `TableDefinitionResolver` that resolves themes using standard palettes.
- * 
- * Resolves themes like `@blue`, `@red`, etc., by mapping to a predefined `StandardPalette`.
- * Each resolved theme includes the following mappings:
- * - `tab`: Uses the palette's `main` shade.
- * - `group.back`: Uses the palette's `darkest` shade.
- * - `header.back`: Uses the palette's `dark` shade.
- * - `data.back`: Uses the palette's `lightest` shade.
+ * Resolves standard color palettes and themes based on predefined configurations.
+ *
+ * This resolver provides color values and theme definitions based on named palettes
+ * and colors. It allows retrieval of colors from standard palettes and generates
+ * table themes accordingly.
+ *
+ * @param themes - Determines whether theme resolution is enabled.
+ * @param colors - Determines whether color resolution is enabled.
+ * @returns A `TableDefinitionResolver` containing color and theme resolution functions.
  */
-export const StandardPaletteResolver = (): TableDefinitionResolver => ({
-    themes: (name) => {
-        if (name in StandardPalettes) {
-            const palette: StandardPalette = (StandardPalettes as any)[name];
+export const StandardPaletteResolver = (
+    themes: boolean,
+    colors: boolean
+): TableDefinitionResolver => ({
+    /**
+     * Resolves colors from predefined standard palettes.
+     *
+     * @remarks
+     * - The expected format for `name` is `<palette>:<color>` (e.g., `"blue:darkest"`).
+     * - If the `<color>` is omitted, the base color of the palette is used (e.g., `"blue"`).
+     * - If the palette is valid but the color is not found, an error result is returned.
+     * - If the palette itself is invalid, a failure result is returned.
+     *
+     * @param name - The name of the color in `<palette>:<color>` format.
+     * @returns A `Result` object containing the resolved color or an error message.
+     */
+    colors: colors
+        ? (name) => {
+            const [palette, color] = name.split(':');
 
-            const theme: TableTheme = {
-                tab: palette.main,
-                group: { back: palette.darkest },
-                header: { back: palette.dark },
-                data: { back: palette.lightest },
-            };
+            if (palette in StandardPalettes) {
+                const standardPalette: StandardPalette = (StandardPalettes as any)[palette];
 
-            return Result.success(theme);
-        } else {
-            // return Result.failure(`Standard theme not found.`);
-            return Result.failure(undefined);
+                if (color) {
+                    if (color in standardPalette) {
+                        return Result.success((standardPalette as any)[color]);
+                    } else {
+                        return Result.failure(`Invalid color '${color}' for palette '${palette}'`);
+                    }
+                } else {
+                    return Result.success(standardPalette.base);
+                }
+            } else {
+                return Result.failure(undefined);
+            }
         }
-    }
+        : undefined,
+
+    /**
+     * Resolves a theme based on a standard palette.
+     *
+     * @remarks
+     * - If the given `name` corresponds to a valid palette, a theme object is generated
+     *   using predefined color mappings.
+     * - The theme includes color values for tabs, groups, headers, and data elements.
+     * - If the `name` is not a valid palette, a failure result is returned.
+     *
+     * @param name - The name of the palette.
+     * @returns A `Result` object containing the resolved theme or an error.
+     */
+    themes: themes
+        ? (name) => {
+            if (name in StandardPalettes) {
+                const palette: StandardPalette = (StandardPalettes as any)[name];
+
+                const theme: TableTheme = {
+                    tab: palette.base,
+                    group: { back: palette.darkest },
+                    header: { back: palette.dark },
+                    data: { back: palette.lightest },
+                };
+
+                return Result.success(theme);
+            } else {
+                return Result.failure(undefined);
+            }
+        }
+        : undefined,
 });
