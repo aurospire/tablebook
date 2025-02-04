@@ -1,6 +1,7 @@
 <p align="center">
   <img src="logo.png" width="100px" align="center" alt="TableBook Logo" />
   <h1 align="center">TableBook</h1>
+  <p align="center"><i>Generate spreadsheets with a declarative and structured table-based schema.</i><p>
 </p>
 
 ## **Project Overview**
@@ -151,7 +152,7 @@ async function main() {
 8. [TableUnit and Hierarchical Structure](#8-tableunit-and-hierarchical-structure)    
 9. [Result](#9-result)
 10. [TableBookIssue](#10-tablebookissue)   
-11. [tablebook Functions](#11-tablebook-functions)
+11. [`tablebook` Functions](#11-tablebook-functions)
 ---
 
 ## **1. TableSelector**
@@ -1782,30 +1783,44 @@ Think of the `SheetBook` as an IR (Intermediate Representation) that abstracts a
 
 ##### **Definition**
 ```typescript
-tablebook.process(
-  data: TableBook,
-  resolvers?: TableDefinitionResolver[],
-  logger?: TableProcessLogger
-): TableBookProcessResult<SheetBook>;
+tablebook.process(data: TableBook, options: TableBookProcessOptions = {}): TableBookProcessResult<SheetBook> {
+```
+
+```typescript
+export type TableBookProcessOptions = {
+    /** Custom resolvers for missing references like themes, colors, or types. */
+    resolvers?: TableDefinitionResolver[];
+    /** Excludes the StandardPaletteResolver if true. Default is false. */
+    omitStandardPalette?: boolean;
+    /** Logger for tracking processing progress. */
+    logger?: TableProcessLogger;
+};
 ```
 
 ##### **11.3.1 TableDefinitionResolver**
 
 Handles missing references for colors, styles, themes, formats, and types during processing. 
-Each resolver mirrors the structure of `TableDefinitions` and returns a `Result`. 
+Each resolver mirrors the structure of `TableDefinitions`
+A Lookup can be a Record with prebuilt items or a `TableReferenceResolver` function.
+A `TableReferenceResolver` function returns a `Result` - a string is a critical error (like partial parse) that will show as an issue, while undefined is a silent fail.
 This enables support for prebuilt definitions (e.g., palettes) or custom type definitions like `@number:2` to represent a 2-decimal number—offering flexibility limited only by your imagination.
 
 ##### **Definition**
 ```typescript
-type TableResolveReference<T> = (name: string) => Result<T, string>;
+/** A function that resolves a table reference by name */
+export type TableReferenceResolver<T> = (name: string) => Result<T, string | undefined>;
 
-type TableDefinitionResolver = {
-    colors?: TableResolveReference<TableColor>;
-    styles?: TableResolveReference<TableStyle>;
-    themes?: TableResolveReference<TableTheme>;    
-    numerics?: TableResolveReference<TableNumericFormat>;
-    temporals?: TableResolveReference<TableTemporalFormat>;    
-    types?: TableResolveReference<TableDataType>;
+/** A lookup for table references, either a map or a resolver function */
+export type TableReferenceLookup<T> = Record<string, T> | TableReferenceResolver<T>;
+
+/** Defines resolvers for various table definitions */
+export type TableDefinitionResolver = {
+    colors?: TableReferenceLookup<TableColor>;
+    styles?: TableReferenceLookup<TableHeaderStyle>;
+    themes?: TableReferenceLookup<TableTheme>;
+    numerics?: TableReferenceLookup<TableNumericFormat>;
+    temporals?: TableReferenceLookup<TableTemporalFormat>;
+    types?: TableReferenceLookup<TableDataType>;
 };
 ```
 
@@ -1816,7 +1831,7 @@ const resolvers: TableDefinitionResolver = {
         if (name === 'black')
           return Result.success('#000000'),
         else
-          return Result.failure(message: `Color not found.`);
+          return Result.failure(undefined);
     },
     format: {
         numerics: () => Result.success({ type: 'number', integer: { fixed: 2 }, decimal: { fixed: 2 } })

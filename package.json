@@ -1,6 +1,6 @@
 {
     "name": "tablebook",
-    "description": "A declarative way to generate spreadsheets with a structured table-based paradigm.",
+    "description": "Generate spreadsheets with a declarative and structured table-based schema.",
     "author": "aurospire",
     "version": "0.9.4",
     "repository": {
