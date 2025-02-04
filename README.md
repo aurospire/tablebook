@@ -1,4 +1,7 @@
-# TableBook
+<p align="center">
+  <img src="logo.png" width="100px" align="center" alt="TableBook Logo" />
+  <h1 align="center">TableBook</h1>
+</p>
 
 ## **Project Overview**
 
