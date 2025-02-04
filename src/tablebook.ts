@@ -60,8 +60,10 @@ export const parseJson = (data: string): TableBookParseResult => {
 export type TableBookProcessOptions = {
     /** Custom resolvers for missing references like themes, colors, or types. */
     resolvers?: TableDefinitionResolver[];
-    /** Excludes the StandardPaletteResolver if true. Default is false. */
-    omitStandardPalette?: boolean;
+    /** Excludes the StandardPaletteResolver.theme if true. Default is false. */
+    omitStandardThemes?: boolean;
+    /** Excludes the StandardPaletteResolver.colors if true. Default is false. */
+    omitStandardColors?: boolean;
     /** Logger for tracking processing progress. */
     logger?: TableProcessLogger;
 };
@@ -141,20 +143,25 @@ export const tablebook = Object.freeze({
             : Result.failure(result.error.issues.map(issue => mapValidatorIssue(issue, data)));
     },
 
+
     /**
-     * Converts a TableBook into a SheetBook.
-     * @param data - The TableBook to convert.
-     * @param resolvers - Optional resolvers for missing references. The StandardPaletteResolver is automatically included
-     * @param logger - Optional logger for processing messages.
-     * @returns A `TableBookProcessResult` with the converted data or processing issues.
+     * Processes a `TableBook` and converts it into a `SheetBook`, applying specified options.
+     *
+     * @param data - The input `TableBook` to be processed.
+     * @param options - Processing options, including resolvers, logging, and flags for standard themes and colors.
+     * @returns A `TableBookProcessResult<SheetBook>` containing the processed table book.
      */
     process(data: TableBook, options: TableBookProcessOptions = {}): TableBookProcessResult<SheetBook> {
-        let { resolvers, omitStandardPalette, logger } = options;
+        let { resolvers, omitStandardThemes, omitStandardColors, logger } = options;
 
-        resolvers = omitStandardPalette ? resolvers : [StandardPaletteResolver(), ...(resolvers ?? [])];
+        resolvers = [
+            StandardPaletteResolver(omitStandardThemes ?? false, omitStandardColors ?? false),
+            ...(resolvers ?? []),
+        ];
 
         return processTableBook(data, resolvers, logger);
     },
+
 
     /**
      * Generates a sheet from a SheetBook using a custom generator.

@@ -1790,8 +1790,10 @@ tablebook.process(data: TableBook, options: TableBookProcessOptions = {}): Table
 export type TableBookProcessOptions = {
     /** Custom resolvers for missing references like themes, colors, or types. */
     resolvers?: TableDefinitionResolver[];
-    /** Excludes the StandardPaletteResolver if true. Default is false. */
-    omitStandardPalette?: boolean;
+    /** Excludes the StandardPaletteResolver.theme if true. Default is false. */
+    omitStandardThemes?: boolean;
+    /** Excludes the StandardPaletteResolver.colors if true. Default is false. */
+    omitStandardColors?: boolean;
     /** Logger for tracking processing progress. */
     logger?: TableProcessLogger;
 };
