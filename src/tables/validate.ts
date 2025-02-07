@@ -335,10 +335,28 @@ const TableUnit = z.object({
     definitions: TableDefinitions.optional()
 }).strict();
 
+export type TableValues =
+    | TableExpression<TableSelector> // One expression for all rows
+    | TableExpression<TableSelector>[] // Explicit values for specific rows
+    | {
+        /** Explicitly assigned values for specific row indices */
+        items?: TableExpression<TableSelector>[];
+        /** Default expression for all rows not covered by `items` */
+        rest?: TableExpression<TableSelector>;
+    };
+
+const TableValues = z.union([
+    TableExpression,
+    z.array(TableExpression),
+    z.object({
+        items: z.array(TableExpression).optional(),
+        rest: TableExpression.optional()
+    }).strict()]);
+    
 const TableColumn: z.ZodType<TableColumn> = TableUnit.merge(z.object({
     type: z.union([TableDataType, TableReference]),
     source: z.string().optional(),
-    expression: TableExpression.optional(),
+    values: TableValues.optional()
 })).strict();
 
 const TableGroup: z.ZodType<TableGroup> = TableUnit.merge(z.object({

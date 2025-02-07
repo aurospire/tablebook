@@ -450,16 +450,30 @@ export type TableUnit = {
 };
 
 /** 
-* Definition of a single column in a table
-* Specifies the data type and optional metadata
-*/
+ * Defines how values are assigned to rows in a column 
+ * Supports global expressions, per-row values, or mixed assignments.
+ */
+export type TableValues =
+    | TableExpression<TableSelector> // One expression for all rows
+    | TableExpression<TableSelector>[] // Explicit values for specific rows
+    | {
+        /** Explicitly assigned values for specific row indices */
+        items?: TableExpression<TableSelector>[];
+        /** Default expression for all rows not covered by `items` */
+        rest?: TableExpression<TableSelector>;
+    };
+
+/** 
+ * Definition of a single column in a table 
+ * Specifies the data type, optional metadata, and row-based values.
+ */
 export type TableColumn = TableUnit & {
     /** Data type defining the content and behavior of this column */
     type: TableDataType | TableReference;
     /** Optional metadata describing where the column's data comes from */
     source?: string;
-    /** Optional expression to compute the value */
-    expression?: TableExpression<TableSelector>;
+    /** Optional row-based expressions defining computed or assigned values */
+    values?: TableValues;
 };
 
 /** 

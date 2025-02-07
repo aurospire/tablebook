@@ -1268,17 +1268,48 @@ type TableUnit = {
 
 #### **9.3 TableColumn**
 
-A `TableColumn` represents the smallest unit in a `TableBook`. It extends `TableUnit` and includes properties for data typing and optional expressions.
+A `TableColumn` represents the smallest unit in a `TableBook`. It extends `TableUnit` and includes properties for defining the data type, optional metadata, and row-based value assignments.
 
 ```typescript
-type TableColumn = TableUnit & {
-  type: TableDataType | TableReference;
-  source?: string;
-  expression?: TableExpression;
+export type TableColumn = TableUnit & {    
+    type: TableDataType | TableReference; 
+    values?: TableValues;            
+    source?: string;                      // Metadata describing where the column's data comes from    
 };
 ```
 
----
+#### **TableValues**
+
+The `TableValues` type provides a structured way to assign values to rows in a column. Instead of directly referencing individual spreadsheet cells, `TableBook` uses expressions to dynamically compute values based on logical references. This serves as a column-centric alternative to traditional cell-based formulas in spreadsheets.
+
+Each column can define its values in one of three ways:
+
+1. **Single Expression for All Rows**  
+   - A `TableExpression<TableSelector>` applies a **single expression** to every row in the column.
+   - This is equivalent to writing the same formula in every row of a spreadsheet column.
+
+2. **Explicit Per-Row Assignments**  
+   - An **array** of `TableExpression<TableSelector>` where each array index corresponds to a row index (0-based).
+   - This approach is useful when different rows require distinct formulas or values.
+
+3. **Mixed Assignments (`items` + `rest`)**  
+   - The `items` array defines explicit expressions for specific row indices.  
+   - The `rest` expression applies to all rows **not covered** by `items`.  
+   - This method is useful when most rows share a common formula, but some need specific overrides.
+
+```typescript
+export type TableValues =
+    | TableExpression<TableSelector>    // One expression for all rows
+    | TableExpression<TableSelector>[]  // Explicit values for specific rows
+    | { 
+        items?: TableExpression<TableSelector>[]; // Explicit row-based expressions
+        rest?: TableExpression<TableSelector>;    // Default expression for remaining rows
+      };
+```
+
+By structuring values this way, `TableBook` allows for powerful and flexible row-level computations while maintaining a clear column-based paradigm.
+
+___
 
 #### **9.4 TableGroup**
 
@@ -1571,7 +1602,7 @@ tablebook.process(data: TableBook, options: TableBookProcessOptions = {}): Table
 ```
 
 ```typescript
-export type TableBookProcessOptions = {
+type TableBookProcessOptions = {
     /** Custom resolvers for missing references like themes, colors, or types. */
     resolvers?: TableDefinitionResolver[];
     /** Excludes the StandardPaletteResolver.theme if true. Default is false. */
