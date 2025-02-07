@@ -138,236 +138,167 @@ async function main() {
 ---
 ---
 
-## **Types and Methods Guide and Reference**
+## **Types of TableBook**
+
+> **Note**: This section covers all types, structures, and concepts that form the declarative schema of a `TableBook`.
 
 ### Table of Contents
 
-1. [TableSelector](#1-tableselector)
-2. [TableReference](#2-tablereference)
-3. [TableStyle](#3-tablestyle)
-4. [TableHeaderStyle](#4-tableheaderstyle)
-5. [TableTheme](#5-tabletheme)
-6. [TableExpressions](#6-tableexpressions)
-7. [TableDataTypes](#7-tabledatatype)
-8. [TableUnit and Hierarchical Structure](#8-tableunit-and-hierarchical-structure)    
-9. [Result](#9-result)
-10. [TableBookIssue](#10-tablebookissue)   
-11. [`tablebook` Functions](#11-tablebook-functions)
+1. [TableSelector](#1-tableselector)  
+2. [TableReference](#2-tablereference)  
+3. [TableStyle](#3-tablestyle)  
+4. [TableHeaderStyle](#4-tableheaderstyle)  
+5. [TableTheme](#5-tabletheme)  
+6. [StandardPalette](#6-standardpalette)  
+7. [TableExpressions](#7-tableexpressions)  
+8. [TableDataType](#8-tabledatatype)  
+   - [8.1 TableConditionalStyle](#81-tableconditionalstyle)  
+   - [8.2 Rules Overview](#82-rules-overview)       
+   - [8.3 Text Type (`TableTextType`)](#83-text-type-tabletexttype)  
+   - [8.4 Enum Type (`TableEnumType`)](#84-enum-type-tableenumtype)  
+   - [8.5 Lookup Type (`TableLookupType`)](#85-lookup-type-tablelookuptype)  
+   - [8.6 Numeric Type (`TableNumericType`)](#86-numeric-type-tablenumerictype)  
+   - [8.7 Temporal Type (`TableTemporalType`)](#87-temporal-type-tabletemporaltype)  
+9. [TableUnit and Hierarchical Structure](#9-tableunit-and-hierarchical-structure)
+
+
 ---
 
 ## **1. TableSelector**
 
-`TableSelector` provides a structured way to reference specific columns and rows in a `TableBook`. It ensures clarity and flexibility by using logical references instead of direct cell addresses (e.g., `A1:B5`). These logical references are later translated into A1-style spreadsheet references during generation.
+A **TableSelector** is how `TableBook` references data in a specific column and row subset. It always selects:
+1. A **column** (either by page/group/name or some partial subset).
+2. A **row filter** (self, all, absolute index, relative index, or a range).
+
+This approach avoids typical spreadsheet cell references (like `A1`) in favor of logical references that get translated into final A1 notation when generating the spreadsheet.
 
 ---
 
-### **Key Concepts**
-1. **Column-Based Selection Only**: Unlike traditional spreadsheets, `TableBook` does not support cell-based or horizontal (multi-column) selection. All data selection is **column-centric**, targeting one column at a time.
-2. **Page → Group → Column** paradigm: Columns are identified within a hierarchy:
-   - **Page**: Synonymous with a `Table`, representing a single table within the spreadsheet. Each `Page` in the `TableBook` corresponds to one logical table, forming the core unit of the "book of tables."
-   - **Group**: A subgroup within a page that organizes related columns.
-   - **Column**: The specific column within a group.
+### **1.1 How TableSelectors Work**
 
-### **1.1 TableSelector Types**
+A `TableSelector` can be:
+- **`"self"`** – meaning the current column and row in context,
+- **An object** with two parts: `column` and `rows`.
 
-A `TableSelector` can reference either the current column and row (`"self"`) or a specific combination of a column and rows.
+Inside the object form:
+- **`column`** can be:
+  - `"self"` – to indicate the current column,
+  - or a **`TableColumnSelector`** that refers to a column by `page`, `group`, and `name`.
+- **`rows`** can be:
+  - `"self"` – meaning the current row,
+  - `"all"` – meaning every data row in that column,
+  - a **unit** (like `"$0"`, `"+2"`, or `"-1"`),
+  - or a **range** (like `{ from: "$0", to: "$4" }`).
 
-#### **Type Definitions**
-```typescript
-type TableSelector = 
-  | TableSelfSelector
-  | {
-      column: TableColumnSelector | TableSelfSelector;
-      rows: TableRowSelector | TableSelfSelector;
-  };
-```
+Thus, you always have a single column plus whichever rows you specify.
 
-#### **1.1.1 TableSelfSelector**
-```typescript
-type TableSelfSelector = "self";
-```
-- Refers to the **current column** and/or **row** in context.  
+---
 
-#### **1.1.2 TableColumnSelector**
+### **1.2 Column Reference: Absolute vs. Relative**
+
+A `TableColumnSelector` can fully or partially qualify where the column resides:
+
 ```typescript
 type TableColumnSelector = {
-  page?: string;  // Optional page.
-  group?: string; // Optional group, required if page is included.
-  name: string;   // Required column name.
+  page?: string;  // optional page
+  group?: string; // optional group, if page is included
+  name: string;   // the column name
 };
 ```
-- Identifies a column by its **page**, **group**, and **name**.  
-- If `page` is included, `group` must also be specified.
 
-##### **Examples**
-| Selector                                              | Meaning                                                             |
-|-------------------------------------------------------|---------------------------------------------------------------------|
-| `{ name: "Sales" }`                                   | References `"Sales"` in the current page and group.                 |
-| `{ group: "Revenue", name: "Sales" }`                 | References `"Sales"` in `"Revenue"` in the current page.            |
-| `{ page: "Summary", group: "Revenue", name: "Sales" }`| Fully qualified reference to `"Sales"` in `"Revenue"` on `"Summary"`.|
-
-#### **1.1.3 TableRowSelector**
-```typescript
-type TableRowSelector = 
-  | TableUnitSelector
-  | TableRangeSelector
-  | TableAllSelector
-  | TableSelfSelector;
-```
-
-##### **TableUnitSelector**
-```typescript
-type TableUnitSelector = `$${number}` | `+${number}` | `-${number}`;
-```
-- **`$n`**: Absolute, zero-based row within the data region.  
-- **`+n`**: Row offset forward from the current row.  
-- **`-n`**: Row offset backward from the current row.
-
-##### **TableRangeSelector**
-```typescript
-type TableRangeSelector = {
-  from: TableUnitSelector;
-  to: TableUnitSelector;
-};
-```
-- Selects a range of rows between two positions (inclusive).
-
-##### **TableAllSelector**
-```typescript
-type TableAllSelector = "all";
-```
-- Selects all rows in the specified column.
+- **Fully Qualified**: `{ page: "Summary", group: "Revenue", name: "Sales" }`
+  - Points to `"Sales"` in the `"Revenue"` group on the `"Summary"` page.
+- **Partially Qualified**: `{ group: "Revenue", name: "Sales" }`
+  - Points to `"Sales"` in `"Revenue"` (on the current page).
+- **Name Only**: `{ name: "Sales" }`
+  - Points to `"Sales"` in the **current group** and **current page**.
 
 ---
 
-### **1.2 Single Group vs. Multiple Groups**
+### **1.3 Row Reference: Self, All, Unit, or Range**
 
-The structure of a table depends on whether it has **one group** or **multiple groups** of columns.
+A `TableRowSelector` indicates which rows to include in the selection:
 
-#### **Single Group Example**
-| **Row** | **A**        | **B**      | **C**        |
-|---------|--------------|------------|--------------|
-| **1**   | **Sales**    | **Cost**   | **Profit**   |
-| **2**   | Data Row 1   | Data Row 1 | Data Row 1   |
-| **3**   | Data Row 2   | Data Row 2 | Data Row 2   |
+- **`"self"`**  
+  – The current row in context. If you’re defining an expression inside a cell, `"self"` means “this exact row.”
 
-- **Row 1**: Column headers.  
-- **Row 2 onward**: Data rows.
+- **`"all"`**  
+  – Every data row in that column.
 
-**Key Rule**: The first data row corresponds to **logical `$0`**, which maps to A1-address row **2**.
+- **Unit Selector**: `$n`, `+n`, `-n`  
+  - `"$0"`: The first data row (absolute).  
+  - `"$3"`: The 4th data row.  
+  - `"+2"`: Two rows below the current row.  
+  - `"-1"`: One row above the current row.
 
----
-
-#### **Multiple Groups Example**
-| **Row** |       **A**       |      **B**       |       **C**       |       **D**       |      **E**       |
-|---------|--------------------|------------------|--------------------|--------------------|------------------|
-| **1**   | **Revenue Group** | **Revenue Group**| **Revenue Group** | **Expense Group** | **Expense Group** |
-| **2**   | **Sales**         | **Cost**         | **Profit**         | **Labor**         | **Materials**     |
-| **3**   | Data Row 1         | Data Row 1       | Data Row 1         | Data Row 1         | Data Row 1        |
-| **4**   | Data Row 2         | Data Row 2       | Data Row 2         | Data Row 2         | Data Row 2        |
-
-- **Row 1**: Group headers (span multiple columns).  
-- **Row 2**: Column headers.  
-- **Row 3 onward**: Data rows.
-
-**Key Rule**: The first data row corresponds to **logical `$0`**, which maps to A1-address row **3**.
+- **Range Selector**: `{ from: TableUnitSelector, to: TableUnitSelector }`
+  - `{ from: "$0", to: "$4" }`: Rows 0 through 4 (inclusive).
 
 ---
 
-#### **1.3 Translating Selectors to A1 Notation**
+### **1.4 Single vs. Multiple Column Groups**
 
-##### **Translation Rules**
-1. **Columns**:
-   - Columns are mapped to spreadsheet letters (e.g., `"Sales"` → `A`).
-2. **Rows**:
-   - `$n` corresponds to the **nth data row** in TableBook logic:
-     - Row 2 in A1 for single groups.
-     - Row 3 in A1 for multiple groups.
+**Single Group**: If a page has only one group, the top row is the column header, and data starts at row 2 in A1 terms.  
+**Multiple Groups**: If a page has multiple groups, row 1 is the group header, row 2 is the column header, and data starts at row 3 in A1 terms.
 
-##### **Examples**
-
-###### **1. Column Selector with All Rows**
-```typescript
-{ column: { name: "Sales" }, rows: "all" }
-```
-- Logical: All rows in `"Sales"`.
-- A1 Translation (If Sales is Column 0):
-  - Single group: `$A2:$A`.
-  - Multiple groups: `$A3:$A`.
+Hence, `$0` → `A2` in a single-group layout, `$0` → `A3` in a multi-group layout.
 
 ---
 
-###### **2. Fully Qualified Selector with Absolute Row**
-```typescript
-{
-  column: { page: "Summary", group: "Revenue", name: "Sales" },
-  rows: "$0"
-}
-```
-- Logical: First data row in `"Sales"` on `"Summary"`.
-- A1 Translation: `Summary!$A$2` (single group) or `Summary!$A$3` (multiple groups).
+### **1.5 Examples**
+
+1. **Selector with All Rows of “Sales”**  
+   ```typescript
+   { column: { name: "Sales" }, rows: "all" }
+   ```
+   Targets every row in the `Sales` column in the current group/page.
+
+2. **Fully Qualified Selector**  
+   ```typescript
+   {
+     column: { page: "Summary", group: "Revenue", name: "Sales" },
+     rows: "$0"
+   }
+   ```
+   The very first data row of the `Sales` column on the `Summary` page, `Revenue` group.
+
+3. **Relative Offset**  
+   ```typescript
+   {
+     column: { name: "Profit" },
+     rows: "+1"
+   }
+   ```
+   One row below the current row in the `Profit` column.
+
+4. **Range**  
+   ```typescript
+   {
+     column: { name: "Sales" },
+     rows: { from: "$0", to: "$4" }
+   }
+   ```
+   Rows 0 through 4 (inclusive) of `Sales`.
+
+5. **Self**  
+   ```typescript
+   "self"
+   ```
+   Refers to the exact column and row in context.
 
 ---
 
-###### **3. Relative Row Offset**
-```typescript
-{
-  column: { name: "Profit" },
-  rows: "+1"
-}
-```
-- Logical: Row one step below the current row in `"Profit"`.
-- A1 Translation (if current row is `$2`): `$C4`.
+### **1.6 Key Takeaways**
 
----
-
-###### **4. Range of Rows**
-```typescript
-{
-  column: { name: "Sales" },
-  rows: { from: "$0", to: "$4" }
-}
-```
-- Logical: Rows `$0` to `$4` in `"Sales"`.
-- A1 Translation:
-  - Single group: `$A$2:$A$6`.
-  - Multiple groups: `$A$3:$A$7`.
-
----
-
-###### **5. Self-Selector**
-```typescript
-"self"
-```
-- Logical: Current column and row.
-- A1 Translation: Context-dependent (e.g., `$A2` if in column `"Sales"` and row `$0`).
-
----
-
-#### **1.4 Key Takeaways**
-
-1. **Column Selection**:
-   - `{ name: "Sales" }` → Same group and page.
-   - `{ group: "Revenue", name: "Sales" }` → Same page, specific group.
-   - `{ page: "Summary", group: "Revenue", name: "Sales" }` → Fully qualified.
-
-2. **Row Selection**:
-   - `$n` → Absolute zero-based row.
-   - `+n`/`-n` → Relative offsets.
-   - `"all"` → All rows in the column.
-   - `"self"` → Current column and row.
-
-3. **Table Structure**:
-   - Single Group: Data starts at A1 row 2 (`$0 → A2`).
-   - Multiple Groups: Data starts at A1 row 3 (`$0 → A3`).
-
-4. **Flexibility**:
-   - Logical references decouple the schema from spreadsheet-specific addresses.
+- A **TableSelector** always references **one column** + a row subset.
+- Columns can be **fully qualified** or **relative** to the current context.
+- Rows can be **self** (current row), **all**, **absolute/relative** units, or **ranges**.
+- Single vs. multiple column groups slightly changes how `$n` translates to A1 notation, but that’s handled automatically during generation.
 
 ---
 ---
 
-### **2. TableReference**
+## **2. TableReference**
 
 The `TableReference` type enables reusable definitions in `TableBook`. It allows you to reference shared elements like colors, styles, or themes, ensuring consistency across your table schema.
 
@@ -383,7 +314,7 @@ type TableReference = `@${string}`;
 ---
 ---
 
-### **3. TableStyle**
+## **3. TableStyle**
 
 The `TableStyle` type defines visual styling for text and backgrounds. It is a reusable element that can be applied wherever specific styling is required in a `TableBook`.
 
@@ -408,7 +339,7 @@ type TableStyle = {
 ---
 ---
 
-### **4. TableHeaderStyle**
+## **4. TableHeaderStyle**
 
 The `TableHeaderStyle` type extends `TableStyle` to include border options. It is specifically used for styling table headers, such as group or column headers, to enhance visual structure.
 
@@ -442,14 +373,14 @@ Represents the available styles for border lines:
 ```typescript
 type TableBorderType =
     "none"  | 
-    "thin"  | "medium" | "thick",  // single line style of different thickness
-    "dotted"| "dashed" | "double"  // alternative lines styles
-    ;
+    "thin"  | "medium" | "thick"  |
+    "dotted"| "dashed" | "double";
 ```
+
 ---
 ---
 
-### **5. TableTheme**
+## **5. TableTheme**
 
 A **TableTheme** defines coordinated styling for multiple areas - tabs, group headers, column headers, and data cells.
 You can apply a theme at different levels of a `TableBook` (book → page → group → column), with each level either using or refining the theme from above.
@@ -498,67 +429,7 @@ Themes can be defined at any level of the `TableBook`. When a level has no theme
 
 ---
 
-#### **5.3 Built-In Palettes**
-
-`TableBook` includes a set of prebuilt palettes, each with four shades:
-
-- **Darkest** → applies to `group.back`
-- **Dark** → applies to `header.back`
-- **Main** → applies to `tab`
-- **Lightest** → applies to `data.back`
-
-All these palettes use relatively dark shades for group headers and column headers. **You’ll likely want to define bold, white text** (or another contrasting color) for your group/header styles if you want the text to stand out.
-
-Below is a categorized list of built-in palette names (each name is referenced with an `@` symbol in themes, e.g., `"theme": "@red"`):
-
-```
-Reds:
-  - pink
-  - cranberry
-  - red
-
-Oranges & Yellows:
-  - rust
-  - orange
-  - yellow
-
-Greens:
-  - green
-  - moss
-  - sage
-
-Blues:
-  - teal
-  - slate
-  - cyan
-  - blue
-  - azure
-  - skyblue
-
-Purples:
-  - lavender
-  - indigo
-  - purple
-  - plum
-  - mauve
-
-Neutrals:
-  - coral
-  - terracotta
-  - bronze
-  - sand
-  - taupe
-  - gray
-  - charcoal
-```
-
-When you reference one of these palettes in a theme (for example, `"theme": "@blue"`), the background colors for `group`, `header`, `tab`, and `data` will be set automatically. If you want readable text on dark headers/groups, define a lighter or white foreground color in `group` or `header` style.
-Best is to define it globally in the Book theme.
-
-
----
-
-#### **5.4 Example: Setting a Book Theme**
+#### **5.3 Example: Setting a Book Theme**
 
 Below is an example of a **book-level** theme referencing the built-in **blue** palette. It then explicitly sets white, bold text for `group` and `header`:
 
@@ -602,7 +473,7 @@ Below is an example of a **book-level** theme referencing the built-in **blue** 
 
 ---
 
-#### **5.5 Default Book Theme**
+#### **5.4 Default Book Theme**
 
 A good starting theme for your TableBook allows you to use different palettes for each page while ensuring clarity and consistency. The following example sets a clean, bold look for group and header text, with clear dividing lines between groups and columns.
 
@@ -626,26 +497,100 @@ A good starting theme for your TableBook allows you to use different palettes fo
 ```
 
 ---
+---
 
-#### **5.6 Key Points**
+## **6. StandardPalette**
 
-1. **Property-by-Property Merging**  
-   Multiple themes in `inherits` apply one after the other. Each level (book, page, group, column) can refine or leave properties as-is.
-2. **Prebuilt Palettes**  
-   Provide convenient color sets. They automatically fill in `group.back`, `header.back`, `tab`, and `data.back` with coordinated shades.
-3. **Dark Headers**  
-   Because most prebuilt palettes have dark `group` and `header` backgrounds, you may want to specify bold, white text for clarity.
-4. **Flexibility**  
-   If a page or group doesn’t define a theme, it continues to use the parent’s. If it does define a theme, it overrides or merges where specified.
+**StandardPalette** provides a set of built-in color palettes, each containing five shades: `darkest`, `dark`, `base`, `light`, and `lightest`. You can reference an entire palette as a **theme** (e.g., `"@red"`) or reference its individual color shades (e.g., `"@red:darkest"`).
+
+### **Using a Predefined Theme**
+
+When you reference a palette by name for a **theme** (e.g., `"theme": "@blue"`), it brings in that entire palette for tab, group, header, and data. Specifically:
+
+- `tab` gets the **base** color,
+- `group.back` gets the **darkest** color,
+- `header.back` gets the **dark** color,
+- `data.back` gets the **lightest** color.
+
+### **Using a Palette for a Specific Color**
+
+If you want to use just a single shade from a palette in a style property (e.g. `fore` or `back`), you can specify `"@palette:shade"`. For example, `"@blue:darkest"`, `"@blue:light"`, etc. If you reference simply `"@blue"` as a color (without `:shade`), you get the **base** color of the palette.
+
+### **Built-In Palettes**
+
+```
+Reds:
+  - pink
+  - cranberry
+  - red
+
+Oranges & Yellows:
+  - rust
+  - orange
+  - yellow
+
+Greens:
+  - green
+  - moss
+  - sage
+
+Blues:
+  - teal
+  - slate
+  - cyan
+  - blue
+  - azure
+  - skyblue
+
+Purples:
+  - lavender
+  - indigo
+  - purple
+  - plum
+  - mauve
+
+Neutrals:
+  - coral
+  - terracotta
+  - bronze
+  - sand
+  - taupe
+  - gray
+  - charcoal
+```
+
+### **Examples**
+
+1. **Use a Full Palette as a Theme**  
+   ```json
+   {
+     "name": "Report",
+     "theme": "@blue",
+     "pages": [ ... ]
+   }
+   ```
+   This automatically applies the darkest, dark, base, lightest shades to `group.back`, `header.back`, `tab`, and `data.back` respectively.
+
+2. **Reference a Specific Shade**  
+   ```json
+   {
+     "theme": {
+       "group": { "back": "@blue:darkest" },
+       "header": { "fore": "#FFFFFF", "back": "@blue:dark" },
+       "data": { "back": "@blue:lightest" }
+     }
+   }
+   ```
+   This picks out specific colors (`darkest`, `dark`, `lightest`) from the `blue` palette.
 
 ---
 ---
 
-### **6. TableExpressions**
+## **7. TableExpressions**
 
 Expressions in `TableBook` are used to define structured formulas, replacing traditional spreadsheet cell references (e.g., `A1:B5`) with precise column-row relationships via `TableSelectors`. These formulas allow for consistent, column-based computations that translate into spreadsheet formulas during generation.
 
-#### **6.1 Definition**
+#### **7.1 Definition**
 
 ```typescript
 type TableExpression =
@@ -660,7 +605,7 @@ type TableExpression =
 
 ---
 
-#### **6.2 TableLiteralExpression**
+#### **7.2 TableLiteralExpression**
 
 The simplest type of expression, a `TableLiteralExpression`, represents a fixed value (number, string, or boolean).
 
@@ -684,7 +629,7 @@ This translates to the literal value `42` in a formula.
 
 ---
 
-#### **6.3 TableSelectorExpression**
+#### **7.3 TableSelectorExpression**
 
 A `TableSelectorExpression` references data in a specific column and row. Instead of traditional spreadsheet ranges, it uses a `TableSelector` to target the data.
 
@@ -711,7 +656,7 @@ This references the `Revenue` column, specifically the 5th row - or 6 in A1 addr
 
 ---
 
-#### **6.4 TableCompoundExpression**
+#### **7.4 TableCompoundExpression**
 
 A `TableCompoundExpression` combines multiple expressions using an operator. It supports both comparison and arithmetic/merge operators.
 
@@ -752,8 +697,8 @@ const compoundExpression: TableCompoundExpression = {
   type: "compound",
   op: "+",
   items: [
-    { type: "selector", from: { column: { name: "Revenue" }, rows: "$0" } },
-    { type: "literal", of: 100 }
+    { type: "selector", selector: { column: { name: "Revenue" }, rows: "$0" } },
+    { type: "literal", value: 100 }
   ]
 };
 ```
@@ -762,7 +707,7 @@ If `Revenue` was column `C` (with no group header), this translates to `=$C$2 + 
 
 ---
 
-#### **6.5 TableNegatedExpression**
+#### **7.5 TableNegatedExpression**
 
 A `TableNegatedExpression` inverts the result of another expression.
 
@@ -789,7 +734,7 @@ If `Profit` was column `B` (with no group header), this corresponds to `=-($B2)`
 
 ---
 
-#### **6.6 TableFunctionExpression**
+#### **7.6 TableFunctionExpression**
 
 A `TableFunctionExpression` applies a named function to a list of arguments, which can be other expressions.
 
@@ -808,8 +753,8 @@ const functionExpression: TableFunctionExpression = {
   type: "function",
   name: "SUM",
   items: [
-    { type: "selector", from: { column: { page: 'Items', group: 'Info', name: "Revenue" }, rows: "all" } },
-    { type: "literal", of: 50 }
+    { type: "selector", selector: { column: { page: 'Items', group: 'Info', name: 'Revenue' }, rows: "all" } },
+    { type: "literal", value: 50 }
   ]
 };
 ```
@@ -818,7 +763,7 @@ If `Revenue` was column `D` (with a group header), this translates to `SUM(Items
 
 ---
 
-#### **6.7 TableTemplateExpression**  
+#### **7.7 TableTemplateExpression**  
 
 A `TableTemplateExpression` represents a formula written as literal text with placeholders (`vars`) that map to subexpressions. This enables dynamic, structured computation while preserving the relationships between table data.
 
@@ -827,10 +772,15 @@ A `TableTemplateExpression` represents a formula written as literal text with pl
 ```typescript
 type TableTemplateExpression = {
     type: "template";
-    text: string;                           // Formula text containing placeholders.
-    vars?: Record<string, TableExpression>; // Placeholders mapped to expressions.
+    text: string;
+    vars?: Record<string, TableExpression>;
 };
 ```
+
+##### **How `vars` Works**  
+- The `text` property contains placeholders that **exactly match** keys in the `vars` object.  
+- **The var name can be any string**—it does **not** need to start with `@`. If `text` has something like `COUNTIF($Revenue, ">50")`, then you'd define `vars` with a key like `$Revenue` (or any other name you used).
+- During processing, each placeholder is replaced by the corresponding subexpression’s A1 reference or formula.
 
 ##### **Example**  
 
@@ -841,7 +791,7 @@ const templateExpression: TableTemplateExpression = {
   vars: {
     '@Revenue': {
       type: 'selector',
-      from: { column: { page: 'Items', group: 'Info', name: 'Revenue' }, rows: 'all' }
+      selector: { column: { page: 'Items', group: 'Info', name: 'Revenue' }, rows: 'all' }
     }
   }
 };
@@ -851,24 +801,9 @@ If `Revenue` was column `D` (with a group header), this translates to:
 `COUNTIF(Items!$D3:$D, ">=50")`.
 
 ---
-
-#### **How It Works**  
-
-1. **Template (`text` field)**:  
-   - The `text` field is a formula string that includes placeholders.  
-   - A placeholder can be any string, but it must exactly match a key in `vars`.
-
-2. **Variables (`vars` object)**:  
-   - `vars` maps placeholders to expressions.  
-   - Every placeholder in `text` **must** have a corresponding key in `vars`.  
-   - The placeholders do **not** have to follow any specific naming convention (`@Revenue` is just one example).  
-
-This allows for dynamic formula generation while ensuring that every placeholder is backed by a structured table expression.
-
----
 ---
 
-### **7. TableDataType**
+## **8. TableDataType**
 
 The `TableDataType` defines the type of data in a column. It determines how data is validated, formatted, and optionally styled conditionally. There are five main types:
 
@@ -889,46 +824,34 @@ Each data type shares the following properties:
 
 ---
 
-#### **7.1 TableConditionalStyle**
+#### **8.1 TableConditionalStyle**
 
 The `TableConditionalStyle` type applies styling to data when a specific rule or condition is met. It is used in conjunction with rules for text, numeric, and temporal types.
 
 ```typescript
 type TableConditionalStyle<Rule> = {
-    when: Rule;                              // The rule to trigger this style.
-    style?: TableStyle | TableReference;     // The optional style to apply if the rule is satisfied.
-    color?: TableColor | TableReference;     // The optional forecolor shorthand to apply if the rule is satisfied
+    when: Rule;
+    style?: TableStyle | TableReference;
+    color?: TableColor | TableReference;
 };
 ```
+
 ###### Style Merging
 
-The final style for an `TableConditionalStyle` (and `EnumItem`) is created from the style and/or color.
+The final style for a `TableConditionalStyle` (and `EnumItem`) is created from the style and/or color.
 ```typescript
 (item.style ?? {}) + { fore: item.color }
 ```
 
-For example, if `item.style` is 
-```typescript
-{ bold: true, back: '#fffffff', fore: '#000000' }
-```
-and `item.color` is 
-```typescript
-'#222222'
-```
-The final `EnumItem` style will be
-```typescript
-{ bold: true,  back: '#fffffff', fore: '#222222 }
-```
-
 ---
 
-#### **7.2 Rules Overview**
+#### **8.2 Rules Overview**
 
 Rules (`TableRules`) define how values in a column are validated. Each type (text, numeric, temporal) has its own rule system, but all support custom rules using expressions.
 
 ---
 
-##### **7.2.1 TableCustomRule**
+##### **8.2.1 TableCustomRule**
 
 A `TableCustomRule` defines advanced validation using expressions.
 
@@ -941,7 +864,7 @@ type TableCustomRule = {
 
 ---
 
-##### **7.2.2 Text Rules** (`TableTextRule`)
+##### **8.2.2 Text Rules** (`TableTextRule`)
 
 Text rules validate string values.
 
@@ -966,7 +889,7 @@ const rule: TableTextRule = { type: "contains", value: "Important" };
 
 ---
 
-##### **7.2.3 Numeric Rules** (`TableNumericRule`)
+##### **8.2.3 Numeric Rules** (`TableNumericRule`)
 
 Numeric rules validate number values.
 
@@ -1002,7 +925,7 @@ const rule2: TableNumericRule = { type: "between", low: 5, high: 20 };
 
 ---
 
-##### **7.2.4 Temporal Rules** (`TableTemporalRule`)
+##### **8.2.4 Temporal Rules** (`TableTemporalRule`)
 
 Temporal rules validate date and time values.
 
@@ -1027,90 +950,90 @@ const rule: TableTemporalRule = {
 
 ---
 
-#### **7.3 Text Type** (`TableTextType`)
+#### **8.3 Text Type** (`TableTextType`)
 
 Represents string-based data.  
 
 ```typescript
 type TableTextType = {
     kind: "text";
-    style?: TableStyle | TableReference;                // Base style
-    styles?: TableConditionalStyle<TableTextRule>[];    // Conditional styling
-    rule?: TableTextRule;                               // Validation rule
+    style?: TableStyle | TableReference;
+    styles?: TableConditionalStyle<TableTextRule>[];
+    rule?: TableTextRule;
 };
 ```
 ---
 
-#### **7.4 Enum Type** (`TableEnumType`)
+#### **8.4 Enum Type** (`TableEnumType`)
 
 Represents data with a fixed set of allowed values.  
 ```typescript
 type TableEnumType = {
     kind: "enum";
-    style?: TableStyle | TableReference;          // Base style
-    items: TableEnumItem[];                       // Possible values
+    style?: TableStyle | TableReference;
+    items: TableEnumItem[];
 };
 ```
 
 ##### **Enum Item**
 An `EnumItem` defines an individual value in the enum and supports customizable styles or colors.
-Conditional styling and validation is build in
 
 ```typescript
 type TableEnumItem = {
-    name: string;                             // The value of the enum item
-    description?: string;                     // Optional description for the item
-    style?: TableStyle | TableReference;      // The optional style to apply for the enum item.
-    color?: TableColor | TableReference;      // The optional forecolor shorthand to apply for the enum itm
+    name: string;
+    description?: string;
+    style?: TableStyle | TableReference;
+    color?: TableColor | TableReference;
 };
 ```
 ---
 
-#### **7.5 Lookup Type** (`TableLookupType`)
+#### **8.5 Lookup Type** (`TableLookupType`)
 
 References valid values from another column.  
 ```typescript
 type TableLookupType = {
     kind: "lookup";
-    style?: TableStyle | TableReference;                // Base style
-    styles?: TableConditionalStyle<TableTextRule>[];    // Conditional styling
-    column: TableColumnSelector;                        // Column referencing valid values
+    style?: TableStyle | TableReference;
+    styles?: TableConditionalStyle<TableTextRule>[];
+    column: TableColumnSelector;
+    rule?: TableTextRule; // NEW: optional validation rule for the looked-up text
 };
 ```
 
 ---
 
-#### **7.6 Numeric Type** (`TableNumericType`)
+#### **8.6 Numeric Type** (`TableNumericType`)
 
 Represents numerical data, allowing for validation, formatting, and conditional styling.  
 
 ```typescript
 type TableNumericType = {
     kind: "numeric";
-    style?: TableStyle | TableReference;               // Base style
-    styles?: TableConditionalStyle<TableNumericRule>[];// Conditional styling
-    rule?: TableNumericRule;                           // Validation rule
-    format?: TableNumericFormat | TableReference;      // Formatting options
+    style?: TableStyle | TableReference;
+    styles?: TableConditionalStyle<TableNumericRule>[];
+    rule?: TableNumericRule;
+    format?: TableNumericFormat | TableReference;
 };
 ```
 ---
 
-##### **7.6.1 TableBaseNumericFormat**
+##### **8.6.1 TableBaseNumericFormat**
 
 All numeric formats (`number`, `percent`, `currency`) inherit from the same base format options.
 
 ```typescript
 type TableBaseNumericFormat<Type extends string> = {
-    type: Type;                               // The format type (e.g., "number", "percent")
-    integer?: number | TableDigitPlaceholder; // Formatting for digits before the decimal
-    decimal?: number | TableDigitPlaceholder; // Formatting for digits after the decimal
-    commas?: boolean;                         // Whether to separate thousands with commas
+    type: Type;
+    integer?: number | TableDigitPlaceholder;
+    decimal?: number | TableDigitPlaceholder;
+    commas?: boolean;
 };
 ```
 
 ---
 
-##### **7.6.2 TableDigitPlaceholder**
+##### **8.6.2 TableDigitPlaceholder**
 
 `TableDigitPlaceholder` controls how digits are displayed using placeholder characters:
 
@@ -1122,21 +1045,15 @@ type TableBaseNumericFormat<Type extends string> = {
 
 ```typescript
 type TableDigitPlaceholder = {
-    fixed?: number;  // Number of '0' placeholders
-    flex?: number;   // Number of '#' placeholders
-    align?: number;  // Number of '?' placeholders
+    fixed?: number;
+    flex?: number;
+    align?: number;
 };
 ```
 
-**Example:**
-```typescript
-const placeholder: TableDigitPlaceholder = { fixed: 2, flex: 3 };
-```
-- Displays two mandatory digits and up to three additional digits if available.
-
 ---
 
-##### **7.6.3 Numeric Formats**
+##### **8.6.3 Numeric Formats**
 
 There are three specific numeric formats, each extending the base numeric format:
 
@@ -1145,161 +1062,137 @@ There are three specific numeric formats, each extending the base numeric format
     ```typescript
     type TableNumberFormat = TableBaseNumericFormat<"number">;
     ```
-    Displays numbers with optional integer/decimal placeholders and thousands separators.
 
 2. **Percent Format**
 
     ```typescript
     type TablePercentFormat = TableBaseNumericFormat<"percent">;
     ```
-    Displays percentages (e.g., `0.75` as `75%`).
 
 3. **Currency Format**
 
     ```typescript
     type TableCurrencyFormat = TableBaseNumericFormat<"currency"> & {
-        symbol?: string;                // The currency symbol, e.g. "$"
-        position?: "prefix" | "suffix"; // Symbol placement, defaults to 'prefix'
+        symbol?: string;
+        position?: "prefix" | "suffix";
     };
     ```
-    Displays currency values like `$1234.56`, typically with two decimal places.
 
 ---
 
-#### **7.7 Temporal Type** (`TableTemporalType`)
+#### **8.7 Temporal Type** (`TableTemporalType`)
 
 Represents date and time data, with flexible validation and customizable formatting.  
 
 ```typescript
 type TableTemporalType = {
     kind: "temporal";
-    style?: TableStyle | TableReference;                // Base style
-    styles?: TableConditionalStyle<TableTemporalRule>[];// Conditional styling
-    rule?: TableTemporalRule;                           // Validation rule
-    format?: TableTemporalFormat | TableReference;      // Formatting
+    style?: TableStyle | TableReference;
+    styles?: TableConditionalStyle<TableTemporalRule>[];
+    rule?: TableTemporalRule;
+    format?: TableTemporalFormat | TableReference;
 };
 ```
 
 ---
 
-##### **7.7.1 Temporal Rules**
+##### **8.7.1 Temporal Rules**
 
 Temporal rules validate date and time values. They function similarly to numeric rules but operate on temporal strings (`YYYY-MM-DD`).
 
-**Example Rules:**
-```typescript
-const comparisonRule: TableTemporalRule = {
-  type: "=",
-  value: "2025-01-01"
-};
-
-const rangeRule: TableTemporalRule = {
-  type: "between",
-  low: "2025-01-01",
-  high: "2025-12-31"
-};
-```
-
 ---
 
-##### **7.7.2 TableTemporalUnit**
+##### **8.7.2 TableTemporalUnit**
 
 A `TableTemporalUnit` defines a single element of a temporal format, such as a year, month, day, or time component. Each unit can optionally specify a `length`, which determines whether the unit is displayed in a short or long format.
 
 ```typescript
 type TableTemporalUnit = {
-    type: "year"
+    type:
+         | "year"
          | "month"
          | "monthname"
          | "weekday"
          | "day"
          | "hour"
+         | "meridiem"
          | "minute"
          | "second"
-         | "meridiem";
+         ;
     length?: "short" | "long";
 };
 ```
 
-###### **Unit Type Details**
+Below is a more detailed look at each possible `type` within a `TableTemporalUnit`, with examples of “short” vs. “long” formats.
 
-| **Type**      | **Description**                          | **Short Example** | **Long Example**   |
-|---------------|------------------------------------------|-------------------|--------------------|
-| **`year`**    | The year of the date.                   | `25` (`yy`)       | `2025` (`yyyy`)    |
-| **`month`**   | The numeric month of the year.          | `1` (`m`)         | `01` (`mm`)        |
-| **`monthname`**| The name of the month.                 | `Jan` (`mmm`)     | `January` (`mmmm`) |
-| **`weekday`** | The name of the day of the week.        | `Mon` (`ddd`)     | `Monday` (`dddd`)  |
-| **`day`**     | The day of the month.                   | `7` (`d`)         | `07` (`dd`)        |
-| **`hour`**    | The hour in 12-hour or 24-hour format.  | `3` (`h`)         | `03` (`hh`)        |
-| **`minute`**  | The minute of the hour.                 | `5` (`m`)         | `05` (`mm`)        |
-| **`second`**  | The second of the minute.               | `3` (`s`)         | `03` (`ss`)        |
-| **`meridiem`**| The AM/PM designator.                   | `a` (`a/p`)       | `AM` (`AM/PM`)     |
+| **Type**    | **Description**                                        | **Short Example** | **Long Example**  |
+|-------------|--------------------------------------------------------|-------------------|-------------------|
+| **`year`**      | The year of the date.                                  | `25` (e.g. `yy`)  | `2025` (e.g. `yyyy`) |
+| **`month`**     | The numeric month of the year.                         | `1` (`m`)         | `01` (`mm`)       |
+| **`monthname`** | The textual month name.                               | `Jan`             | `January`         |
+| **`weekday`**   | The name of the weekday.                              | `Mon`             | `Monday`          |
+| **`day`**       | The day of the month.                                 | `7`  (`d`)        | `07` (`dd`)       |
+| **`hour`**      | The hour (12-hour or 24-hour clock, depending on system). | `3` (`h`)         | `03` (`hh`)       |
+| **`meridiem`**  | The AM/PM designator (if using 12-hour clock).        | `AM`              | `AM` (expanded)   |
+| **`minute`**    | The minute of the hour.                               | `5`  (`m`)        | `05` (`mm`)       |
+| **`second`**    | The second of the minute.                             | `3`  (`s`)        | `03` (`ss`)       |
+
+When building a `TableTemporalFormat`, you combine these units (with optional literal strings in between). For example:
+```json
+[
+  { "type": "monthname", "length": "short" },
+  " ",
+  { "type": "day", "length": "long" },
+  ", ",
+  { "type": "year", "length": "long" }
+]
+```
+Might produce something like **`Jan 07, 2025`**.
 
 ---
 
-###### **Example Temporal Formats**
+##### **8.7.3 TableTemporalFormat**
 
-1. **ISO Date Format**
-   ```json
-   [
-     { "type": "year", "length": "long" },
-     "-",
-     { "type": "month", "length": "long" },
-     "-",
-     { "type": "day", "length": "long" }
-   ]
-   ```
-   **Output:** `2025-01-27`
+A `TableTemporalFormat` is an array mixing literal strings and `TableTemporalUnit` objects.
 
-2. **Readable Date Format**
-   ```json
-   [
-     { "type": "monthname", "length": "short" },
-     " ",
-     { "type": "day", "length": "long" },
-     ", ",
-     { "type": "year", "length": "long" }
-   ]
-   ```
-   **Output:** `Jan 27, 2025`
+```typescript
+type TableTemporalFormat = (TableTemporalUnit | string)[];
+```
 
-3. **12-Hour Time with Meridiem**
-   ```json
-   [
-     { "type": "hour", "length": "short" },
-     ":",
-     { "type": "minute", "length": "long" },
-     " ",
-     { "type": "meridiem", "length": "long" }
-   ]
-   ```
-   **Output:** `3:05 PM`
+---
+
+#### **8.8 Key Takeaways**
+
+1. **Text, Enum, Lookup, Numeric, Temporal**: Five distinct types, each with potential rules, formatting, and conditional styling.
+2. **Conditional Styles**: Trigger color/bold/etc. changes when certain rules are met.
+3. **Custom/Inherited Formats**: Numeric and temporal types can reference built-in or custom formats for consistent display.
+4. **Flexible Validation**: Each type can have built-in rules or custom expression-based rules.
 
 ---
 ---
 
-### **8. TableUnit and Hierarchical Structure**
+## **9. TableUnit and Hierarchical Structure**
 
 The `TableUnit` type provides the foundation for defining a `TableBook`. This section covers each layer of the hierarchy—from the smallest element (**TableColumn**) to the root (**TableBook**)—and explains how **definitions** can be declared at each level to enable flexible, cascading reuse of styles, formats, and more.
 
 ---
 
-#### **8.1 TableDefinitions**
+#### **9.1 TableDefinitions**
 
 A `TableUnit` can optionally declare `definitions` that store **reusable, named elements** such as colors, styles, themes, numeric/temporal formats, and column types. Each level (**column, group, page, book**) can define its own `definitions`, and references to these definitions cascade **upward** when a match isn't found locally.
 
 Additionally, **definitions themselves can reference other definitions** using `TableReference`. This enables modular, hierarchical styling and formatting where:
-- A **style** can reference a **color**.
-- A **theme** can inherit from another **theme**.
+- A **style** can refer to predefined colors.
+- A **theme** can inherit from another theme.
 - A **type** can reference a **format**.
 - A **numeric format** can reference another numeric format.
 - A **temporal format** can reference a pre-existing pattern.
 
-This design allows for **cleaner, DRY (Don’t Repeat Yourself) configurations**, making it easy to create reusable building blocks.
+This design allows for **cleaner, DRY configurations**, making it easy to create reusable building blocks.
 
 ---
 
-##### **8.1.1 Definition**
+##### **9.1.1 Definition**
 
 ```typescript
 type TableReferenceMap<T> = Record<string, T | TableReference>;
@@ -1314,20 +1207,9 @@ type TableDefinitions = {
 };
 ```
 
-##### **How TableReference Works**
-Each category (`colors`, `styles`, `themes`, `numerics`, `temporals`, `types`) follows the same pattern:  
-A **named object** can either:
-- Define the element **inline** (e.g., `danger: { fore: "#FF0000" }`).
-- **Reference another definition** using `@referenceName` (e.g., `alert: "@danger"`).
-
-This enables:
-1. **Thematic consistency** – A style can refer to predefined colors.
-2. **Extensible formats** – A numeric format can extend another numeric format.
-3. **Hierarchical styling** – A theme can inherit another theme’s properties.
-
 ---
 
-##### **8.1.2 Example**
+##### **9.1.2 Example**
 
 ```json
 {
@@ -1365,80 +1247,42 @@ This enables:
 }
 ```
 
-##### **8.1.3 Explanation of Example**
-- **Color Reference (`@alert`)**: `"alert"` refers to `"danger"`, meaning `"alert"` will resolve to `#FF0000`.
-- **Style Inheritance (`@alertHeader`)**: `"alertHeader"` references `"alert"` for its foreground color.
-- **Theme Inheritance (`@corporate`)**: The `"corporate"` theme inherits from `"@blue"` and applies `"@boldHeader"` to headers.
-- **Numeric Format Reference (`@usd`)**: `"usd"` simply references `"currency"`, ensuring consistency.
-- **Temporal Format Reference (`@usFormat`)**: `"usFormat"` refers to `"shortDate"`, preventing duplication.
-- **Column Type Reference (`@currencyColumn`)**: `"currencyColumn"` applies `"@usd"` as its format.
-
 ---
 
-##### **8.1.4 Key Benefits**
-- **Reusability**: Any definition can be **used multiple times** without repetition.
-- **Consistency**: Ensures **standardized** styling, formatting, and data types across the `TableBook`.
-- **Modular Structure**: Small, **composable** definitions allow for easier customization and scaling.
-- **Cascading Resolution**: If `"@referenceName"` isn't found in a `TableUnit`, it will **search upward** (column → group → page → book).
-
----
-
-#### **8.2 TableUnit**
+#### **9.2 TableUnit**
 
 All elements in a `TableBook` (columns, groups, pages, and the book itself) extend `TableUnit`. It holds common properties like a name, optional theme, an optional description, and the optional `definitions`.
 
-##### **8.2.1 Definition**
-
 ```typescript
 type TableUnit = {
-  name: string;                        // Unique identifier.
-  theme?: TableTheme | TableReference; // Optional theme for this unit.
-  description?: string;                // Optional explanation/purpose.
-  definitions?: TableDefinitions;      // Local definitions, cascading upward.
+  name: string; // must match TableUnitNameRegex
+  theme?: TableTheme | TableReference;
+  description?: string;
+  definitions?: TableDefinitions;
 };
 ```
 
-- **`name`** must follow `TableUnitNameRegex` (`^[A-Z][A-Za-z0-9_]+$`), starting with an uppercase letter.
-- **`theme`** can be an inline `TableTheme` or a reference like `@myTheme`.
-- **`definitions`** can override or add to any definitions from parent units.
+> **Regex**: The `TableUnitNameRegex` is `^[A-Z][A-Za-z0-9_]*$`, meaning the name must start with an uppercase letter followed by alphanumeric characters or underscores.
 
 ---
 
-#### **8.3 TableColumn**
+#### **9.3 TableColumn**
 
 A `TableColumn` represents the smallest unit in a `TableBook`. It extends `TableUnit` and includes properties for data typing and optional expressions.
 
-##### **8.3.1 Definition**
-
 ```typescript
 type TableColumn = TableUnit & {
-  type: TableDataType | TableReference;      // The data type of the column.
-  source?: string;                             // Optional metadata about the column's data source.
-  expression?: TableExpression<TableSelector>; // Optional expression for computed values.
+  type: TableDataType | TableReference;
+  source?: string;
+  expression?: TableExpression;
 };
-```
-
-##### **8.3.2 Example**
-
-```json
-{
-  "name": "Revenue",
-  "type": "@currencyColumn",
-  "definitions": {
-    "types": {
-      "currencyColumn": { "kind": "numeric", "format": "@currency" }
-    }
-  }
-}
 ```
 
 ---
 
-#### **8.4 TableGroup**
+#### **9.4 TableGroup**
 
 A `TableGroup` organizes multiple `TableColumn` elements into a logical set (e.g., financial columns vs. operational columns). Groups also extend `TableUnit`, so they can have their own definitions, theme, or description.
-
-##### **8.4.1 Definition**
 
 ```typescript
 type TableGroup = TableUnit & {
@@ -1446,96 +1290,29 @@ type TableGroup = TableUnit & {
 };
 ```
 
-##### **8.4.2 Example**
-
-```json
-{
-  "name": "RevenueGroup",
-  "columns": [
-    { "name": "Revenue", "type": { "kind": "numeric" } },
-    { "name": "Profit", "type": { "kind": "numeric" } }
-  ]
-}
-```
-
 ---
 
-#### **8.5 TablePage**
+#### **9.5 TablePage**
 
 A `TablePage` represents a **single sheet** within a `TableBook`. Every page has **one table** made up of groups and columns.
-
-##### **8.5.1 Definition**
 
 ```typescript
 type TablePage = TableUnit & {
   groups: TableGroup[];
-  rows: number;         // Number of Rows in the Table
+  rows: number;
 };
-```
-
-##### **8.5.2 Example**
-
-```json
-{
-  "name": "SummaryPage",
-  "rows": 100,
-  "groups": [
-    {
-      "name": "RevenueGroup",
-      "columns": [
-        { "name": "Revenue", "type": { "kind": "numeric" } }
-      ]
-    }
-  ]
-}
 ```
 
 ---
 
-#### **8.6 TableBook**
+#### **9.6 TableBook**
 
 A `TableBook` is the **root** container, holding an array of pages. It extends `TableUnit` so it can also specify **global** definitions, themes, or descriptions.
-
-##### **8.6.1 Definition**
 
 ```typescript
 type TableBook = TableUnit & {
   pages: TablePage[];
 };
-```
-
-##### **8.6.2 Example**
-
-```json
-{
-  "name": "AnnualReport",
-  "definitions": {
-    "colors": {
-      "highlight": "#FFD700"
-    },
-    "themes": {
-      "highlightTheme": {
-        "inherits": ["@blue"],
-        "tab": "@highlight"
-      }
-    }
-  },
-  "pages": [
-    {
-      "name": "SummaryPage",
-      "theme": "@highlightTheme",
-      "rows": 100,
-      "groups": [
-        {
-          "name": "RevenueGroup",
-          "columns": [
-            { "name": "Revenue", "type": "@currencyColumn" }
-          ]
-        }
-      ]
-    }
-  ]
-}
 ```
 
 ---
@@ -1549,7 +1326,11 @@ type TableBook = TableUnit & {
 ---
 ---
 
-### **9. Result**
+## **TableBook Functions & Utilities**
+
+> **This section covers the operational side of TableBook: Results, Issues, Parsing, Validation, Processing, and Generation.**
+
+### 10. Result
 
 The `Result` type represents the outcome of an operation, which can either succeed or fail. It is a generic utility type, parameterized by:
 - `T`: The type of the value when the operation is successful.
@@ -1587,10 +1368,13 @@ The `Result` type ensures that all operations explicitly define success or failu
   const failureResult = Result.failure("Invalid input format", rawInput);
   ```
 
+- **`Result.isResult(value: any): boolean`**
+  Checks if an object is a `Result`.
+
 ---
 ---
 
-### **10. TableBookIssue**
+### 11. TableBookIssue
 
 The `TableBookIssue` type represents errors or warnings encountered while working with `TableBook` objects. It is a union type covering issues from four distinct phases:
 - Parsing
@@ -1611,16 +1395,16 @@ Each issue type contains unique fields based on its context.
 
 ---
 
-#### **10.1 TableBookParseIssue**
+#### **11.1 TableBookParseIssue**
 Represents issues encountered during the **parsing phase** (e.g., invalid JSON/YAML syntax).
 
 ##### **Properties**
 | Field         | Type                 | Description                                |
 |---------------|----------------------|--------------------------------------------|
-| `type`        | `'parsing'`          | Indicates the parsing phase.              |
-| `message`     | `string`             | Descriptive message about the issue.      |
-| `location`    | `TextLocation`       | Location (line/column) of the issue.      |
-| `length`      | `number`             | Length of the problematic text segment.   |
+| `type`        | `'parsing'`         | Indicates the parsing phase.              |
+| `message`     | `string`            | Descriptive message about the issue.      |
+| `location`    | `TextLocation`      | Location (line/column) of the issue.      |
+| `length`      | `number`            | Length of the problematic text segment.   |
 
 ##### **Example**
 ```typescript
@@ -1634,16 +1418,16 @@ const issue: TableBookParseIssue = {
 
 ---
 
-#### **10.2 TableBookValidateIssue**
+#### **11.2 TableBookValidateIssue**
 Represents issues encountered during the **validation phase** (e.g., schema violations).
 
 ##### **Properties**
 | Field         | Type                 | Description                                |
 |---------------|----------------------|--------------------------------------------|
-| `type`        | `'validating'`       | Indicates the validation phase.           |
-| `message`     | `string`             | Descriptive message about the issue.      |
-| `path`        | `ObjectPath`         | Path to the problematic data.             |
-| `value`       | `any` (optional)     | The invalid value that caused the issue.  |
+| `type`        | `'validating'`      | Indicates the validation phase.           |
+| `message`     | `string`            | Descriptive message about the issue.      |
+| `path`        | `ObjectPath`        | Path to the problematic data.             |
+| `value`       | `any` (optional)    | The invalid value that caused the issue.  |
 
 ##### **Example**
 ```typescript
@@ -1657,16 +1441,16 @@ const issue: TableBookValidateIssue = {
 
 ---
 
-#### **10.3 TableBookProcessIssue**
+#### **11.3 TableBookProcessIssue**
 Represents issues encountered during the **processing phase** (e.g., resolving references).
 
 ##### **Properties**
 | Field         | Type                 | Description                                |
 |---------------|----------------------|--------------------------------------------|
-| `type`        | `'processing'`       | Indicates the processing phase.           |
-| `message`     | `string`             | Descriptive message about the issue.      |
-| `path`        | `ObjectPath`         | Path to the problematic data.             |
-| `data`        | `any`                | Contextual data about the issue.          |
+| `type`        | `'processing'`      | Indicates the processing phase.           |
+| `message`     | `string`            | Descriptive message about the issue.      |
+| `path`        | `ObjectPath`        | Path to the problematic data.             |
+| `data`        | `any`               | Contextual data about the issue.          |
 
 ##### **Example**
 ```typescript
@@ -1680,15 +1464,15 @@ const issue: TableBookProcessIssue = {
 
 ---
 
-#### **10.4 TableBookGenerateIssue**
+#### **11.4 TableBookGenerateIssue**
 Represents issues encountered during the **generation phase** (e.g., external generator errors).
 
 ##### **Properties**
 | Field         | Type                 | Description                                |
 |---------------|----------------------|--------------------------------------------|
-| `type`        | `'generating'`       | Indicates the generation phase.           |
-| `message`     | `string`             | Descriptive message about the issue.      |
-| `data`        | `any`                | Contextual data about the issue.          |
+| `type`        | `'generating'`      | Indicates the generation phase.           |
+| `message`     | `string`            | Descriptive message about the issue.      |
+| `data`        | `any`               | Contextual data about the issue.          |
 
 ##### **Example**
 ```typescript
@@ -1720,13 +1504,13 @@ if (!parseResult.success) {
 ---
 ---
 
-### **11. TableBook Functions**
+### **12. `tablebook` Functions
 
 The `tablebook` object includes utilities for parsing, validating, processing, and generating `TableBook` objects. Here's a breakdown:
 
 ---
 
-#### **11.1 tablebook.parse**
+#### **12.1 tablebook.parse**
 
 Parses a `TableBook` from a JSON or YAML string.
 
@@ -1747,7 +1531,7 @@ else
 
 ---
 
-#### **11.2 tablebook.validate**
+#### **12.2 tablebook.validate**
 
 Validates a `TableBook` against its schema.
 
@@ -1768,7 +1552,7 @@ else
 
 ---
 
-#### **11.3 tablebook.process**
+#### **12.3 tablebook.process**
 
 Processes a `TableBook` to resolve references and prepare it for generation. This step converts the declarative `TableBook` schema into a `SheetBook`, which is an intermediate representation (IR) closer to the final spreadsheet output.
 
@@ -1799,53 +1583,10 @@ export type TableBookProcessOptions = {
 };
 ```
 
-##### **11.3.1 TableDefinitionResolver**
-
-Handles missing references for colors, styles, themes, formats, and types during processing. 
-Each resolver mirrors the structure of `TableDefinitions`
-A Lookup can be a Record with prebuilt items or a `TableReferenceResolver` function.
-A `TableReferenceResolver` function returns a `Result` - a string is a critical error (like partial parse) that will show as an issue, while undefined is a silent fail.
-This enables support for prebuilt definitions (e.g., palettes) or custom type definitions like `@number:2` to represent a 2-decimal number—offering flexibility limited only by your imagination.
-
-##### **Definition**
-```typescript
-/** A function that resolves a table reference by name */
-export type TableReferenceResolver<T> = (name: string) => Result<T, string | undefined>;
-
-/** A lookup for table references, either a map or a resolver function */
-export type TableReferenceLookup<T> = Record<string, T> | TableReferenceResolver<T>;
-
-/** Defines resolvers for various table definitions */
-export type TableDefinitionResolver = {
-    colors?: TableReferenceLookup<TableColor>;
-    styles?: TableReferenceLookup<TableHeaderStyle>;
-    themes?: TableReferenceLookup<TableTheme>;
-    numerics?: TableReferenceLookup<TableNumericFormat>;
-    temporals?: TableReferenceLookup<TableTemporalFormat>;
-    types?: TableReferenceLookup<TableDataType>;
-};
-```
-
-##### **Example Resolver**
-```typescript
-const resolvers: TableDefinitionResolver = {
-    colors: (name, path) => {
-        if (name === 'black')
-          return Result.success('#000000'),
-        else
-          return Result.failure(undefined);
-    },
-    format: {
-        numerics: () => Result.success({ type: 'number', integer: { fixed: 2 }, decimal: { fixed: 2 } })
-    }
-};
-```
-
-##### **11.3.2 TableProcessLogger**
+##### **TableProcessLogger**
 
 Tracks processing progress at each level of the hierarchy.
 
-##### **Definition**
 ```typescript
 type TableProcessLogger = {
     book?: (book: TableBook) => void;
@@ -1865,7 +1606,8 @@ const logger: TableProcessLogger = {
 
 ##### **Example Usage**
 ```typescript
-const processResult = tablebook.process(tableBook, resolvers, logger);
+const processResult = tablebook.process(tableBook, { logger });
+
 if (processResult.success)
     console.log('Processed SheetBook:', processResult.value);
 else
@@ -1874,7 +1616,7 @@ else
 
 ---
 
-#### **11.4 tablebook.generate**
+#### **12.4 tablebook.generate**
 
 Generates output from a processed `SheetBook`.
 
@@ -1898,23 +1640,23 @@ else
 ```
 ---
 
-#### **11.5 tablebook.generators**
+#### **12.5 tablebook.generators**
 
 The `generators` object provides methods to create output generators for converting a processed `SheetBook` into a spreadsheet. It simplifies the integration with external systems by abstracting the complexity of connecting to APIs or managing file formats.
 
 ---
 
-#### **11.5.1 tablebook.generators.google**
+#### **12.5.1 tablebook.generators.google**
 
 Creates a Google Sheets generator for exporting to a specified sheet.
 
 ##### **Definition**
 ```typescript
 tablebook.generators.google(
-  email: string,        // Service account email for Google Sheets API.
-  key: string,          // API key for authenticating the service account.
-  sheetId: string,      // ID of the target Google Sheet.
-  reset: boolean        // Whether to clear existing sheet content before writing.
+  email: string,
+  key: string,
+  sheetId: string,
+  reset: boolean
 ): Promise<SheetGenerator>;
 ```
 
