@@ -128,13 +128,8 @@ export type TableTheme = {
 
 
 /* Operators */
-/** Type identifier for template expressions */
-export const TableLiteralExpressionType = 'literal';
-/** Template expression */
-export type TableLiteralExpression = {
-    type: typeof TableLiteralExpressionType,
-    value: string | number | boolean;
-};
+/** Expression that represents a fixed value */
+export type TableLiteralExpression = string | number
 
 /** Type identifier for selector expressions */
 export const TableSelectorExpressionType = 'selector';

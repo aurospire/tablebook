@@ -8,12 +8,12 @@ import {
     TableColorRegex,
     TableColumn,
     TableColumnSelector,
-    TableDataType,
     TableComparisonOperator,
     TableComparisonOperators,
     TableCompoundExpression, TableCompoundExpressionType,
     TableCurrencyFormat, TableCurrencyFormatType, TableCurrencySymbolPositions,
     TableCustomRule, TableCustomRuleType,
+    TableDataType,
     TableDefinitions,
     TableDigitPlaceholder,
     TableEnumItem, TableEnumType, TableEnumTypeKind,
@@ -22,7 +22,6 @@ import {
     TableGroup,
     TableHeaderStyle,
     TableLiteralExpression,
-    TableLiteralExpressionType,
     TableLookupType, TableLookupTypeKind,
     TableMatchOperators,
     TableMatchRule,
@@ -38,14 +37,14 @@ import {
     TableRangeOperators,
     TableRangeRule,
     TableRangeSelector,
-    TableTemplateExpression,
-    TableTemplateExpressionType,
     TableReference, TableReferenceRegex,
     TableRowSelector,
     TableSelector,
     TableSelectorExpression, TableSelectorExpressionType,
     TableSelfLiteral, TableSelfSelector,
     TableStyle,
+    TableTemplateExpression,
+    TableTemplateExpressionType,
     TableTemporalFormat,
     TableTemporalItem,
     TableTemporalRule,
@@ -136,10 +135,7 @@ const TableComparisonOperator: z.ZodType<TableComparisonOperator> = z.enum(Table
 const TableMergeOperator: z.ZodType<TableMergeOperator> = z.enum(TableMergeOperators);
 
 /* Expressions */
-const TableLiteralExpression: z.ZodType<TableLiteralExpression> = z.object({
-    type: z.literal(TableLiteralExpressionType),
-    value: z.union([z.string(), z.number(), z.boolean()])
-}).strict();
+const TableLiteralExpression: z.ZodType<TableLiteralExpression> = z.union([z.string(), z.number()]);
 
 const TableSelectorExpression: z.ZodType<TableSelectorExpression<TableSelector>> = z.object({
     type: z.literal(TableSelectorExpressionType),
@@ -352,7 +348,7 @@ const TableValues = z.union([
         items: z.array(TableExpression).optional(),
         rest: TableExpression.optional()
     }).strict()]);
-    
+
 const TableColumn: z.ZodType<TableColumn> = TableUnit.merge(z.object({
     type: z.union([TableDataType, TableReference]),
     source: z.string().optional(),

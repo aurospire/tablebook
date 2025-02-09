@@ -22,15 +22,12 @@ export type SheetGroup = {
     columns: SheetColumn[];
 };
 
-export type SheetValues =
-    | TableExpression<SheetSelector>
-    | TableExpression<SheetSelector>[]
-    | { items?: TableExpression<SheetSelector>[], rest?: TableExpression<SheetSelector>; };
+export type SheetValues = { items?: TableExpression<SheetSelector>[], rest?: TableExpression<SheetSelector>; };
 
 export type SheetColumn = {
     title: string;
     titleStyle?: SheetTitleStyle;
     dataStyle?: SheetStyle;
-    values?: SheetValues;
     behavior?: SheetBehavior;
+    values?: SheetValues;
 };
