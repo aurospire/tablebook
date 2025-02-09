@@ -8,9 +8,12 @@ import {
     TableColorRegex,
     TableColumn,
     TableColumnSelector,
+    TableCombineExpression, TableCombineExpressionType,
+    TableCombineOperator, TableCombineOperators,
+    TableCompareExpression,
+    TableCompareExpressionType,
     TableCompareOperator,
     TableCompareOperators,
-    TableCombineExpression, TableCombineExpressionType,
     TableCurrencyFormat, TableCurrencyFormatType, TableCurrencySymbolPositions,
     TableCustomRule, TableCustomRuleType,
     TableDataType,
@@ -25,7 +28,6 @@ import {
     TableLookupType, TableLookupTypeKind,
     TableMatchOperators,
     TableMatchRule,
-    TableCombineOperator, TableCombineOperators,
     TableNegateExpression, TableNegateExpressionType,
     TableNumberFormat, TableNumberFormatType,
     TableNumericFormat,
@@ -58,9 +60,7 @@ import {
     TableTextType, TableTextTypeKind,
     TableTheme,
     TableUnit, TableUnitNameRegex,
-    TableUnitSelector, TableUnitSelectorRegex,
-    TableCompareExpression,
-    TableCompareExpressionType
+    TableUnitSelector, TableUnitSelectorRegex
 } from './types';
 
 /* Reference */
@@ -341,7 +341,7 @@ const TableUnit = z.object({
     definitions: TableDefinitions.optional()
 }).strict();
 
-export type TableValues =
+type TableValues =
     | TableExpression<TableSelector> // One expression for all rows
     | TableExpression<TableSelector>[] // Explicit values for specific rows
     | {
