@@ -61,7 +61,7 @@ export type TableRowSelector = TableUnitSelector | TableRangeSelector | TableAll
 export type TableSelector = {
     /** The column to target; 'self' refers to current element's column */
     column: TableColumnSelector | TableSelfSelector;
-    /** Optional row filter; 'self' refers to current row, undefined means entire column */
+    /** The row filter; 'self' refers to current row, undefined means entire column */
     rows: TableRowSelector | TableSelfSelector;
 } | TableSelfSelector; // Full self reference - both column and row of current element
 
@@ -126,15 +126,15 @@ export type TableTheme = {
     data?: TableStyle | TableReference;
 };
 
+/* Expressions */
 
-/* Operators */
 /** Expression that represents a fixed value */
-export type TableLiteralExpression = string | number
+export type TableLiteralExpression = string | number;
 
 /** Type identifier for selector expressions */
 export const TableSelectorExpressionType = 'selector';
 /** Expression that references data via a selector */
-export type TableSelectorExpression<Selector> = {
+export type TableSelectorExpression<Selector = TableSelector> = {
     type: typeof TableSelectorExpressionType;
     selector: Selector;
 };
@@ -142,7 +142,7 @@ export type TableSelectorExpression<Selector> = {
 /** Type identifier for function extagspressions */
 export const TableFunctionExpressionType = 'function';
 /** Expression that applies a named function to a list of arguments */
-export type TableFunctionExpression<Selector> = {
+export type TableFunctionExpression<Selector = TableSelector> = {
     type: typeof TableFunctionExpressionType;
     name: string;
     items: TableExpression<Selector>[];
@@ -150,51 +150,62 @@ export type TableFunctionExpression<Selector> = {
 
 
 /** Valid comparison operators for conditional expressions */
-export const TableComparisonOperators = ['=', '<>', '>', '<', '>=', '<='] as const;
+export const TableCompareOperators = ['=', '<>', '>', '<', '>=', '<='] as const;
 /** Type representing valid comparison operators */
-export type TableComparisonOperator = typeof TableComparisonOperators[number];
+export type TableCompareOperator = typeof TableCompareOperators[number];
 
-/** Valid merge operators for combining values */
-export const TableMergeOperators = ['+', '-', '*', '/', '^', '&'] as const;
-/** Type representing valid merge operators */
-export type TableMergeOperator = typeof TableMergeOperators[number];
+/** Type identifier for comparison expressions */
+export const TableCompareExpressionType = 'compare';
+/** Expression that compares two values using a comparison operator */
+export type TableCompareExpression<Selector = TableSelector> = {
+    type: typeof TableCompareExpressionType;
+    op: TableCompareOperator;
+    left: TableExpression<Selector>;
+    right: TableExpression<Selector>;
+};
 
-/* Expressions */
-/** Type identifier for compound expressions that combine multiple values */
-export const TableCompoundExpressionType = 'compound';
-/** Expression that combines multiple values using comparison or merge operators */
-export type TableCompoundExpression<Selector> = {
-    type: typeof TableCompoundExpressionType;
-    op: TableComparisonOperator | TableMergeOperator;
+/** Type identifier for combine expressions */
+export const TableCombineOperators = ['+', '-', '*', '/', '^', '&'] as const;
+/** Type representing valid combine operators */
+export type TableCombineOperator = typeof TableCombineOperators[number];
+
+/** Type identifier for combine expressions */
+export const TableCombineExpressionType = 'combine';
+/** Expression that combines multiple values using an operator */
+export type TableCombineExpression<Selector = TableSelector> = {
+    type: typeof TableCombineExpressionType;
+    op: TableCombineOperator;
     items: TableExpression<Selector>[];
 };
 
 /** Type identifier for negated expressions */
-export const TableNegatedExpressionType = 'negated';
+export const TableNegateExpressionType = 'negate';
 /** Expression that inverts the result of another expression */
-export type TableNegatedExpression<Selector> = {
-    type: typeof TableNegatedExpressionType;
+export type TableNegateExpression<Selector = TableSelector> = {
+    type: typeof TableNegateExpressionType;
     item: TableExpression<Selector>;
 };
 
 /** Type identifier for template expressions */
 export const TableTemplateExpressionType = 'template';
 /** Expression that formats a string using placeholders replaced by variables */
-export type TableTemplateExpression<Selector> = {
+export type TableTemplateExpression<Selector = TableSelector> = {
     type: typeof TableTemplateExpressionType;
     text: string;
     vars?: Record<string, TableExpression<Selector>>;
 };
 
 /** All possible expression types for data computation and validation */
-export type TableExpression<Selector> =
+export type TableExpression<Selector = TableSelector> =
     | TableLiteralExpression
     | TableSelectorExpression<Selector>
     | TableFunctionExpression<Selector>
-    | TableCompoundExpression<Selector>
-    | TableNegatedExpression<Selector>
+    | TableCompareExpression<Selector>
+    | TableCombineExpression<Selector>
+    | TableNegateExpression<Selector>
     | TableTemplateExpression<Selector>
     ;
+
 
 /* Data Rules */
 /** Regex pattern for validating temporal strings in ISO format */
@@ -206,7 +217,7 @@ export type TableTemporalString = TableDateString;
 
 
 /** Rule comparing a value to a fixed target using a comparison operator */
-export type TableComparisonRule<T> = { type: TableComparisonOperator; value: T; };
+export type TableComparisonRule<T> = { type: TableCompareOperator; value: T; };
 
 
 /** Type for custom rules using DataSelector expressions */
@@ -266,9 +277,9 @@ export type TableDigitPlaceholder = {
 /** Base configuration for all numeric format types */
 export type TableBaseNumericFormat<Type extends string> = {
     type: Type;
-    integer?: number | TableDigitPlaceholder;   // Formatting for digits before decimal
+    integer?: number | TableDigitPlaceholder;    // Formatting for digits before decimal
     decimal?: number | TableDigitPlaceholder;    // Formatting for digits after decimal
-    commas?: boolean;  // Whether to separate thousands with commas
+    commas?: boolean;                            // Whether to separate thousands with commas
 };
 
 /** Format type for regular numbers */

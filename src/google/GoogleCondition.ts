@@ -3,7 +3,7 @@ import { toFormula } from "../sheets/SheetExpression";
 import { SheetPosition } from "../sheets/SheetPosition";
 import { SheetSelector } from "../sheets/SheetSelector";
 import { SheetRule } from "../sheets/SheetRule";
-import { TableComparisonOperator, TableMatchOperator, TableRangeOperator } from "../tables/types";
+import { TableCompareOperator, TableMatchOperator, TableRangeOperator } from "../tables/types";
 import { GoogleCondition } from "./GoogleTypes";
 
 export const GoogleNumberConditionTypeMap: Record<string, string> = {
@@ -15,7 +15,7 @@ export const GoogleNumberConditionTypeMap: Record<string, string> = {
     '<=': 'NUMBER_LESS_THAN_EQ',
     'between': 'NUMBER_BETWEEN',
     'outside': 'NUMBER_NOT_BETWEEN',
-} satisfies Record<TableComparisonOperator | TableRangeOperator, string>;
+} satisfies Record<TableCompareOperator | TableRangeOperator, string>;
 
 export const GoogleDateConditionTypeMap: Record<string, string> = {
     '=': 'DATE_EQ',
@@ -26,7 +26,7 @@ export const GoogleDateConditionTypeMap: Record<string, string> = {
     '<=': 'DATE_ON_OR_BEFORE',
     'between': 'DATE_BETWEEN',
     'outside': 'DATE_NOT_BETWEEN',
-} satisfies Record<TableComparisonOperator | TableRangeOperator, string>;
+} satisfies Record<TableCompareOperator | TableRangeOperator, string>;
 
 export const GoogleTextConditionTypeMap: Record<string, string> = {
     'is': 'TEXT_EQ',
