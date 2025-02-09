@@ -166,136 +166,203 @@ async function main() {
 
 ## **1. TableSelector**
 
-A **TableSelector** is how `TableBook` references data in a specific column and row subset. It always selects:
-1. A **column** (either by page/group/name or some partial subset).
-2. A **row filter** (self, all, absolute index, relative index, or a range).
+A **TableSelector** is how `TableBook` references data within a table. Instead of using direct spreadsheet cell references (e.g., `A1`), a `TableSelector` identifies:
 
-This approach avoids typical spreadsheet cell references (like `A1`) in favor of logical references that get translated into final A1 notation when generating the spreadsheet.
+1. A **column**
+2. A selection of that column's **rows**
+
+This structured approach ensures clarity and flexibility when working with tabular data.
 
 ---
 
 ### **1.1 How TableSelectors Work**
 
-A `TableSelector` can be:
-- **`"self"`** – meaning the current column and row in context,
-- **An object** with two parts: `column` and `rows`.
+A `TableSelector` is either:
 
-Inside the object form:
-- **`column`** can be:
-  - `"self"` – to indicate the current column,
-  - or a **`TableColumnSelector`** that refers to a column by `page`, `group`, and `name`.
-- **`rows`** can be:
-  - `"self"` – meaning the current row,
-  - `"all"` – meaning every data row in that column,
-  - a **unit** (like `"$0"`, `"+2"`, or `"-1"`),
-  - or a **range** (like `{ from: "$0", to: "$4" }`).
+- **The string `"self"`** – referring to the current column and row in context.
 
-Thus, you always have a single column plus whichever rows you specify.
+- **An object** containing:
+  - A `column` field (identifying the column).
+  - A `rows` field (specifying which rows to select).
+
+```typescript
+type TableSelector = 
+  | "self" 
+  | {
+      column: TableColumnSelector | "self";
+      rows:   TableRowSelector    | "self";
+    };
+```
+
+**Column Selection Rules:**
+- If `column` is `"self"`, it refers to the current column.
+- Otherwise, it must be a `TableColumnSelector`, which specifies a column by its `page`, `group`, and `name`.
+
+**Row Selection Rules:**
+- If `rows` is `"self"`, it refers to the current row.
+- Otherwise, it must be a `TableRowSelector`, which defines how rows are chosen.
 
 ---
 
 ### **1.2 Column Reference: Absolute vs. Relative**
 
-A `TableColumnSelector` can fully or partially qualify where the column resides:
+A `TableColumnSelector` defines a column's location within a table. Columns can be specified **absolutely** or **relatively**:
 
 ```typescript
 type TableColumnSelector = {
-  page?: string;  // optional page
-  group?: string; // optional group, if page is included
-  name: string;   // the column name
+  page?: string;  // Optional: If provided, must include 'group'.
+  group?: string;
+  name: string;
 };
 ```
 
-- **Fully Qualified**: `{ page: "Summary", group: "Revenue", name: "Sales" }`
-  - Points to `"Sales"` in the `"Revenue"` group on the `"Summary"` page.
-- **Partially Qualified**: `{ group: "Revenue", name: "Sales" }`
-  - Points to `"Sales"` in `"Revenue"` (on the current page).
-- **Name Only**: `{ name: "Sales" }`
-  - Points to `"Sales"` in the **current group** and **current page**.
+#### **Absolute vs. Relative Column Selection**
+| **Column Selector**                     | **Resolves To**                                      |
+|------------------------------------------|------------------------------------------------------|
+| `{ name: "Sales" }`                      | `"Sales"` in the **current group** and **page**.    |
+| `{ group: "Revenue", name: "Sales" }`    | `"Sales"` in `"Revenue"` on the **current page**.   |
+| `{ page: "Summary", group: "Revenue", name: "Sales" }` | `"Sales"` in `"Revenue"` on `"Summary"` page. |
+
+An **absolute reference** includes `page`, `group`, and `name`, explicitly identifying the column's location.
+
+A **relative reference** may include just `group` and `name`, or only `name`:
+- If a `group` is provided, it refers to that group within the current page.
+- If only `name` is provided, it refers to that column within the **current group** and **page**.
+
+❗ **Error:** If `page` is provided, `group` must also be specified. A `{ page, column }` reference is invalid.
 
 ---
 
 ### **1.3 Row Reference: Self, All, Unit, or Range**
 
-A `TableRowSelector` indicates which rows to include in the selection:
+A `TableRowSelector` defines which rows to include in the selection.
 
-- **`"self"`**  
-  – The current row in context. If you’re defining an expression inside a cell, `"self"` means “this exact row.”
+```typescript
+type TableRowSelector = "self" | "all" | TableUnitSelector | TableRangeSelector;
+```
 
-- **`"all"`**  
-  – Every data row in that column.
+| **Row Selector**         | **Meaning**                                     | **Example (A1 Equivalent in Column D)** |
+|--------------------------|-------------------------------------------------|-----------------------------------------|
+| `"self"`                 | Current row in context                         | `D3` (if on row 3).                    |
+| `"all"`                  | Every row in the column                        | `D2:D` or `D3:D`                    |
+| `"$n"`                   | Absolute row index (0-based)                   | `$0` => `D$2` or `D$3`                |
+| `"+n"` / `"-n"`          | Relative to the current row                    | `D5` (if `+2` from row 3).             |
+| `{ from: TableUnitSelector; to: TableUnitSelector }` |Selects a range of rows from a starting unit to an ending unit. | `D3:D6` (if on row 4 and `{to: "-1", from: '+3'}` ) |
 
-- **Unit Selector**: `$n`, `+n`, `-n`  
-  - `"$0"`: The first data row (absolute).  
-  - `"$3"`: The 4th data row.  
-  - `"+2"`: Two rows below the current row.  
-  - `"-1"`: One row above the current row.
+#### **Unit Selectors**
+A `TableUnitSelector` selects a specific row in the column:
 
-- **Range Selector**: `{ from: TableUnitSelector, to: TableUnitSelector }`
-  - `{ from: "$0", to: "$4" }`: Rows 0 through 4 (inclusive).
+```typescript
+type TableUnitSelector = "$n" | "+n" | "-n";
+```
+
+- `"$0"`: First data row.
+- `"$3"`: Fourth data row.
+- `"+2"`: Two rows below the current row.
+- `"-1"`: One row above the current row.
+
+#### **Range Selectors**
+A `TableRangeSelector` selects a range between two unit selectors:
+
+```typescript
+type TableRangeSelector = { from: TableUnitSelector; to: TableUnitSelector };
+```
+
+Example: `{ from: "$0", to: "$4" }` selects rows 0 through 4.
 
 ---
 
 ### **1.4 Single vs. Multiple Column Groups**
 
-**Single Group**: If a page has only one group, the top row is the column header, and data starts at row 2 in A1 terms.  
-**Multiple Groups**: If a page has multiple groups, row 1 is the group header, row 2 is the column header, and data starts at row 3 in A1 terms.
+The structure of a table affects how row indices translate to A1 notation.
+When there is a single group for a table, the group header row is not shown.
 
-Hence, `$0` → `A2` in a single-group layout, `$0` → `A3` in a multi-group layout.
+| **Table Structure**      | **Header Rows** | **First Data Row** | **Meaning of `$0` for A1 Column `A`** |
+|--------------------------|---------------|-------------------|--------------------|
+| **Single Group**         | Column headers only | Row 2          | `A2`               |
+| **Multiple Groups**      | Group + Column headers | Row 3      | `A3`               |
+
+Since `TableBook` supports multiple groups on a page, `$0` does **not always map to row 2**—it depends on whether group headers exist.
 
 ---
 
 ### **1.5 Examples**
 
-1. **Selector with All Rows of “Sales”**  
-   ```typescript
-   { column: { name: "Sales" }, rows: "all" }
-   ```
-   Targets every row in the `Sales` column in the current group/page.
+#### **Example 1: Selector for All Rows in "Sales"**
+```typescript
+{ column: { name: "Sales" }, rows: "all" }
+```
+- **Resolves to**: Every row in `Sales` (e.g., `D2:D` in A1 notation if groupless).
 
-2. **Fully Qualified Selector**  
-   ```typescript
-   {
-     column: { page: "Summary", group: "Revenue", name: "Sales" },
-     rows: "$0"
-   }
-   ```
-   The very first data row of the `Sales` column on the `Summary` page, `Revenue` group.
+---
 
-3. **Relative Offset**  
-   ```typescript
-   {
-     column: { name: "Profit" },
-     rows: "+1"
-   }
-   ```
-   One row below the current row in the `Profit` column.
+#### **Example 2: Fully Qualified Selector**
+```typescript
+{
+  column: { page: "Summary", group: "Revenue", name: "Sales" },
+  rows: "$0"
+}
+```
+- **Resolves to**: The first data row of `Sales` on the `Summary` page, `Revenue` group.
 
-4. **Range**  
-   ```typescript
-   {
-     column: { name: "Sales" },
-     rows: { from: "$0", to: "$4" }
-   }
-   ```
-   Rows 0 through 4 (inclusive) of `Sales`.
+---
 
-5. **Self**  
-   ```typescript
-   "self"
-   ```
-   Refers to the exact column and row in context.
+#### **Example 3: Relative Column with Explicit Group**
+```typescript
+{
+  column: { group: "Revenue", name: "Sales" },
+  rows: "$0"
+}
+```
+- **Resolves to**: The first data row of `Sales` in the `Revenue` group, within the **current page**.
+
+---
+
+#### **Example 4: Relative Row Selector**
+```typescript
+{
+  column: { name: "Profit" },
+  rows: "+1"
+}
+```
+- **Resolves to**: One row below the current row in the `Profit` column.
+
+---
+
+#### **Example 5: Range of Rows**
+```typescript
+{
+  column: { name: "Sales" },
+  rows: { from: "$0", to: "$4" }
+}
+```
+- **Resolves to**: Rows 0 through 4 (inclusive) in `Sales` (e.g., `D2:D6`).
+
+---
+
+#### **Example 6: Self Reference**
+```typescript
+"self"
+```
+- **Resolves to**: The current column and row in context.
 
 ---
 
 ### **1.6 Key Takeaways**
 
-- A **TableSelector** always references **one column** + a row subset.
-- Columns can be **fully qualified** or **relative** to the current context.
-- Rows can be **self** (current row), **all**, **absolute/relative** units, or **ranges**.
-- Single vs. multiple column groups slightly changes how `$n` translates to A1 notation, but that’s handled automatically during generation.
+- A **TableSelector** always references **one column** + a **row subset**.
+- **Columns** can be:
+  - **Fully Qualified** (`page, group, name`).
+  - **Relative** (`group, name` or just `name`).
+- **Rows** can be:
+  - `"self"` (current row),
+  - `"all"` (all rows),
+  - Absolute (`$n`),
+  - Relative (`+n`, `-n`),
+  - A **range** (`{ from: "$0", to: "$4" }`).
+- **Errors:** You **must** include `group` when specifying `page` (`{ page, column }` is invalid).
+- **Single vs. Multiple Groups:** `$0` translates to `A2` if there’s **one group**, but `A3` if there are **multiple groups**.
 
----
 ---
 
 ## **2. TableReference**
@@ -588,219 +655,260 @@ Neutrals:
 
 ## **7. TableExpressions**
 
-Expressions in `TableBook` are used to define structured formulas, replacing traditional spreadsheet cell references (e.g., `A1:B5`) with precise column-row relationships via `TableSelectors`. These formulas allow for consistent, column-based computations that translate into spreadsheet formulas during generation.
+Expressions in `TableBook` provide structured formulas that define computed values. Unlike traditional spreadsheets that use direct cell references (e.g. `A1`), expressions in TableBook are built from logical components—such as selectors, functions, comparisons, combinations, negations, and templates—that compile into final spreadsheet formulas.
 
-#### **7.1 Definition**
+Expressions fall into the following categories:
 
-```typescript
-type TableExpression =
-  | TableLiteralExpression
-  | TableSelectorExpression
-  | TableCompoundExpression
-  | TableNegatedExpression
-  | TableFunctionExpression
-  | TableTemplateExpression
-  ;
-```
+- **Literal values**: Fixed numbers or text.
+- **Selectors**: References to data within a table.
+- **Functions**: Named function calls with arguments.
+- **Comparisons**: Binary comparisons using operators (e.g. `=`, `>`, `<`).
+- **Combinations**: Arithmetic or string operations using operators (e.g. `+`, `-`, `&`).
+- **Negation**: Inversion of an expression.
+- **Templates**: Raw formula strings with placeholders for literal replacement.
 
 ---
 
-#### **7.2 TableLiteralExpression**
+#### **7.1 TableLiteralExpression**
 
-The simplest type of expression, a `TableLiteralExpression`, represents a fixed value (number, string, or boolean).
+A `TableLiteralExpression` is a fixed value that does not depend on other table data. It is simply a primitive value—either a string or a number.
 
-##### **Definition**
 ```typescript
-type TableLiteralExpression = {
-    type: "literal";
-    value: string | number | boolean;
-};
+export type TableLiteralExpression = string | number;
 ```
 
-##### **Example**
-```typescript
-const literalExpression: TableLiteralExpression = {
-  type: "literal",
-  value: 42
-};
-```
-
-This translates to the literal value `42` in a formula.
+**Examples:**
+- `"Approved"`
+- `42`
+- `"John Doe"`
 
 ---
 
-#### **7.3 TableSelectorExpression**
+#### **7.2 TableSelectorExpression**
 
-A `TableSelectorExpression` references data in a specific column and row. Instead of traditional spreadsheet ranges, it uses a `TableSelector` to target the data.
+A `TableSelectorExpression` references data dynamically using a selector. The selector defines a column (and a row subset) from which to retrieve a value. For instance, if the `"Revenue"` column is located in column D (with a group header), the selector might resolve to the cell range `D3:D` (depending on the current row context).
 
-##### **Definition**
 ```typescript
-type TableSelectorExpression = {
-    type: "selector";
-    selector: TableSelector;
+export const TableSelectorExpressionType = 'selector';
+export type TableSelectorExpression = {
+    type: typeof TableSelectorExpressionType;
+    selector: Selector;
 };
 ```
 
-##### **Example**
-```typescript
-const selectorExpression: TableSelectorExpression = {
-  type: "selector",
-  selector: {
-    column: { name: "Revenue" },
-    rows: "$5"
-  }
-};
+**Example:**
+```json
+{
+  "type": "selector",
+  "selector": { "column": { "name": "Revenue" }, "rows": "self" }
+}
 ```
-
-This references the `Revenue` column, specifically the 5th row - or 6 in A1 addressing.
+This selects the value from the `"Revenue"` column for the current row.
 
 ---
 
-#### **7.4 TableCompoundExpression**
+#### **7.3 TableFunctionExpression**
 
-A `TableCompoundExpression` combines multiple expressions using an operator. It supports both comparison and arithmetic/merge operators.
+A `TableFunctionExpression` applies a named function to a list of argument expressions. The final formula will call that function with the provided arguments.  
+For example, if the `"Revenue"` column is in column D (with a group header) and you want to sum all values in that column along with a literal value, the compiled formula might look like:  
+`SUM(Items!$D3:$D, 50)`.
 
-##### **Definition**
 ```typescript
-type TableCompoundExpression = {
-    type: "compound";
-    op: TableComparisonOperator | TableMergeOperator;
-    items: TableExpression[];
-};
-```
-
-##### **Available Operators**
-
-**Comparison Operators**: Used for logical comparisons.
-| Operator | Description       |
-|----------|-------------------|
-| `=`      | Equal to          |
-| `<>`     | Not equal to      |
-| `>`      | Greater than      |
-| `<`      | Less than         |
-| `>=`     | Greater than or equal to |
-| `<=`     | Less than or equal to    |
-
-**Merge (Arithmetic) Operators**: Used for numerical or string operations.
-| Operator | Description        |
-|----------|--------------------|
-| `+`      | Addition/Concatenation |
-| `-`      | Subtraction        |
-| `*`      | Multiplication     |
-| `/`      | Division           |
-| `^`      | Exponentiation     |
-| `&`      | String concatenation |
-
-##### **Example**
-```typescript
-const compoundExpression: TableCompoundExpression = {
-  type: "compound",
-  op: "+",
-  items: [
-    { type: "selector", selector: { column: { name: "Revenue" }, rows: "$0" } },
-    { type: "literal", value: 100 }
-  ]
-};
-```
-
-If `Revenue` was column `C` (with no group header), this translates to `=$C$2 + 100`.
-
----
-
-#### **7.5 TableNegatedExpression**
-
-A `TableNegatedExpression` inverts the result of another expression.
-
-##### **Definition**
-```typescript
-type TableNegatedExpression = {
-    type: "negated";
-    item: TableExpression;
-};
-```
-
-##### **Example**
-```typescript
-const negatedExpression: TableNegatedExpression = {
-  type: "negated",
-  item: {
-    type: "selector",
-    selector: { column: { name: "Profit" }, rows: "self" }
-  }
-};
-```
-
-If `Profit` was column `B` (with no group header), this corresponds to `=-($B2)`
-
----
-
-#### **7.6 TableFunctionExpression**
-
-A `TableFunctionExpression` applies a named function to a list of arguments, which can be other expressions.
-
-##### **Definition**
-```typescript
-type TableFunctionExpression = {
-    type: "function";
+export const TableFunctionExpressionType = 'function';
+export type TableFunctionExpression = {
+    type: typeof TableFunctionExpressionType;
     name: string;
     items: TableExpression[];
 };
 ```
 
-##### **Example**
-```typescript
-const functionExpression: TableFunctionExpression = {
-  type: "function",
-  name: "SUM",
-  items: [
-    { type: "selector", selector: { column: { page: 'Items', group: 'Info', name: 'Revenue' }, rows: "all" } },
-    { type: "literal", value: 50 }
+**Example:**
+```json
+{
+  "type": "function",
+  "name": "SUM",
+  "items": [
+    { "type": "selector", "selector": { "column": { "name": "Revenue" }, "rows": "all" } },
+    50
   ]
-};
+}
 ```
-
-If `Revenue` was column `D` (with a group header), this translates to `SUM(Items!$D3:$D, 50)`.
+This represents a formula that, when compiled, might translate to `SUM(Items!$D3:$D, 50)`.
 
 ---
 
-#### **7.7 TableTemplateExpression**  
+#### **7.4 TableCompareExpression**
 
-A `TableTemplateExpression` represents a formula written as literal text with placeholders (`vars`) that map to subexpressions. This enables dynamic, structured computation while preserving the relationships between table data.
-
-##### **Definition**  
+A `TableCompareExpression` compares two expressions using a comparison operator. It uses explicit `left` and `right` properties.
 
 ```typescript
-type TableTemplateExpression = {
-    type: "template";
+export const TableCompareOperators = ['=', '<>', '>', '<', '>=', '<='] as const;
+export type TableCompareOperator = typeof TableCompareOperators[number];
+
+export const TableCompareExpressionType = 'compare';
+export type TableCompareExpression = {
+    type: typeof TableCompareExpressionType;
+    op: TableCompareOperator;
+    left: TableExpression;
+    right: TableExpression;
+};
+```
+
+**Operators Breakdown:**
+
+| **Operator** | **Description**               | **Example Translation**                  |
+|--------------|-------------------------------|------------------------------------------|
+| `=`          | Equal to                      | `A = B`                                  |
+| `<>`         | Not equal to                  | `A <> B`                                 |
+| `>`          | Greater than                  | `A > B`                                  |
+| `<`          | Less than                     | `A < B`                                  |
+| `>=`         | Greater than or equal to      | `A >= B`                                 |
+| `<=`         | Less than or equal to         | `A <= B`                                 |
+
+**Example:**
+```json
+{
+  "type": "compare",
+  "op": ">",
+  "left": { "type": "selector", "selector": { "column": { "name": "Profit" }, "rows": "self" } },
+  "right": 1000
+}
+```
+If `"Profit"` is in column B (with no group header), this might compile to a formula like `($B2 > 1000)`.
+
+---
+
+#### **7.5 TableCombineExpression**
+
+A `TableCombineExpression` combines multiple expressions using an operator. It is used for arithmetic or string operations. All items in the expression are combined in order using the specified operator.
+
+```typescript
+export const TableCombineOperators = ['+', '-', '*', '/', '^', '&'] as const;
+export type TableCombineOperator = typeof TableCombineOperators[number];
+
+export const TableCombineExpressionType = 'combine';
+export type TableCombineExpression = {
+    type: typeof TableCombineExpressionType;
+    op: TableCombineOperator;
+    items: TableExpression[];
+};
+```
+
+**Operators Breakdown:**
+
+| **Operator** | **Description**                   | **Example Translation**            |
+|--------------|-----------------------------------|------------------------------------|
+| `+`          | Addition or concatenation         | `A + B` (e.g., `Revenue + 50`)      |
+| `-`          | Subtraction                       | `A - B`                            |
+| `*`          | Multiplication                    | `A * B`                            |
+| `/`          | Division                          | `A / B`                            |
+| `^`          | Exponentiation                    | `A ^ B`                            |
+| `&`          | String concatenation              | `A & B` (e.g., `"Total: " & Revenue`)|
+
+**Example:**
+```json
+{
+  "type": "combine",
+  "op": "&",
+  "items": [
+    { "type": "selector", "selector": { "column": { "name": "Price" }, "rows": "self" } },
+    " x "    
+    { "type": "selector", "selector": { "column": { "name": "Amount" }, "rows": "self" } },
+  ]
+}
+```
+If `"Price"` is column D and `"Amount"` is column E, this may compile to a formula like `($D3 & " x " & $E3)`.
+
+---
+
+#### **7.6 TableNegateExpression**
+
+A `TableNegateExpression` inverts the result of another expression (i.e., multiplies it by -1).
+
+```typescript
+export const TableNegateExpressionType = 'negate';
+export type TableNegateExpression = {
+    type: typeof TableNegateExpressionType;
+    item: TableExpression;
+};
+```
+
+**Example:**
+```json
+{
+  "type": "negate",
+  "item": {
+    "type": "selector",
+    "selector": { "column": { "name": "Cost" }, "rows": "self" }
+  }
+}
+```
+This represents the negation of `Cost` (e.g., `-Cost`).
+
+---
+
+#### **7.7 TableTemplateExpression**
+
+A `TableTemplateExpression` constructs a raw formula string with placeholders that are replaced by literal expressions from the `vars` object. The keys in `vars` must match the placeholders exactly as they appear in the `text`.
+
+For example, if you want to create a formula like `SUM(@Items, $Price)`, you would define the template text with placeholders `{@Items}` and `{$Price}`; these placeholders will be replaced exactly by the corresponding expressions.
+
+```typescript
+export const TableTemplateExpressionType = 'template';
+export type TableTemplateExpression = {
+    type: typeof TableTemplateExpressionType;
     text: string;
     vars?: Record<string, TableExpression>;
 };
 ```
 
-##### **How `vars` Works**  
-- The `text` property contains placeholders that **exactly match** keys in the `vars` object.  
-- **The var name can be any string**—it does **not** need to start with `@`. If `text` has something like `COUNTIF($Revenue, ">50")`, then you'd define `vars` with a key like `$Revenue` (or any other name you used).
-- During processing, each placeholder is replaced by the corresponding subexpression’s A1 reference or formula.
-
-##### **Example**  
-
-```typescript
-const templateExpression: TableTemplateExpression = {
-  type: 'template',
-  text: 'COUNTIF(@Revenue, ">=50")',
-  vars: {
-    '@Revenue': {
-      type: 'selector',
-      selector: { column: { page: 'Items', group: 'Info', name: 'Revenue' }, rows: 'all' }
-    }
+**Example:**
+```json
+{
+  "type": "template",
+  "text": "SUM(@Items, {Price})",
+  "vars": {
+    "@Items": {
+      "type": "selector",
+      "selector": { "column": { "name": "Sales" }, "rows": "all" }
+    },
+    "{Price}": 100
   }
-};
+}
 ```
-
-If `Revenue` was column `D` (with a group header), this translates to:  
-`COUNTIF(Items!$D3:$D, ">=50")`.
+If `"Sales"` is in column D (with a group header), this might compile to a formula like `SUM(Items!$D3:$D, 100)`.
 
 ---
+
+#### **7.8 TableExpression (Unified Type)**
+
+All expression types are combined into the unified `TableExpression` type, allowing expressions to be nested and composed dynamically.
+
+```typescript
+export type TableExpression =
+    | TableLiteralExpression
+    | TableSelectorExpression
+    | TableFunctionExpression
+    | TableCompareExpression
+    | TableCombineExpression
+    | TableNegateExpression
+    | TableTemplateExpression;
+```
+
+---
+
+### **Key Takeaways**
+
+1. **Expressions replace traditional spreadsheet formulas** by using structured, logical components.
+2. **Literal expressions** are simple fixed values (strings or numbers).
+3. **Selector expressions** dynamically reference table data based on column and row relationships.
+4. **Function expressions** call named functions with arguments—e.g., summing a column.
+5. **Compare expressions** perform binary comparisons using clearly defined operators.
+6. **Combine expressions** merge multiple values using arithmetic or string operators.
+7. **Negate expressions** invert the sign of an expression.
+8. **Template expressions** construct raw formulas with exact literal replacement using placeholders.
+9. **Final formulas** are generated by compiling these components into standard spreadsheet notation (e.g., `SUM(Items!$D3:$D, 50)`).
+
 ---
 
 ## **8. TableDataType**
@@ -1285,11 +1393,11 @@ The `TableValues` type provides a structured way to assign values to rows in a c
 Each column can define its values in one of three ways:
 
 1. **Single Expression for All Rows**  
-   - A `TableExpression<TableSelector>` applies a **single expression** to every row in the column.
+   - A `TableExpression` applies a **single expression** to every row in the column.
    - This is equivalent to writing the same formula in every row of a spreadsheet column.
 
 2. **Explicit Per-Row Assignments**  
-   - An **array** of `TableExpression<TableSelector>` where each array index corresponds to a row index (0-based).
+   - An **array** of `TableExpression` where each array index corresponds to a row index (0-based).
    - This approach is useful when different rows require distinct formulas or values.
 
 3. **Mixed Assignments (`items` + `rest`)**  
@@ -1299,11 +1407,11 @@ Each column can define its values in one of three ways:
 
 ```typescript
 export type TableValues =
-    | TableExpression<TableSelector>    // One expression for all rows
-    | TableExpression<TableSelector>[]  // Explicit values for specific rows
+    | TableExpression    // One expression for all rows
+    | TableExpression[]  // Explicit values for specific rows
     | { 
-        items?: TableExpression<TableSelector>[]; // Explicit row-based expressions
-        rest?: TableExpression<TableSelector>;    // Default expression for remaining rows
+        items?: TableExpression[]; // Explicit row-based expressions
+        rest?: TableExpression;    // Default expression for remaining rows
       };
 ```
 
