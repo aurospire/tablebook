@@ -106,8 +106,12 @@ export const processTableBook = (book: TableBook, resolvers?: TableDefinitionRes
                 if (column.values) {
                     const valuesResult = resolveValues(column.values, page.name, group.name, column.name, columns, columnPath);
 
-                    if (valuesResult.success)
+                    if (valuesResult.success) {
                         values = valuesResult.value;
+
+                        if ((values.items?.length ?? page.rows) > page.rows)
+                            issues.push({ type: 'processing', message: 'Values contain more items than the page rows', data: values.items?.length, path: columnPath });
+                    }
                     else
                         issues.push(...valuesResult.info);
                 }
