@@ -1433,7 +1433,7 @@ type TableGroup = TableUnit & {
 
 #### **9.5 TablePage**
 
-A `TablePage` represents a **single sheet** within a `TableBook`. Every page has **one table** made up of groups and columns.
+A `TablePage` represents a **single sheet** within a `TableBook`. Each page contains a structured table composed of **groups** and **columns**, defining the layout of the data.
 
 ```typescript
 type TablePage = TableUnit & {
@@ -1441,6 +1441,16 @@ type TablePage = TableUnit & {
   rows: number;
 };
 ```
+
+The `rows` property represents the number of **data rows only**, excluding any headers. The total number of rows in the final spreadsheet depends on whether the page has **single or multiple groups**.
+
+- If the page has **a single group**, the first row is a column header, and the total number of rows is `rows + 1`.  
+  - Example: If `rows: 10`, the total rows in the sheet are **11** (1 header + 10 data rows).  
+
+- If the page has **multiple groups**, the first row is a **group header**, followed by a column header. The total number of rows is `rows + 2`.  
+  - Example: If `rows: 10`, the total rows in the sheet are **12** (2 headers + 10 data rows).  
+
+This distinction is important when determining absolute row positions, as **data always starts below the headers**.
 
 ---
 
