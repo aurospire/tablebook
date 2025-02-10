@@ -27,11 +27,13 @@ export const toFormula = (exp: SheetExpression, position: SheetPosition): string
             return exp.toString();
         default:
             switch (exp.type) {
-                case 'compound':
-                    return exp.items.map(item => toFormula(item, position)).join(exp.op);
+                case 'compare':
+                    return `(${toFormula(exp.left, position)} ${exp.op} ${toFormula(exp.right, position)})`;
+                case 'combine':
+                    return `(${exp.items.map(item => toFormula(item, position)).join(exp.op)})`;
                 case 'function':
                     return `${exp.name}(${exp.items.map(arg => toFormula(arg, position)).join(',')})`;
-                case 'negated':
+                case 'negate':
                     return `-(${toFormula(exp.item, position)})`;
                 case 'selector':
                     return SheetSelector().toAddress(exp.selector, position);
