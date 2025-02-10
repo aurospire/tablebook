@@ -9,6 +9,9 @@ type PageInfo = {
     sheetId: number;
     columns: number;
     page: SheetPage;
+    multigroup?: boolean;
+    totalRows: number;
+    dataRows: number;
 };
 
 export class GoogleGenerator implements SheetGenerator {
@@ -35,15 +38,21 @@ export class GoogleGenerator implements SheetGenerator {
 
             // Add all Pages first
             for (const page of book.pages) {
-                const columnCount = page.groups.reduce((acc, group) => acc + group.columns.length, 0);
+                const columnCount = page.groups.reduce((total, group) => total + group.columns.length, 0);
+
+                const multigroup = page.groups.length > 1;
+
+                const dataRows = page.rows;
+
+                const totalRows = dataRows + (multigroup ? 2 : 1);
 
                 if (columnCount) {
-                    const sheetId = await sheet.addSheet({ title: page.title, columns: columnCount, rows: page.rows, color: page.tabColor });
+                    const sheetId = await sheet.addSheet({ title: page.title, columns: columnCount, rows: totalRows, color: page.tabColor });
 
                     if (sheetId == undefined)
                         throw new Error("Failed to add sheet");
 
-                    pageInfos.push({ sheetId: sheetId, columns: columnCount, page });
+                    pageInfos.push({ sheetId: sheetId, columns: columnCount, page, multigroup, totalRows, dataRows });
                 }
             }
 
@@ -54,11 +63,9 @@ export class GoogleGenerator implements SheetGenerator {
 
             // Process each Page
             for (const pageInfo of pageInfos) {
-                const { sheetId, page } = pageInfo;
+                const { sheetId, page, multigroup, totalRows, dataRows } = pageInfo;
 
                 await sheet.modify(r => {
-                    const multigroup = page.groups.length > 1;
-
                     let index = 0;
 
                     // Group
@@ -75,7 +82,10 @@ export class GoogleGenerator implements SheetGenerator {
                                     r = r.setBorder(sheetId, SheetRange.row(0, index, group.columns.length), { bottom: group.titleStyle.beneath });
 
                                 if (group.titleStyle?.between)
-                                    r = r.setBorder(sheetId, SheetRange.region(index, 0, group.columns.length, page.rows), { left: group.titleStyle.between, right: group.titleStyle.between });
+                                    r = r.setBorder(sheetId,
+                                        SheetRange.region(index, 0, group.columns.length, totalRows),
+                                        { left: group.titleStyle.between, right: group.titleStyle.between }
+                                    );
                             }
                         }
 
@@ -94,11 +104,13 @@ export class GoogleGenerator implements SheetGenerator {
 
 
                             // Data
-                            const columnRange = SheetRange.column(index, rowOffset + 1, page.rows - 1 - rowOffset);
+                            const columnRange = SheetRange.column(index, rowOffset + 1, dataRows);
 
-                            const dataRange = SheetRange.column(index, rowOffset + 1, page.rows - 1 - rowOffset);
+                            const dataRange = SheetRange.column(index, rowOffset + 1, dataRows);
 
-                            for (const item of column.values?.items ?? []) {
+                            const valueItems = column.values?.items ?? [];
+
+                            for (const item of valueItems) {
                                 r = r.updateCells(sheetId, { from: dataRange.from }, {
                                     horizontal: 'middle', vertical: 'middle',
                                     ...column.dataStyle,
@@ -110,13 +122,14 @@ export class GoogleGenerator implements SheetGenerator {
                                 dataRange.from.row++;
                             }
 
-                            r = r.updateCells(sheetId, dataRange, {
-                                horizontal: 'middle', vertical: 'middle',
-                                ...column.dataStyle,
-                                value: column.values?.rest,
-                                kind: column.behavior?.kind,
-                                format: column.behavior?.format
-                            });
+                            if (valueItems.length < dataRows)
+                                r = r.updateCells(sheetId, dataRange, {
+                                    horizontal: 'middle', vertical: 'middle',
+                                    ...column.dataStyle,
+                                    value: column.values?.rest,
+                                    kind: column.behavior?.kind,
+                                    format: column.behavior?.format
+                                });
 
                             if (column.behavior?.rule)
                                 r = r.setDataValidation(sheetId, columnRange, column.behavior.rule, true);
@@ -136,7 +149,7 @@ export class GoogleGenerator implements SheetGenerator {
                                 const showRight = c != group.columns.length - 1;
 
                                 if (showLeft || showRight)
-                                    r = r.setBorder(sheetId, SheetRange.region(index, rowOffset, 1, page.rows - rowOffset), {
+                                    r = r.setBorder(sheetId, SheetRange.region(index, rowOffset, 1, totalRows - rowOffset), {
                                         left: showLeft ? column.titleStyle.between : undefined,
                                         right: showRight ? column.titleStyle.between : undefined
                                     });
