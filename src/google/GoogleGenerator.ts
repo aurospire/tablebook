@@ -96,10 +96,22 @@ export class GoogleGenerator implements SheetGenerator {
                             // Data
                             const columnRange = SheetRange.column(index, rowOffset + 1, page.rows - 1 - rowOffset);
 
+                            for (const item of column.values?.items ?? []) {
+                                r = r.updateCells(sheetId, columnRange, {
+                                    horizontal: 'middle', vertical: 'middle',
+                                    ...column.dataStyle,
+                                    value: item,
+                                    kind: column.behavior?.kind,
+                                    format: column.behavior?.format
+                                });
+
+                                columnRange.from.row++;
+                            }
+
                             r = r.updateCells(sheetId, columnRange, {
                                 horizontal: 'middle', vertical: 'middle',
                                 ...column.dataStyle,
-                                value: column.expression,
+                                value: column.values?.rest,
                                 kind: column.behavior?.kind,
                                 format: column.behavior?.format
                             });
