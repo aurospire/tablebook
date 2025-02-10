@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { TableComparisonOperator, TableExpression, TableMatchOperator, TableRangeOperator } from "../tables/types";
+import { TableCompareOperator, TableExpression, TableMatchOperator, TableRangeOperator } from "../tables/types";
 import { SheetStyle } from "./SheetStyle";
 import { SheetSelector } from "./SheetSelector";
 
@@ -9,7 +9,7 @@ export type DateTarget = 'temporal';
 
 // Generic Rule for Comparison
 export type SheetComparisonRule<TTarget, TValue> = {
-    type: TableComparisonOperator;
+    type: TableCompareOperator;
     target: TTarget;
     value: TValue;
 };

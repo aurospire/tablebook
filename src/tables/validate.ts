@@ -8,12 +8,15 @@ import {
     TableColorRegex,
     TableColumn,
     TableColumnSelector,
-    TableDataType,
-    TableComparisonOperator,
-    TableComparisonOperators,
-    TableCompoundExpression, TableCompoundExpressionType,
+    TableCombineExpression, TableCombineExpressionType,
+    TableCombineOperator, TableCombineOperators,
+    TableCompareExpression,
+    TableCompareExpressionType,
+    TableCompareOperator,
+    TableCompareOperators,
     TableCurrencyFormat, TableCurrencyFormatType, TableCurrencySymbolPositions,
     TableCustomRule, TableCustomRuleType,
+    TableDataType,
     TableDefinitions,
     TableDigitPlaceholder,
     TableEnumItem, TableEnumType, TableEnumTypeKind,
@@ -22,12 +25,10 @@ import {
     TableGroup,
     TableHeaderStyle,
     TableLiteralExpression,
-    TableLiteralExpressionType,
     TableLookupType, TableLookupTypeKind,
     TableMatchOperators,
     TableMatchRule,
-    TableMergeOperator, TableMergeOperators,
-    TableNegatedExpression, TableNegatedExpressionType,
+    TableNegateExpression, TableNegateExpressionType,
     TableNumberFormat, TableNumberFormatType,
     TableNumericFormat,
     TableNumericRule,
@@ -38,14 +39,14 @@ import {
     TableRangeOperators,
     TableRangeRule,
     TableRangeSelector,
-    TableTemplateExpression,
-    TableTemplateExpressionType,
     TableReference, TableReferenceRegex,
     TableRowSelector,
     TableSelector,
     TableSelectorExpression, TableSelectorExpressionType,
     TableSelfLiteral, TableSelfSelector,
     TableStyle,
+    TableTemplateExpression,
+    TableTemplateExpressionType,
     TableTemporalFormat,
     TableTemporalItem,
     TableTemporalRule,
@@ -132,49 +133,54 @@ const TableTheme: z.ZodType<TableTheme> = z.object({
 }).strict();
 
 /* Operators */
-const TableComparisonOperator: z.ZodType<TableComparisonOperator> = z.enum(TableComparisonOperators);
-const TableMergeOperator: z.ZodType<TableMergeOperator> = z.enum(TableMergeOperators);
+const TableCompareOperator: z.ZodType<TableCompareOperator> = z.enum(TableCompareOperators);
+const TableCombineOperator: z.ZodType<TableCombineOperator> = z.enum(TableCombineOperators);
 
 /* Expressions */
-const TableLiteralExpression: z.ZodType<TableLiteralExpression> = z.object({
-    type: z.literal(TableLiteralExpressionType),
-    value: z.union([z.string(), z.number(), z.boolean()])
-}).strict();
+const TableLiteralExpression: z.ZodType<TableLiteralExpression> = z.union([z.string(), z.number()]);
 
-const TableSelectorExpression: z.ZodType<TableSelectorExpression<TableSelector>> = z.object({
+const TableSelectorExpression: z.ZodType<TableSelectorExpression> = z.object({
     type: z.literal(TableSelectorExpressionType),
     selector: TableDataSelector
 }).strict();
 
-const TableFunctionExpression: z.ZodType<TableFunctionExpression<TableSelector>> = z.object({
+const TableFunctionExpression: z.ZodType<TableFunctionExpression> = z.object({
     type: z.literal(TableFunctionExpressionType),
     name: z.string().transform(value => value.toUpperCase()),
     items: z.array(z.lazy(() => TableExpression))
 }).strict();
 
-const TableCompoundExpression: z.ZodType<TableCompoundExpression<TableSelector>> = z.object({
-    type: z.literal(TableCompoundExpressionType),
-    op: z.union([TableComparisonOperator, TableMergeOperator]),
+const TableCompareExpression: z.ZodType<TableCompareExpression> = z.object({
+    type: z.literal(TableCompareExpressionType),
+    op: TableCompareOperator,
+    left: z.lazy(() => TableExpression),
+    right: z.lazy(() => TableExpression)
+}).strict();
+
+const TableCombineExpression: z.ZodType<TableCombineExpression> = z.object({
+    type: z.literal(TableCombineExpressionType),
+    op:  TableCombineOperator,
     items: z.array(z.lazy(() => TableExpression))
 }).strict();
 
-const TableNegatedExpression: z.ZodType<TableNegatedExpression<TableSelector>> = z.object({
-    type: z.literal(TableNegatedExpressionType),
+const TableNegateExpression: z.ZodType<TableNegateExpression> = z.object({
+    type: z.literal(TableNegateExpressionType),
     item: z.lazy(() => TableExpression)
 }).strict();
 
-const TableTemplateExpression: z.ZodType<TableTemplateExpression<TableSelector>> = z.object({
+const TableTemplateExpression: z.ZodType<TableTemplateExpression> = z.object({
     type: z.literal(TableTemplateExpressionType),
     text: z.string(),
     vars: z.record(z.string(), z.lazy(() => TableExpression)).optional()
 }).strict();
 
-const TableExpression: z.ZodType<TableExpression<TableSelector>> = z.union([
+const TableExpression: z.ZodType<TableExpression> = z.union([
     TableLiteralExpression,
     TableSelectorExpression,
     TableFunctionExpression,
-    TableCompoundExpression,
-    TableNegatedExpression,
+    TableCompareExpression,
+    TableCombineExpression,
+    TableNegateExpression,
     TableTemplateExpression
 ]);
 
@@ -183,7 +189,7 @@ const TableTemporalString: z.ZodType<TableTemporalString> = z.custom(value => Ta
 
 const makeValueRules = <T>(type: z.ZodType<T>) => {
     const comparison = z.object({
-        type: TableComparisonOperator,
+        type: TableCompareOperator,
         value: type
     }).strict();
 
@@ -335,10 +341,28 @@ const TableUnit = z.object({
     definitions: TableDefinitions.optional()
 }).strict();
 
+type TableValues =
+    | TableExpression<TableSelector> // One expression for all rows
+    | TableExpression<TableSelector>[] // Explicit values for specific rows
+    | {
+        /** Explicitly assigned values for specific row indices */
+        items?: TableExpression<TableSelector>[];
+        /** Default expression for all rows not covered by `items` */
+        rest?: TableExpression<TableSelector>;
+    };
+
+const TableValues = z.union([
+    TableExpression,
+    z.array(TableExpression),
+    z.object({
+        items: z.array(TableExpression).optional(),
+        rest: TableExpression.optional()
+    }).strict()]);
+
 const TableColumn: z.ZodType<TableColumn> = TableUnit.merge(z.object({
     type: z.union([TableDataType, TableReference]),
     source: z.string().optional(),
-    expression: TableExpression.optional(),
+    values: TableValues.optional()
 })).strict();
 
 const TableGroup: z.ZodType<TableGroup> = TableUnit.merge(z.object({
