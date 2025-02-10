@@ -47,5 +47,19 @@
         "ts-jest": "^29.2.5",
         "ts-node": "^10.9.2",
         "typescript": "^5.7.2"
-    }
+    },
+    "keywords": [        
+        "schema",
+        "declarative",
+        "spreadsheet",
+        "table",
+        "validation",
+        "automation",
+        "data",
+        "json",
+        "yaml",
+        "google-sheets",
+        "sheets",
+        "xlsx"
+    ]
 }
