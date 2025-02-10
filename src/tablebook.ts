@@ -155,7 +155,7 @@ export const tablebook = Object.freeze({
         let { resolvers, omitStandardThemes, omitStandardColors, logger } = options;
 
         resolvers = [
-            StandardPaletteResolver(omitStandardThemes ?? false, omitStandardColors ?? false),
+            StandardPaletteResolver(!(omitStandardThemes ?? false), !(omitStandardColors ?? false)),
             ...(resolvers ?? []),
         ];
 
