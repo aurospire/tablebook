@@ -4,6 +4,13 @@
   <p align="center"><i>Generate spreadsheets with a declarative and structured table-based schema.</i><p>
 </p>
 
+## Table of Contents
+
+1. [Project Overview](#project-overview)  
+2. [Using the Library](#using-the-library)  
+3. [TableBook Types](#types-of-tablebook)  
+4. [TableBook Functions and Utilities](#tablebook-functions-and-utilities)  
+
 ## **Project Overview**
 
 ### **What is TableBook?**
@@ -1475,11 +1482,17 @@ type TableBook = TableUnit & {
 ---
 ---
 
-## **TableBook Functions & Utilities**
+## **TableBook Functions and Utilities**
 
 > **This section covers the operational side of TableBook: Results, Issues, Parsing, Validation, Processing, and Generation.**
 
-### 10. Result
+### Table of Contents
+
+1. [Result](#1-result)  
+2. [TableBookIssue](#2-tablebookissue)  
+3. [`tablebook` Functions](#3-tablebook-functions)  
+
+### 1. Result
 
 The `Result` type represents the outcome of an operation, which can either succeed or fail. It is a generic utility type, parameterized by:
 - `T`: The type of the value when the operation is successful.
@@ -1523,7 +1536,7 @@ The `Result` type ensures that all operations explicitly define success or failu
 ---
 ---
 
-### 11. TableBookIssue
+### 2. TableBookIssue
 
 The `TableBookIssue` type represents errors or warnings encountered while working with `TableBook` objects. It is a union type covering issues from four distinct phases:
 - Parsing
@@ -1544,7 +1557,7 @@ Each issue type contains unique fields based on its context.
 
 ---
 
-#### **11.1 TableBookParseIssue**
+#### **2.1 TableBookParseIssue**
 Represents issues encountered during the **parsing phase** (e.g., invalid JSON/YAML syntax).
 
 ##### **Properties**
@@ -1567,7 +1580,7 @@ const issue: TableBookParseIssue = {
 
 ---
 
-#### **11.2 TableBookValidateIssue**
+#### **2.2 TableBookValidateIssue**
 Represents issues encountered during the **validation phase** (e.g., schema violations).
 
 ##### **Properties**
@@ -1590,7 +1603,7 @@ const issue: TableBookValidateIssue = {
 
 ---
 
-#### **11.3 TableBookProcessIssue**
+#### **2.3 TableBookProcessIssue**
 Represents issues encountered during the **processing phase** (e.g., resolving references).
 
 ##### **Properties**
@@ -1613,7 +1626,7 @@ const issue: TableBookProcessIssue = {
 
 ---
 
-#### **11.4 TableBookGenerateIssue**
+#### **2.4 TableBookGenerateIssue**
 Represents issues encountered during the **generation phase** (e.g., external generator errors).
 
 ##### **Properties**
@@ -1653,13 +1666,13 @@ if (!parseResult.success) {
 ---
 ---
 
-### **12. `tablebook` Functions
+### **3. `tablebook` Functions
 
 The `tablebook` object includes utilities for parsing, validating, processing, and generating `TableBook` objects. Here's a breakdown:
 
 ---
 
-#### **12.1 tablebook.parse**
+#### **3.1 tablebook.parse**
 
 Parses a `TableBook` from a JSON or YAML string.
 
@@ -1680,7 +1693,7 @@ else
 
 ---
 
-#### **12.2 tablebook.validate**
+#### **3.2 tablebook.validate**
 
 Validates a `TableBook` against its schema.
 
@@ -1701,7 +1714,7 @@ else
 
 ---
 
-#### **12.3 tablebook.process**
+#### **3.3 tablebook.process**
 
 Processes a `TableBook` to resolve references and prepare it for generation. This step converts the declarative `TableBook` schema into a `SheetBook`, which is an intermediate representation (IR) closer to the final spreadsheet output.
 
@@ -1765,7 +1778,7 @@ else
 
 ---
 
-#### **12.4 tablebook.generate**
+#### **3.4 tablebook.generate**
 
 Generates output from a processed `SheetBook`.
 
@@ -1789,13 +1802,13 @@ else
 ```
 ---
 
-#### **12.5 tablebook.generators**
+#### **3.5 tablebook.generators**
 
 The `generators` object provides methods to create output generators for converting a processed `SheetBook` into a spreadsheet. It simplifies the integration with external systems by abstracting the complexity of connecting to APIs or managing file formats.
 
 ---
 
-#### **12.5.1 tablebook.generators.google**
+#### **3.5.1 tablebook.generators.google**
 
 Creates a Google Sheets generator for exporting to a specified sheet.
 
