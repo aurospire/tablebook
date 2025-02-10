@@ -33,9 +33,9 @@ const resolveExpressionList = (
             return result.value;
         else {
             issues.push(...result.info);
-            return undefined;
+            return '';
         }
-    }).filter((value): value is SheetExpression => value !== undefined);
+    });
 
     if (resolvedItems.length > 0)
         return resolvedItems;
