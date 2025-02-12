@@ -605,16 +605,17 @@ Oranges & Yellows:
 
 Greens:
   - green
-  - moss
+  - forest
   - sage
+  - moss
 
 Blues:
-  - teal
   - slate
+  - teal
   - cyan
   - blue
   - azure
-  - skyblue
+  - cerulean
 
 Purples:
   - lavender
