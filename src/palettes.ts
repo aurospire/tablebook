@@ -45,22 +45,24 @@ export const StandardPalettes = {
     red: palette('#660000', '#880000', '#C32222', '#F19999', '#F8C5C5'),
 
     // Oranges and Yellows
-    rust: palette('#8B3103', '#B54D18', '#D65C2B', '#F3B28E', '#F7D5BC'),
-    orange: palette('#783F04', '#B45F06', '#E6751A', '#FFBA8C', '#FDD9BC'),
+    rust: palette('#752203', '#993311', '#BD4022', '#E99275', '#F4C7B7'),       // More red-brown
+    orange: palette('#8C4A04', '#C66A05', '#F08200', '#FFBB7F', '#FFE0C2'),     // More pure orange/golden
     yellow: palette('#856500', '#BF9000', '#E6AC1E', '#FFE494', '#FFF2C4'),
 
     // Greens
     green: palette('#294E13', '#38761D', '#4B9022', '#A7CF9B', '#D6E8CE'),
-    moss: palette('#1E4D2B', '#3A7A47', '#519563', '#9FC7A0', '#D4E8D1'),
-    sage: palette('#38471F', '#596F34', '#788F4A', '#B8CBA3', '#DCEADF'),
+    forest: palette('#1D3B0A', '#2B5811', '#3B7517', '#9BCE8A', '#D4EBCB'),      // More saturated, darker
+    sage: palette('#38471F', '#596F34', '#788F4A', '#B8CBA3', '#DCEADF'),       // Unchanged as reference
+    moss: palette('#2E462D', '#445E3F', '#5A7752', '#A8BBA2', '#D9E3D6'),      // More gray-brown undertone
 
     // Blues
-    teal: palette('#004548', '#006E6E', '#008F8F', '#8CD1CD', '#D1F0EC'),
     slate: palette('#2A4545', '#366060', '#507878', '#AFC6C6', '#DEE8E8'),
+    teal: palette('#004548', '#006E6E', '#008F8F', '#8CD1CD', '#D1F0EC'),
     cyan: palette('#0C343D', '#134F5C', '#1B657A', '#89BEC6', '#CBE5E8'),
-    blue: palette('#073763', '#0B5394', '#1763B8', '#8BB6DE', '#CEE2F0'),
-    azure: palette('#123A75', '#1E5BAA', '#2D70C8', '#8DB6E6', '#D0E2F4'),
-    skyblue: palette('#004080', '#0066CC', '#2E8FEA', '#8CBEF3', '#D0E6F8'),
+    blue: palette('#042850', '#0A3D7D', '#1155AA', '#82B0E1', '#C7DEF2'),      // Deeper, more saturated
+    azure: palette('#073763', '#0B5394', '#1763B8', '#8BB6DE', '#CEE2F0'),      
+    //azure: palette('#193D66', '#275A88', '#3677AA', '#97BCE0', '#D2E4F2'),     // More gray undertone
+    cerulean: palette('#005B99', '#0077CC', '#0095FF', '#99D6FF', '#CCE9FF'),  // Brighter, more cyan
 
     // Purples
     lavender: palette('#3F3677', '#5F51B7', '#776CCF', '#B5AAE6', '#DAD5F2'),

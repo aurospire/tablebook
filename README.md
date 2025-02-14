@@ -605,16 +605,17 @@ Oranges & Yellows:
 
 Greens:
   - green
-  - moss
+  - forest
   - sage
+  - moss
 
 Blues:
-  - teal
   - slate
+  - teal
   - cyan
   - blue
   - azure
-  - skyblue
+  - cerulean
 
 Purples:
   - lavender
@@ -681,7 +682,7 @@ Expressions fall into the following categories:
 A `TableLiteralExpression` is a fixed value that does not depend on other table data. It is simply a primitive value—either a string or a number.
 
 ```typescript
-export type TableLiteralExpression = string | number;
+type TableLiteralExpression = string | number;
 ```
 
 **Examples:**
@@ -696,8 +697,8 @@ export type TableLiteralExpression = string | number;
 A `TableSelectorExpression` references data dynamically using a selector. The selector defines a column (and a row subset) from which to retrieve a value. For instance, if the `"Revenue"` column is located in column D (with a group header), the selector might resolve to the cell range `D3:D` (depending on the current row context).
 
 ```typescript
-export const TableSelectorExpressionType = 'selector';
-export type TableSelectorExpression = {
+const TableSelectorExpressionType = 'selector';
+type TableSelectorExpression = {
     type: typeof TableSelectorExpressionType;
     selector: Selector;
 };
@@ -721,8 +722,8 @@ For example, if the `"Revenue"` column is in column D (with a group header) and 
 `SUM(Items!$D3:$D, 50)`.
 
 ```typescript
-export const TableFunctionExpressionType = 'function';
-export type TableFunctionExpression = {
+const TableFunctionExpressionType = 'function';
+type TableFunctionExpression = {
     type: typeof TableFunctionExpressionType;
     name: string;
     items: TableExpression[];
@@ -749,11 +750,11 @@ This represents a formula that, when compiled, might translate to `SUM(Items!$D3
 A `TableCompareExpression` compares two expressions using a comparison operator. It uses explicit `left` and `right` properties.
 
 ```typescript
-export const TableCompareOperators = ['=', '<>', '>', '<', '>=', '<='] as const;
-export type TableCompareOperator = typeof TableCompareOperators[number];
+const TableCompareOperators = ['=', '<>', '>', '<', '>=', '<='] as const;
+type TableCompareOperator = typeof TableCompareOperators[number];
 
-export const TableCompareExpressionType = 'compare';
-export type TableCompareExpression = {
+const TableCompareExpressionType = 'compare';
+type TableCompareExpression = {
     type: typeof TableCompareExpressionType;
     op: TableCompareOperator;
     left: TableExpression;
@@ -790,11 +791,11 @@ If `"Profit"` is in column B (with no group header), this might compile to a for
 A `TableCombineExpression` combines multiple expressions using an operator. It is used for arithmetic or string operations. All items in the expression are combined in order using the specified operator.
 
 ```typescript
-export const TableCombineOperators = ['+', '-', '*', '/', '^', '&'] as const;
-export type TableCombineOperator = typeof TableCombineOperators[number];
+const TableCombineOperators = ['+', '-', '*', '/', '^', '&'] as const;
+type TableCombineOperator = typeof TableCombineOperators[number];
 
-export const TableCombineExpressionType = 'combine';
-export type TableCombineExpression = {
+const TableCombineExpressionType = 'combine';
+type TableCombineExpression = {
     type: typeof TableCombineExpressionType;
     op: TableCombineOperator;
     items: TableExpression[];
@@ -833,8 +834,8 @@ If `"Price"` is column D and `"Amount"` is column E, this may compile to a formu
 A `TableNegateExpression` inverts the result of another expression (i.e., multiplies it by -1).
 
 ```typescript
-export const TableNegateExpressionType = 'negate';
-export type TableNegateExpression = {
+const TableNegateExpressionType = 'negate';
+type TableNegateExpression = {
     type: typeof TableNegateExpressionType;
     item: TableExpression;
 };
@@ -861,8 +862,8 @@ A `TableTemplateExpression` constructs a raw formula string with placeholders th
 For example, if you want to create a formula like `SUM(@Items, $Price)`, you would define the template text with placeholders `{@Items}` and `{$Price}`; these placeholders will be replaced exactly by the corresponding expressions.
 
 ```typescript
-export const TableTemplateExpressionType = 'template';
-export type TableTemplateExpression = {
+const TableTemplateExpressionType = 'template';
+type TableTemplateExpression = {
     type: typeof TableTemplateExpressionType;
     text: string;
     vars?: Record<string, TableExpression>;
@@ -892,7 +893,7 @@ If `"Sales"` is in column D (with a group header), this might compile to a formu
 All expression types are combined into the unified `TableExpression` type, allowing expressions to be nested and composed dynamically.
 
 ```typescript
-export type TableExpression =
+type TableExpression =
     | TableLiteralExpression
     | TableSelectorExpression
     | TableFunctionExpression
@@ -1386,7 +1387,7 @@ type TableUnit = {
 A `TableColumn` represents the smallest unit in a `TableBook`. It extends `TableUnit` and includes properties for defining the data type, optional metadata, and row-based value assignments.
 
 ```typescript
-export type TableColumn = TableUnit & {    
+type TableColumn = TableUnit & {    
     type: TableDataType | TableReference; 
     values?: TableValues;            
     source?: string;                      // Metadata describing where the column's data comes from    
@@ -1413,7 +1414,7 @@ Each column can define its values in one of three ways:
    - This method is useful when most rows share a common formula, but some need specific overrides.
 
 ```typescript
-export type TableValues =
+type TableValues =
     | TableExpression    // One expression for all rows
     | TableExpression[]  // Explicit values for specific rows
     | { 
