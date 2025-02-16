@@ -8,7 +8,7 @@ export type ObjectPath = (string | number)[];
 export type TextLocation = {
     /** The absolute index of the text in the document. */
     index: number;
-    /** The line number where the text is located (1-based). */
+    /** The line number where the text is located (0-based). */
     line: number;
     /** The column number where the text starts (0-based). */
     column: number;
