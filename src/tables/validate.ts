@@ -7,6 +7,7 @@ import {
     TableColor,
     TableColorRegex,
     TableColumn,
+    TableColumnList,
     TableColumnSelector,
     TableCombineExpression, TableCombineExpressionType,
     TableCombineOperator, TableCombineOperators,
@@ -159,7 +160,7 @@ const TableCompareExpression: z.ZodType<TableCompareExpression> = z.object({
 
 const TableCombineExpression: z.ZodType<TableCombineExpression> = z.object({
     type: z.literal(TableCombineExpressionType),
-    op:  TableCombineOperator,
+    op: TableCombineOperator,
     items: z.array(z.lazy(() => TableExpression))
 }).strict();
 
@@ -365,12 +366,14 @@ const TableColumn: z.ZodType<TableColumn> = TableUnit.merge(z.object({
     values: TableValues.optional()
 })).strict();
 
-const TableGroup: z.ZodType<TableGroup> = TableUnit.merge(z.object({
-    columns: z.array(TableColumn).min(1)
-})).strict();
+const TableColumnList = z.object({
+    columns: z.array(TableColumn).min(1),
+}).strict();
+
+const TableGroup: z.ZodType<TableGroup> = TableUnit.merge(TableColumnList).strict();
 
 const TablePage: z.ZodType<TablePage> = TableUnit.merge(z.object({
-    groups: z.array(TableGroup).min(1),
+    schema: z.union([TableColumnList, TableGroup]),
     rows: z.number().int().positive()
 })).strict();
 
