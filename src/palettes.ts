@@ -50,8 +50,8 @@ export const StandardPalettes = {
     yellow: palette('#856500', '#BF9000', '#E6AC1E', '#FFE494', '#FFF2C4'),
 
     // Greens
-    green: palette('#294E13', '#38761D', '#4B9022', '#A7CF9B', '#D6E8CE'),
     forest: palette('#1D3B0A', '#2B5811', '#3B7517', '#9BCE8A', '#D4EBCB'),      // More saturated, darker
+    green: palette('#294E13', '#38761D', '#4B9022', '#A7CF9B', '#D6E8CE'),
     sage: palette('#38471F', '#596F34', '#788F4A', '#B8CBA3', '#DCEADF'),       // Unchanged as reference
     moss: palette('#2E462D', '#445E3F', '#5A7752', '#A8BBA2', '#D9E3D6'),      // More gray-brown undertone
 

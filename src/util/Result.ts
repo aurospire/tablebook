@@ -41,5 +41,19 @@ export const Result = Object.freeze({
      */
     isResult: (value: any): value is Result<any, any> => {
         return typeof value === 'object' && value !== null && 'success' in value;
+    },
+
+    /**
+     * Unwraps a `Result` object by returning the successful value or handling the failure case.
+     * 
+     * @typeParam T - The type of the value returned when the operation is successful.
+     * @typeParam I - The type of the additional information provided when the operation fails.
+     * @typeParam O - The type of the return value from the `onFailure` function.
+     * @param result - The `Result` object to unwrap.
+     * @param onFailure - A callback function that handles the failure case and returns a fallback value.
+     * @returns The successful value if the result is successful, otherwise the value returned by `onFailure`.
+     */
+    unwrap: <T, I, O>(result: Result<T, I>, onFailure: (info: I) => O): T | O => {
+        return result.success ? result.value : onFailure(result.info);
     }
 });

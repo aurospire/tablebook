@@ -16,9 +16,10 @@ const modifyUnitSelector = (selector: TableUnitSelector, grouped: boolean): Tabl
 export const resolveSelector = (
     selector: TableSelector,
     columns: Map<string, ResolvedColumn>,
-    page: string, group: string, name: string,
-    path: ObjectPath
-): Result<SheetSelector, TableBookProcessIssue[]> => {
+    pageName: string, groupName: string | undefined, columnName: string,
+    path: ObjectPath,
+    issues: TableBookProcessIssue[]
+): SheetSelector | undefined => {
 
     const { column, rows } = selector === 'self' ? { column: 'self', rows: 'self' } : selector;
 
@@ -26,16 +27,18 @@ export const resolveSelector = (
     let selectedColumn: ResolvedColumn;
 
     if (typeof column === 'string')
-        selectedColumn = columns.get(toLookupName(page, group, name))!;
+        selectedColumn = columns.get(toLookupName(pageName, groupName, columnName))!;
     else {
         const fullname = toLookupName(
-            column.page ?? page,
-            column.group ?? group,
+            column.page ?? pageName,
+            column.group ?? groupName,
             column.name
         );
 
-        if (!columns.has(fullname))
-            return Result.failure([{ type: 'processing', message: `Invalid column`, path, data: fullname }]);
+        if (!columns.has(fullname)) {
+            issues.push({ type: 'processing', message: `Invalid column`, path, data: fullname });
+            return undefined;
+        }
 
         selectedColumn = columns.get(fullname)!;
 
@@ -66,7 +69,7 @@ export const resolveSelector = (
         }
     }
 
-    return Result.success({
+    return {
         page: selectedPage,
         from: {
             col: `$${selectedColumn.index}`,
@@ -76,5 +79,5 @@ export const resolveSelector = (
             col: `$${selectedColumn.index}`,
             row: selectedRowEnd === true ? undefined : modifyUnitSelector(selectedRowEnd, selectedColumn.grouped)
         } : undefined
-    });
+    };
 };

@@ -1,5 +1,5 @@
 import { TableBookProcessIssue } from "../issues";
-import { isReference, TableDefinitionResolver, TableReferenceLookup, TableReferenceResolver } from "../tables/references";
+import { isReference, TableDefinitionResolver, TableReferenceLookup } from "../tables/references";
 import { TableColor, TableDataType, TableDefinitions, TableHeaderStyle, TableNumericFormat, TableReference, TableReferenceMap, TableTemporalFormat, TableTheme } from "../tables/types";
 import { ObjectPath, Result } from "../util";
 
