@@ -8,12 +8,15 @@ export type ResolvedColumn = {
     index: number;
 };
 
-export const toLookupName = (page: string, group: string, name: string) => `${page}.${group}.${name}`;
 
-export const resolveColumns = (tablebook: TableBook): Result<Map<string, ResolvedColumn>, TableBookProcessIssue[]> => {
+export type ResolvedColumnMap = Map<string, ResolvedColumn>;
+
+export const toLookupName = (page: string, group: string | undefined, name: string) => group ? `${page}.${group}.${name}` : `${page}.${name}`;
+
+export const resolveColumns = (tablebook: TableBook): Result<ResolvedColumnMap, TableBookProcessIssue[]> => {
     const issues: TableBookProcessIssue[] = [];
 
-    const resolved: Map<string, ResolvedColumn> = new Map();
+    const resolved: ResolvedColumnMap = new Map();
 
     const pages = new Set<string>();
 
@@ -26,27 +29,44 @@ export const resolveColumns = (tablebook: TableBook): Result<Map<string, Resolve
 
         pages.add(page.name);
 
-        const groups = new Set<string>();
-        let index = 0;
+        const schema = page.schema;
 
-        for (let g = 0; g < page.groups.length; g++) {
-            const group = page.groups[g];
+        if (Array.isArray(schema)) {
+            const groups = new Set<string>();
+            let index = 0;
 
-            if (groups.has(group.name))
-                issues.push({ type: 'processing', message: `Duplicate group name`, path: ['pages', s, 'groups', g], data: group });
+            for (let g = 0; g < schema.length; g++) {
+                const group = schema[g];
 
-            for (let c = 0; c < group.columns.length; c++) {
-                const column = group.columns[c];
+                if (groups.has(group.name))
+                    issues.push({ type: 'processing', message: `Duplicate group name`, path: ['pages', s, 'schema', g], data: group });
 
-                const fullname = toLookupName(page.name, group.name, column.name);
+                for (let c = 0; c < group.columns.length; c++) {
+                    const column = group.columns[c];
 
-                if (resolved.has(fullname))
-                    issues.push({ type: 'processing', message: `Duplicate column name`, path: ['pages', s, 'groups', g, 'columns', c], data: column });
+                    const fullname = toLookupName(page.name, group.name, column.name);
 
-                resolved.set(fullname, { page: page.name, grouped: page.groups.length > 1, index: index++ });
+                    if (resolved.has(fullname))
+                        issues.push({ type: 'processing', message: `Duplicate column name`, path: ['pages', s, 'schema', g, 'columns', c], data: column });
+
+                    resolved.set(fullname, { page: page.name, grouped: true, index: index++ });
+                }
             }
         }
-    }
+        else {
+            let index = 0;
+            for (let c = 0; c < schema.columns.length; c++) {
+                const column = schema.columns[c];
+
+                const fullname = toLookupName(page.name, undefined, column.name);
+
+                if (resolved.has(fullname))
+                    issues.push({ type: 'processing', message: `Duplicate column name`, path: ['pages', s, 'schema', 'columns', c], data: column });
+
+                resolved.set(fullname, { page: page.name, grouped: false, index: index++ });
+            }
+        }
+    };
 
     return issues.length === 0 ? Result.success(resolved) : Result.failure(issues, resolved);
 };
