@@ -12,15 +12,16 @@ export type SheetBook = {
 export type SheetPage = {
     title: string;
     tabColor?: ColorObject;
-    groups: SheetGroup[];
+    schema: SheetColumnList | SheetGroup[];
     rows: number;
 };
+
+export type SheetColumnList = { columns: SheetColumn[]; };
 
 export type SheetGroup = {
     title: string;
     titleStyle?: SheetTitleStyle;
-    columns: SheetColumn[];
-};
+} & SheetColumnList;
 
 export type SheetValues = { items?: TableExpression<SheetSelector>[], rest?: TableExpression<SheetSelector>; };
 
