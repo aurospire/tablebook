@@ -373,8 +373,8 @@ const TableColumnList = z.object({
 const TableGroup: z.ZodType<TableGroup> = TableUnit.merge(TableColumnList).strict();
 
 const TablePage: z.ZodType<TablePage> = TableUnit.merge(z.object({
-    schema: z.union([TableColumnList, TableGroup]),
-    rows: z.number().int().positive()
+    schema: z.union([TableColumnList, z.array(TableGroup).min(1)]),
+    rows: z.number().int().gt(0),
 })).strict();
 
 
