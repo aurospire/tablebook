@@ -41,7 +41,7 @@ export const resolveTheme = (
     chain: TableTheme[],
     path: ObjectPath,
     issues: TableBookProcessIssue[]
-): SheetTheme | undefined => {
+): SheetTheme => {
     const resolvedTheme: TableTheme =
         isReference(theme)
             ? Result.unwrap(definitions.themes.resolve(theme, path), (info) => { issues.push(...info); return {}; })
@@ -68,8 +68,7 @@ export const resolveTheme = (
 
             const resolvedInherit = resolveTheme(inherit, definitions, [], branchChain, path, issues);
 
-            if (resolvedInherit)
-                result = mergeThemes(result, resolvedInherit);
+            result = mergeThemes(result, resolvedInherit);
         }
     }
 
@@ -78,8 +77,11 @@ export const resolveTheme = (
         : undefined;
 
     const group = resolvedTheme.group ? resolveStyle(resolvedTheme.group, definitions, path, issues) : undefined;
-    const header = resolvedTheme.header ? resolveStyle(resolvedTheme.header, definitions, path, issues) : undefined; 
+
+    const header = resolvedTheme.header ? resolveStyle(resolvedTheme.header, definitions, path, issues) : undefined;
+
     const data = resolvedTheme.data ? resolveStyle(resolvedTheme.data, definitions, path, issues) : undefined;
+
 
     result = mergeThemes(result, { tab, header: header ?? {}, group: group ?? {}, data: data ?? {} });
 

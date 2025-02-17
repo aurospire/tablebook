@@ -12,9 +12,7 @@ export type ResolvedColumnMap = Map<string, ResolvedColumn>;
 
 export const toLookupName = (page: string, group: string | undefined, name: string) => group ? `${page}.${group}.${name}` : `${page}.${name}`;
 
-export const resolveColumns = (tablebook: TableBook): Result<ResolvedColumnMap, TableBookProcessIssue[]> => {
-    const issues: TableBookProcessIssue[] = [];
-
+export const resolveColumns = (tablebook: TableBook, issues: TableBookProcessIssue[]): ResolvedColumnMap => {
     const resolved: ResolvedColumnMap = new Map();
 
     const pages = new Set<string>();
@@ -67,5 +65,5 @@ export const resolveColumns = (tablebook: TableBook): Result<ResolvedColumnMap, 
         }
     };
 
-    return issues.length === 0 ? Result.success(resolved) : Result.failure(issues, resolved);
+    return resolved;
 };

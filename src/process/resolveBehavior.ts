@@ -160,17 +160,17 @@ const resolveTextConditionalStyle = (
 
 const resolveTextBehavior = (
     type: TableTextType,
-    page: string, group: string, name: string,
+    pageName: string, groupName: string | undefined, columnName: string,
     columns: Map<string, ResolvedColumn>,
     definitions: TableDefinitionsManager,
     path: ObjectPath,
     issues: TableBookProcessIssue[]
 ): SheetBehavior | undefined => {
 
-    let resolvedRule = type.rule ? resolveTextRule(type.rule, page, group, name, columns, path, issues) : undefined;
+    let resolvedRule = type.rule ? resolveTextRule(type.rule, pageName, groupName, columnName, columns, path, issues) : undefined;
 
     let resolvedStyles = type.styles
-        ? resolveTextConditionalStyle(type.styles, page, group, name, columns, definitions, path, issues)
+        ? resolveTextConditionalStyle(type.styles, pageName, groupName, columnName, columns, definitions, path, issues)
         : undefined;
 
     const behavior: SheetBehavior = {
@@ -184,19 +184,19 @@ const resolveTextBehavior = (
 
 const resolveLookupBehavior = (
     type: TableLookupType,
-    page: string, group: string, name: string,
+    pageName: string, groupName: string | undefined, columnName: string,
     columns: Map<string, ResolvedColumn>,
     definitions: TableDefinitionsManager,
     path: ObjectPath,
     issues: TableBookProcessIssue[]
 ): SheetBehavior | undefined => {
 
-    const selector = resolveSelector({ column: type.column, rows: 'all' }, columns, page, group, name, path, issues);
+    const selector = resolveSelector({ column: type.column, rows: 'all' }, columns, pageName, groupName, columnName, path, issues);
 
     if (!selector) return undefined;
 
     const resolvedStyles = type.styles
-        ? resolveTextConditionalStyle(type.styles, page, group, name, columns, definitions, path, issues)
+        ? resolveTextConditionalStyle(type.styles, pageName, groupName, columnName, columns, definitions, path, issues)
         : undefined;
 
     const behavior: SheetBehavior = {
@@ -243,7 +243,7 @@ const resolveEnumBehavior = (
 
 const resolveNumericBehavior = (
     type: TableNumericType,
-    page: string, group: string, name: string,
+    pageName: string, groupName: string|undefined, columnName: string,
     columns: Map<string, ResolvedColumn>,
     definitions: TableDefinitionsManager,
     path: ObjectPath,
@@ -256,11 +256,11 @@ const resolveNumericBehavior = (
             : type.format
         : undefined;
 
-    const resolvedRule = type.rule ? resolveNumericRule(type.rule, page, group, name, columns, path, issues) : undefined;
+    const resolvedRule = type.rule ? resolveNumericRule(type.rule, pageName, groupName, columnName, columns, path, issues) : undefined;
 
     const resolvedStyles = type.styles
         ? type.styles.map((style): SheetConditionalStyle | undefined => {
-            const ruleResult = resolveNumericRule(style.when, page, group, name, columns, path, issues);
+            const ruleResult = resolveNumericRule(style.when, pageName, groupName, columnName, columns, path, issues);
 
             const styleResult = resolveStyleAndColor(style.style, style.color, definitions, path, issues);
 
@@ -283,7 +283,7 @@ const resolveNumericBehavior = (
 
 const resolveTemporalBehavior = (
     type: TableTemporalType,
-    page: string, group: string, name: string,
+    pageName: string, groupName: string|undefined, columnName: string,
     columns: Map<string, ResolvedColumn>,
     definitions: TableDefinitionsManager,
     path: ObjectPath,
@@ -298,12 +298,12 @@ const resolveTemporalBehavior = (
 
 
     const resolvedRule: SheetRule | undefined = type.rule
-        ? resolveTemporalRule(type.rule, page, group, name, columns, path, issues)
+        ? resolveTemporalRule(type.rule, pageName, groupName, columnName, columns, path, issues)
         : undefined;
 
     const resolvedStyles = type.styles
         ? type.styles.map((style): SheetConditionalStyle | undefined => {
-            const ruleResult = resolveTemporalRule(style.when, page, group, name, columns, path, issues);
+            const ruleResult = resolveTemporalRule(style.when, pageName, groupName, columnName, columns, path, issues);
 
             const styleResult = resolveStyleAndColor(style.style, style.color, definitions, path, issues);
 
@@ -311,8 +311,8 @@ const resolveTemporalBehavior = (
                 return { when: ruleResult, style: styleResult };
 
         }).filter((value): value is SheetConditionalStyle => value !== undefined)
-        :undefined;
-        
+        : undefined;
+
     const behavior: SheetBehavior = {
         kind: 'number',
         styles: resolvedStyles,
@@ -326,7 +326,7 @@ const resolveTemporalBehavior = (
 
 export const resolveBehavior = (
     type: TableDataType,
-    page: string, group: string, name: string,
+    pageName: string, groupName: string | undefined, columnName: string,
     columns: Map<string, ResolvedColumn>,
     definitions: TableDefinitionsManager,
     path: ObjectPath,
@@ -335,19 +335,19 @@ export const resolveBehavior = (
 
     switch (type.kind) {
         case "text":
-            return resolveTextBehavior(type, page, group, name, columns, definitions, path, issues);
+            return resolveTextBehavior(type, pageName, groupName, columnName, columns, definitions, path, issues);
 
         case "enum":
             return resolveEnumBehavior(type, definitions, path, issues);
 
         case "lookup":
-            return resolveLookupBehavior(type, page, group, name, columns, definitions, path, issues);
+            return resolveLookupBehavior(type, pageName, groupName, columnName, columns, definitions, path, issues);
 
         case "numeric":
-            return resolveNumericBehavior(type, page, group, name, columns, definitions, path, issues);
+            return resolveNumericBehavior(type, pageName, groupName, columnName, columns, definitions, path, issues);
 
         case "temporal":
-            return resolveTemporalBehavior(type, page, group, name, columns, definitions, path, issues);
+            return resolveTemporalBehavior(type, pageName, groupName, columnName, columns, definitions, path, issues);
     };
 
 };
