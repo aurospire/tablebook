@@ -1,84 +1,45 @@
 import { TableBookProcessIssue } from "../issues";
 import { SheetBorder, SheetTitleStyle } from "../sheets";
 import { isReference } from "../tables";
-import { TableColor, TableHeaderStyle, TableReference, TableStyle } from "../tables/types";
-import { ColorObject, ObjectPath, Result } from "../util";
-import { TableDefinitionsManager, TableReferenceRegistry } from "./DefinitionsRegistry";
+import { TableBorder, TableHeaderStyle, TableReference } from "../tables/types";
+import { ObjectPath, Result } from "../util";
+import { TableDefinitionsManager } from "./DefinitionsRegistry";
 import { resolveColor } from "./resolveColor";
+
+const resolveBorder = (
+    border: TableBorder | undefined,
+    definitions: TableDefinitionsManager,
+    path: ObjectPath,
+    issues: TableBookProcessIssue[]
+): SheetBorder | undefined => {
+    if (border) {
+        const color = resolveColor(border.color, definitions, path, issues);
+
+        return color ? { type: border.type, color } : undefined;
+    }
+};
 
 export const resolveStyle = (
     style: TableHeaderStyle | TableReference,
     definitions: TableDefinitionsManager,
-    path: ObjectPath
-): Result<SheetTitleStyle, TableBookProcessIssue[]> => {
-    let resolved: TableHeaderStyle;
+    path: ObjectPath,
+    issues: TableBookProcessIssue[]
+): SheetTitleStyle | undefined => {
 
-    const issues: TableBookProcessIssue[] = [];
+    const resolvedStyle: TableHeaderStyle | undefined = isReference(style)
+        ? Result.unwrap(definitions.styles.resolve(style, path), (info) => { issues.push(...info); return {}; })
+        : style;
 
-    if (isReference(style)) {
-        const result = definitions.styles.resolve(style, path);
+    const result : SheetTitleStyle = {
+        fore : resolvedStyle.fore ? resolveColor(resolvedStyle.fore, definitions, path, issues) : undefined,
+        back : resolvedStyle.back ? resolveColor(resolvedStyle.back, definitions, path, issues) : undefined,
 
-        if (!result.success)
-            return Result.failure(result.info);
-
-        resolved = result.value;
-    }
-    else {
-        resolved = style;
-    }
-
-    let fore: ColorObject | undefined;
-    if (resolved.fore) {
-        const result = resolveColor(resolved.fore, definitions, path);
-
-        if (result.success)
-            fore = result.value;
-        else
-            issues.push(...result.info);
+        bold: resolvedStyle.bold,
+        italic: resolvedStyle.italic,
+        
+        beneath : resolveBorder(resolvedStyle.beneath, definitions, path, issues),
+        between : resolveBorder(resolvedStyle.between, definitions, path, issues),
     }
 
-    let back: ColorObject | undefined;
-    if (resolved.back) {
-        const result = resolveColor(resolved.back, definitions, path);
-
-        if (result.success)
-            back = result.value;
-        else
-            issues.push(...result.info);
-    }
-
-
-    const bold: boolean | undefined = resolved.bold;
-
-    const italic: boolean | undefined = resolved.italic;
-
-    let beneath: SheetBorder | undefined;
-    if (resolved.beneath) {
-        const result = resolveColor(resolved.beneath.color, definitions, path);
-
-        if (result.success)
-            beneath = {
-                type: resolved.beneath.type,
-                color: result.value
-            };
-        else
-            issues.push(...result.info);
-    }
-
-    let between: SheetBorder | undefined;
-    if (resolved.between) {
-        const result = resolveColor(resolved.between.color, definitions, path);
-
-        if (result.success)
-            between = {
-                type: resolved.between.type,
-                color: result.value
-            };
-        else
-            issues.push(...result.info);
-    }
-
-    const result = { fore, back, bold, italic, beneath, between };
-
-    return issues.length === 0 ? Result.success(result) : Result.failure(issues, result);
+    return result
 };

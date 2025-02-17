@@ -482,23 +482,19 @@ export type TableColumn = TableUnit & {
     values?: TableValues;
 };
 
-/** 
-* Groups related columns together
-* Groups are hidden in the output if there's only one on a page, so the name doesn't matter (can be '')
-*/
-export type TableGroup = TableUnit & {
-    /** Array of columns belonging to this group */
+/** A list of columns in a table. */
+export type TableColumnList = {
     columns: TableColumn[];
 };
 
-/** 
-* Definition of a single page in the workbook
-* Contains one table with one or more column groups
-*/
+/** A group of related columns in a table. */
+export type TableGroup = TableUnit & TableColumnList;
+
+/** A page in the workbook containing table data. */
 export type TablePage = TableUnit & {
-    /** Array of column groups */
-    groups: TableGroup[];
-    /** Number of data rows in the table */
+    /** Table structure: groups of columns or a flat column set. */
+    schema: TableColumnList | TableGroup[];    
+    /** Number of data rows in the table. */
     rows: number;
 };
 

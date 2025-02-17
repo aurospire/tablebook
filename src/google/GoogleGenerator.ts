@@ -1,5 +1,5 @@
 import { TableBookGenerateIssue } from "../issues";
-import { SheetBook, SheetPage } from "../sheets/SheetBook";
+import { SheetBook, SheetColumnList, SheetPage } from "../sheets/SheetBook";
 import { SheetGenerator } from "../sheets/SheetGenerator";
 import { SheetRange } from "../sheets/SheetRange";
 import { Result } from "../util";
@@ -38,9 +38,11 @@ export class GoogleGenerator implements SheetGenerator {
 
             // Add all Pages first
             for (const page of book.pages) {
-                const columnCount = page.groups.reduce((total, group) => total + group.columns.length, 0);
+                const columnCount = Array.isArray(page.schema)
+                    ? page.schema.reduce((total, group) => total + group.columns.length, 0)
+                    : page.schema.columns.length;
 
-                const multigroup = page.groups.length > 1;
+                const multigroup = Array.isArray(page.schema);
 
                 const dataRows = page.rows;
 
@@ -68,8 +70,10 @@ export class GoogleGenerator implements SheetGenerator {
                 await sheet.modify(r => {
                     let index = 0;
 
+                    const groups = Array.isArray(page.schema) ? page.schema : [{ columns: page.schema.columns, title: '' }];
+
                     // Group
-                    for (const group of page.groups) {
+                    for (const group of groups) {
 
                         // Only add group header if there are multiple groups
                         if (multigroup) {
