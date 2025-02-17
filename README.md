@@ -6,10 +6,10 @@
 
 ## Table of Contents
 
-1. [Project Overview](#project-overview)  
-2. [Using the Library](#using-the-library)  
-3. [TableBook Types](#types-of-tablebook)  
-4. [TableBook Functions and Utilities](#tablebook-functions-and-utilities)  
+1. [Project Overview](#project-overview)
+2. [Using the Library](#using-the-library)
+3. [TableBook Types](#types-of-tablebook)
+4. [TableBook Functions and Utilities](#tablebook-functions-and-utilities)
 
 ## **Project Overview**
 
@@ -135,9 +135,9 @@ async function main() {
 
   const genResult = await generator.generate(sheetBook);
 
-  if (!genResult.success) 
+  if (!genResult.success)
     console.error('Generation errors:', genResult.info);
-  else 
+  else
     console.log('Spreadsheet generated successfully!');
 }
 
@@ -151,21 +151,21 @@ async function main() {
 
 ### Table of Contents
 
-1. [TableSelector](#1-tableselector)  
-2. [TableReference](#2-tablereference)  
-3. [TableStyle](#3-tablestyle)  
-4. [TableHeaderStyle](#4-tableheaderstyle)  
-5. [TableTheme](#5-tabletheme)  
-6. [StandardPalette](#6-standardpalette)  
-7. [TableExpressions](#7-tableexpressions)  
-8. [TableDataType](#8-tabledatatype)  
-   - [8.1 TableConditionalStyle](#81-tableconditionalstyle)  
-   - [8.2 Rules Overview](#82-rules-overview)       
-   - [8.3 Text Type (`TableTextType`)](#83-text-type-tabletexttype)  
-   - [8.4 Enum Type (`TableEnumType`)](#84-enum-type-tableenumtype)  
-   - [8.5 Lookup Type (`TableLookupType`)](#85-lookup-type-tablelookuptype)  
-   - [8.6 Numeric Type (`TableNumericType`)](#86-numeric-type-tablenumerictype)  
-   - [8.7 Temporal Type (`TableTemporalType`)](#87-temporal-type-tabletemporaltype)  
+1. [TableSelector](#1-tableselector)
+2. [TableReference](#2-tablereference)
+3. [TableStyle](#3-tablestyle)
+4. [TableHeaderStyle](#4-tableheaderstyle)
+5. [TableTheme](#5-tabletheme)
+6. [StandardPalette](#6-standardpalette)
+7. [TableExpressions](#7-tableexpressions)
+8. [TableDataType](#8-tabledatatype)
+   - [8.1 TableConditionalStyle](#81-tableconditionalstyle)
+   - [8.2 Rules Overview](#82-rules-overview)
+   - [8.3 Text Type (`TableTextType`)](#83-text-type-tabletexttype)
+   - [8.4 Enum Type (`TableEnumType`)](#84-enum-type-tableenumtype)
+   - [8.5 Lookup Type (`TableLookupType`)](#85-lookup-type-tablelookuptype)
+   - [8.6 Numeric Type (`TableNumericType`)](#86-numeric-type-tablenumerictype)
+   - [8.7 Temporal Type (`TableTemporalType`)](#87-temporal-type-tabletemporaltype)
 9. [TableUnit and Hierarchical Structure](#9-tableunit-and-hierarchical-structure)
 
 
@@ -193,8 +193,8 @@ A `TableSelector` is either:
   - A `rows` field (specifying which rows to select).
 
 ```typescript
-type TableSelector = 
-  | "self" 
+type TableSelector =
+  | "self"
   | {
       column: TableColumnSelector | "self";
       rows:   TableRowSelector    | "self";
@@ -211,36 +211,91 @@ type TableSelector =
 
 ---
 
-### **1.2 Column Reference: Absolute vs. Relative**
+### **1.2 Column Selectors: Absolute vs. Relative**
 
-A `TableColumnSelector` defines a column's location within a table. Columns can be specified **absolutely** or **relatively**:
+A `TableColumnSelector` identifies a column within a table. Instead of referencing spreadsheet cell addresses like `A1`, it specifies **where the column is located** within a `TableBook` by using structured identifiers.
 
 ```typescript
 type TableColumnSelector = {
-  page?: string;  // Optional: If provided, must include 'group'.
-  group?: string;
-  name: string;
+  page?: string;  // Optional, specifies a page within the TableBook.
+  group?: string; // Optional, specifies a column group.
+  name: string;   // Required column name.
 };
 ```
 
-#### **Absolute vs. Relative Column Selection**
-| **Column Selector**                     | **Resolves To**                                      |
-|------------------------------------------|------------------------------------------------------|
-| `{ name: "Sales" }`                      | `"Sales"` in the **current group** and **page**.    |
-| `{ group: "Revenue", name: "Sales" }`    | `"Sales"` in `"Revenue"` on the **current page**.   |
-| `{ page: "Summary", group: "Revenue", name: "Sales" }` | `"Sales"` in `"Revenue"` on `"Summary"` page. |
-
-An **absolute reference** includes `page`, `group`, and `name`, explicitly identifying the column's location.
-
-A **relative reference** may include just `group` and `name`, or only `name`:
-- If a `group` is provided, it refers to that group within the current page.
-- If only `name` is provided, it refers to that column within the **current group** and **page**.
-
-❗ **Error:** If `page` is provided, `group` must also be specified. A `{ page, column }` reference is invalid.
+A column selector can be **absolute** or **relative**, depending on whether it explicitly includes a `page` and/or `group`.
 
 ---
 
-### **1.3 Row Reference: Self, All, Unit, or Range**
+### **Absolute Column Selectors**
+An **absolute selector** fully specifies a column's location, ensuring that it always points to the same place regardless of context.
+
+#### **Absolute Selector with Group (`page` + `group` + `name`)**
+If both `page` and `group` are provided, the selector targets a **specific column within a group** on a specific page.
+
+**Example:**
+```typescript
+{ page: "Summary", group: "Revenue", name: "Sales" }
+```
+- **Selects:** `"Sales"` inside the `"Revenue"` group on the `"Summary"` page.
+
+This is the **most explicit selector**, guaranteeing that it resolves to the same column every time.
+
+#### **Absolute Selector without Group (`page` + `name`)**
+If `page` is provided **without** `group`, the selector targets a column **only within a TableColumnList** (a page without column groups).
+
+**Example:**
+```typescript
+{ page: "Summary", name: "Sales" }
+```
+- **Selects:** `"Sales"` inside a **TableColumnList** on the `"Summary"` page.
+
+This selector **only works on pages that use a TableColumnList**. If the page contains **groups**, this selector would be **invalid**, since a group would be required.
+
+---
+
+### **Relative Column Selectors**
+A **relative selector** omits some details (`page`, `group`) and resolves based on **where it is used**.
+
+#### **Relative Selector with Group (`group` + `name`)**
+If a selector includes `group` but omits `page`, it selects a **column within a group on the current page**.
+
+**Example:**
+```typescript
+{ group: "Revenue", name: "Sales" }
+```
+- **Selects:** `"Sales"` inside the `"Revenue"` group **on the current page**.
+
+This selector is **valid on any page** that contains a `Revenue` group with a `Sales` column. If multiple pages share the same structure, the selector can be **reused across them**.
+
+#### **Relative Selector Without Group (`name` Only)**
+If a selector only includes `name`, it selects a **column within the current group and page**.
+
+**Example:**
+```typescript
+{ name: "Sales" }
+```
+- **Selects:** `"Sales"` inside the **current group and page**.
+
+This is **context-sensitive**. If multiple groups contain a `"Sales"` column, the selector resolves to the **nearest relevant group**.
+
+For example, if `{ name: "Total" }` is used inside `"Sales"` (which belongs to `"Revenue"`), it will resolve to `"Total"` inside `"Revenue"`—not another `"Total"` column in an unrelated group.
+
+This allows for **modular, reusable selectors** that work dynamically depending on context.
+
+---
+
+### **Key Takeaways**
+- A **TableColumnSelector** identifies a column inside a table.
+- **Absolute selectors** ensure that the same column is always selected:
+  - **With `page` and `group`** → Column inside a **specific group** on a specific page.
+  - **With `page` only** → Column inside a **TableColumnList** (pages without groups).
+- **Relative selectors** depend on context:
+  - **With `group` and `name`** → Column inside a group **on the current page**.
+  - **With `name` only** → Column inside the **current group and page**.
+- **Reusability**: Relative selectors allow references to be **shared across multiple pages** if the structure is consistent.
+
+### **1.3 Row Selectors: Self, All, Unit, or Range**
 
 A `TableRowSelector` defines which rows to include in the selection.
 
@@ -355,21 +410,23 @@ Since `TableBook` supports multiple groups on a page, `$0` does **not always map
 
 ---
 
-### **1.6 Key Takeaways**
+### **1.6 Key Takeaways**  
 
-- A **TableSelector** always references **one column** + a **row subset**.
-- **Columns** can be:
-  - **Fully Qualified** (`page, group, name`).
-  - **Relative** (`group, name` or just `name`).
-- **Rows** can be:
-  - `"self"` (current row),
-  - `"all"` (all rows),
-  - Absolute (`$n`),
-  - Relative (`+n`, `-n`),
-  - A **range** (`{ from: "$0", to: "$4" }`).
-- **Errors:** You **must** include `group` when specifying `page` (`{ page, column }` is invalid).
-- **Single vs. Multiple Groups:** `$0` translates to `A2` if there’s **one group**, but `A3` if there are **multiple groups**.
-
+- A **TableSelector** always references **one column** + a **row subset**.  
+- **Columns** can be:  
+  - **Fully qualified** (`{ page, group, name }`)  
+  - **Partially qualified** (`{ group, name }` or `{ name }`)  
+  - **Flat column references** (`{ page, name }`) when selecting from a **TableColumnList**.  
+- **Rows** can be:  
+  - `"self"` (current row)  
+  - `"all"` (all rows)  
+  - **Absolute** (`"$n"`)  
+  - **Relative** (`"+n"`, `"-n"`)  
+  - **Range** (`{ from: "$0", to: "$4" }`)  
+- **Headers are always included when using groups.**  
+- **A table without headers must use a `TableColumnList` instead of groups.**  
+- **Single-group tables also render group headers.**  
+- **Selectors can target columns inside a group or a flat column list, depending on structure.**
 ---
 
 ## **2. TableReference**
@@ -446,7 +503,7 @@ type TableBorder = {
 Represents the available styles for border lines:
 ```typescript
 type TableBorderType =
-    "none"  | 
+    "none"  |
     "thin"  | "medium" | "thick"  |
     "dotted"| "dashed" | "double";
 ```
@@ -471,19 +528,19 @@ type TableTheme = {
 };
 ```
 
-- **`inherits`**  
+- **`inherits`**
   An ordered array of theme references. Each referenced theme is merged into the current theme one by one, so later themes override matching properties of earlier themes (property-by-property).
 
-- **`tab`**  
+- **`tab`**
   The color or reference used for the spreadsheet’s tab.
 
-- **`group`**  
+- **`group`**
   The style or reference used for group headers (uses `TableHeaderStyle`).
 
-- **`header`**  
+- **`header`**
   The style or reference used for column headers (uses `TableHeaderStyle`).
 
-- **`data`**  
+- **`data`**
   The style or reference used for data cells (uses `TableStyle`).
 
 ---
@@ -492,13 +549,13 @@ type TableTheme = {
 
 Themes can be defined at any level of the `TableBook`. When a level has no theme, it simply keeps the one from above. If a level **does** define or reference a theme, that new theme merges its properties on top of whatever came before it. For example:
 
-1. **Book Level**  
+1. **Book Level**
    Set a global theme that applies to all pages by default.
-2. **Page Level**  
+2. **Page Level**
    Refine or replace the book theme if needed for that Page.
-3. **Group Level**  
+3. **Group Level**
    Further customize the group’s style.
-4. **Column Level**  
+4. **Column Level**
    Optionally refine the theme again, but only if specific columns require different looks.
 
 ---
@@ -538,11 +595,11 @@ Below is an example of a **book-level** theme referencing the built-in **blue** 
 }
 ```
 
-- **`inherits: ["@blue"]`**  
+- **`inherits: ["@blue"]`**
   Applies the `blue` palette (darkest → `group.back`, dark → `header.back`, main → `tab`, lightest → `data.back`).
-- **`group` and `header`**  
+- **`group` and `header`**
   Set their text color to `#FFFFFF` (white) and enable `bold`, ensuring high contrast on dark backgrounds.
-- **Pages**, **Groups**, **Columns**  
+- **Pages**, **Groups**, **Columns**
   All inherit from this book-level theme unless they specify their own.
 
 ---
@@ -566,7 +623,7 @@ A good starting theme for your TableBook allows you to use different palettes fo
          "bold": true,
          "between": { "type": "thin", "color": "#333333" }
       }
-   }   
+   }
 }
 ```
 
@@ -636,7 +693,7 @@ Neutrals:
 
 ### **Examples**
 
-1. **Use a Full Palette as a Theme**  
+1. **Use a Full Palette as a Theme**
    ```json
    {
      "name": "Report",
@@ -646,7 +703,7 @@ Neutrals:
    ```
    This automatically applies the darkest, dark, base, lightest shades to `group.back`, `header.back`, `tab`, and `data.back` respectively.
 
-2. **Reference a Specific Shade**  
+2. **Reference a Specific Shade**
    ```json
    {
      "theme": {
@@ -717,8 +774,8 @@ This selects the value from the `"Revenue"` column for the current row.
 
 #### **7.3 TableFunctionExpression**
 
-A `TableFunctionExpression` applies a named function to a list of argument expressions. The final formula will call that function with the provided arguments.  
-For example, if the `"Revenue"` column is in column D (with a group header) and you want to sum all values in that column along with a literal value, the compiled formula might look like:  
+A `TableFunctionExpression` applies a named function to a list of argument expressions. The final formula will call that function with the provided arguments.
+For example, if the `"Revenue"` column is in column D (with a group header) and you want to sum all values in that column along with a literal value, the compiled formula might look like:
 `SUM(Items!$D3:$D, 50)`.
 
 ```typescript
@@ -820,7 +877,7 @@ type TableCombineExpression = {
   "op": "&",
   "items": [
     { "type": "selector", "selector": { "column": { "name": "Price" }, "rows": "self" } },
-    " x "    
+    " x "
     { "type": "selector", "selector": { "column": { "name": "Amount" }, "rows": "self" } },
   ]
 }
@@ -1068,7 +1125,7 @@ const rule: TableTemporalRule = {
 
 #### **8.3 Text Type** (`TableTextType`)
 
-Represents string-based data.  
+Represents string-based data.
 
 ```typescript
 type TableTextType = {
@@ -1082,7 +1139,7 @@ type TableTextType = {
 
 #### **8.4 Enum Type** (`TableEnumType`)
 
-Represents data with a fixed set of allowed values.  
+Represents data with a fixed set of allowed values.
 ```typescript
 type TableEnumType = {
     kind: "enum";
@@ -1106,7 +1163,7 @@ type TableEnumItem = {
 
 #### **8.5 Lookup Type** (`TableLookupType`)
 
-References valid values from another column.  
+References valid values from another column.
 ```typescript
 type TableLookupType = {
     kind: "lookup";
@@ -1121,7 +1178,7 @@ type TableLookupType = {
 
 #### **8.6 Numeric Type** (`TableNumericType`)
 
-Represents numerical data, allowing for validation, formatting, and conditional styling.  
+Represents numerical data, allowing for validation, formatting, and conditional styling.
 
 ```typescript
 type TableNumericType = {
@@ -1198,7 +1255,7 @@ There are three specific numeric formats, each extending the base numeric format
 
 #### **8.7 Temporal Type** (`TableTemporalType`)
 
-Represents date and time data, with flexible validation and customizable formatting.  
+Represents date and time data, with flexible validation and customizable formatting.
 
 ```typescript
 type TableTemporalType = {
@@ -1318,8 +1375,8 @@ type TableDefinitions = {
     styles?: TableReferenceMap<TableHeaderStyle>;
     themes?: TableReferenceMap<TableTheme>;
     numerics?: TableReferenceMap<TableNumericFormat>;
-    temporals?: TableReferenceMap<TableTemporalFormat>;    
-    types?: TableReferenceMap<TableDataType>;    
+    temporals?: TableReferenceMap<TableTemporalFormat>;
+    types?: TableReferenceMap<TableDataType>;
 };
 ```
 
@@ -1387,10 +1444,10 @@ type TableUnit = {
 A `TableColumn` represents the smallest unit in a `TableBook`. It extends `TableUnit` and includes properties for defining the data type, optional metadata, and row-based value assignments.
 
 ```typescript
-type TableColumn = TableUnit & {    
-    type: TableDataType | TableReference; 
-    values?: TableValues;            
-    source?: string;                      // Metadata describing where the column's data comes from    
+type TableColumn = TableUnit & {
+    type: TableDataType | TableReference;
+    values?: TableValues;
+    source?: string;                      // Metadata describing where the column's data comes from
 };
 ```
 
@@ -1400,24 +1457,24 @@ The `TableValues` type provides a structured way to assign values to rows in a c
 
 Each column can define its values in one of three ways:
 
-1. **Single Expression for All Rows**  
+1. **Single Expression for All Rows**
    - A `TableExpression` applies a **single expression** to every row in the column.
    - This is equivalent to writing the same formula in every row of a spreadsheet column.
 
-2. **Explicit Per-Row Assignments**  
+2. **Explicit Per-Row Assignments**
    - An **array** of `TableExpression` where each array index corresponds to a row index (0-based).
    - This approach is useful when different rows require distinct formulas or values.
 
-3. **Mixed Assignments (`items` + `rest`)**  
-   - The `items` array defines explicit expressions for specific row indices.  
-   - The `rest` expression applies to all rows **not covered** by `items`.  
+3. **Mixed Assignments (`items` + `rest`)**
+   - The `items` array defines explicit expressions for specific row indices.
+   - The `rest` expression applies to all rows **not covered** by `items`.
    - This method is useful when most rows share a common formula, but some need specific overrides.
 
 ```typescript
 type TableValues =
     | TableExpression    // One expression for all rows
     | TableExpression[]  // Explicit values for specific rows
-    | { 
+    | {
         items?: TableExpression[]; // Explicit row-based expressions
         rest?: TableExpression;    // Default expression for remaining rows
       };
@@ -1427,38 +1484,167 @@ By structuring values this way, `TableBook` allows for powerful and flexible row
 
 ___
 
-#### **9.4 TableGroup**
+#### **9.4 TableColumnList & TableGroup**  
 
-A `TableGroup` organizes multiple `TableColumn` elements into a logical set (e.g., financial columns vs. operational columns). Groups also extend `TableUnit`, so they can have their own definitions, theme, or description.
+A `TableColumnList` and `TableGroup` both define **sets of columns** within a table, but they differ in structure and how headers are handled.
 
 ```typescript
-type TableGroup = TableUnit & {
-  columns: TableColumn[];
+/** An ordered list of columns without group headers. */
+export type TableColumnList = {
+    columns: TableColumn[];
 };
+
+/** A named group of related columns that includes a header row. */
+export type TableGroup = TableUnit & TableColumnList;
 ```
+
+---
+
+### **TableColumnList**  
+A `TableColumnList` represents an **ordered set of columns** that are **not part of a named group**. It defines a simple table structure where columns exist independently, without an additional **group header row**.
+
+- Used when **grouping is not required**.  
+- The first row of the table contains **only column headers**.  
+- Each column appears **in the order it is defined**.
+
+**Example:**
+```typescript
+{
+  schema: {
+    columns: [
+      { name: "Product", type: "text" },
+      { name: "Price", type: "number" }
+    ]
+  }
+}
+```
+**Rendered Structure:**
+| Product | Price |
+|---------|-------|
+| Apple   | 1.00  |
+| Banana  | 0.75  |
+
+---
+
+### **TableGroup**  
+A `TableGroup` defines an **ordered set of related columns** that belong to the same logical category.  
+
+- Used when **columns should be grouped** under a shared header.  
+- The first row contains **group headers**, and the second row contains **column headers**.  
+- Every column within a group is explicitly associated with that group.
+
+```typescript
+{
+  schema: [
+    {
+      name: "Sales Data",
+      columns: [
+        { name: "Region", type: "text" },
+        { name: "Revenue", type: "number" }
+      ]
+    }
+  ]
+}
+```
+**Rendered Structure:**
+| Sales Data |       |  
+|------------|-------|  
+| Region     | Revenue |  
+| North      | 5000   |  
+| South      | 3200   |  
+
+---
+
+### **Definition and Differences**
+| Feature            | TableColumnList | TableGroup |
+|--------------------|----------------|------------|
+| Definition        | An **ordered** list of columns without group headers | An **ordered** group of related columns |
+| Group Headers     | No group headers | Includes a group header |
+| Column Headers    | Always present | Always present |
+| Use Case         | Flat tables without column groups | Structured tables with logical column grouping |
+
+A `TableColumnList` is used for **simple, ungrouped tables**, while a `TableGroup` is used when **columns need to be grouped under a shared name**.
 
 ---
 
 #### **9.5 TablePage**
 
-A `TablePage` represents a **single sheet** within a `TableBook`. Each page contains a structured table composed of **groups** and **columns**, defining the layout of the data.
+### **9.5 TablePage**  
+
+A `TablePage` represents a **single sheet** within a `TableBook`. Each page contains a structured table, which can be either **a flat list of columns** or **grouped columns**.
 
 ```typescript
 type TablePage = TableUnit & {
-  groups: TableGroup[];
+  /** Table structure: a flat column list or grouped columns. */
+  schema: TableColumnList | TableGroup[];
+  /** Number of data rows (excluding headers). */
   rows: number;
 };
 ```
 
-The `rows` property represents the number of **data rows only**, excluding any headers. The total number of rows in the final spreadsheet depends on whether the page has **single or multiple groups**.
+---
 
-- If the page has **a single group**, the first row is a column header, and the total number of rows is `rows + 1`.  
-  - Example: If `rows: 10`, the total rows in the sheet are **11** (1 header + 10 data rows).  
+### **9.5.1 Schema Structure**  
 
-- If the page has **multiple groups**, the first row is a **group header**, followed by a column header. The total number of rows is `rows + 2`.  
-  - Example: If `rows: 10`, the total rows in the sheet are **12** (2 headers + 10 data rows).  
+The `schema` defines how columns are arranged on the page:
 
-This distinction is important when determining absolute row positions, as **data always starts below the headers**.
+- **`TableColumnList`** → A **flat table** with column headers.
+- **`TableGroup[]`** → A **structured table** with group and column headers.
+
+#### **Flat Column List (Column Headers Only)**  
+```typescript
+{
+  schema: {
+    columns: [
+      { name: "Sales", type: { kind: "numeric" } },
+      { name: "Profit", type: { kind: "numeric" } }
+    ]
+  },
+  rows: 10
+}
+```
+- Includes **column headers**.
+- No **group headers**.
+
+#### **Grouped Columns (Group + Column Headers)**  
+```typescript
+{
+  schema: [
+    {
+      name: "Revenue",
+      columns: [
+        { name: "Sales", type: { kind: "numeric" } },
+        { name: "Profit", type: { kind: "numeric" } }
+      ]
+    },
+    {
+      name: "Expenses",
+      columns: [
+        { name: "Cost", type: { kind: "numeric" } },
+        { name: "Overhead", type: { kind: "numeric" } }
+      ]
+    }
+  ],
+  rows: 10
+}
+```
+- Includes **both** group headers and column headers.
+- `"Revenue"` group contains `"Sales"` and `"Profit"` columns.
+- `"Expenses"` group contains `"Cost"` and `"Overhead"` columns.
+
+---
+
+### **9.5.2 Data Rows and Headers**  
+
+The `rows` property represents **only data rows** and excludes headers.
+
+| **Schema Type**      | **Header Rows** | **Total Rows** (if `rows = 10`) |
+|----------------------|---------------|------------------------------|
+| **Flat Column List** | 1 (column headers) | **11** (headers + data) |
+| **Grouped Columns**  | 2 (group + column headers) | **12** (headers + data) |
+
+- **Flat column lists** → Always have **column headers**.  
+- **Grouped columns** → Have **both** group and column headers.
 
 ---
 
@@ -1489,9 +1675,9 @@ type TableBook = TableUnit & {
 
 ### Table of Contents
 
-1. [Result](#1-result)  
-2. [TableBookIssue](#2-tablebookissue)  
-3. [`tablebook` Functions](#3-tablebook-functions)  
+1. [Result](#1-result)
+2. [TableBookIssue](#2-tablebookissue)
+3. [`tablebook` Functions](#3-tablebook-functions)
 
 ### 1. Result
 
@@ -1547,7 +1733,7 @@ The `TableBookIssue` type represents errors or warnings encountered while workin
 
 #### **Definition**
 ```typescript
-type TableBookIssue = 
+type TableBookIssue =
     | TableBookParseIssue
     | TableBookValidateIssue
     | TableBookProcessIssue
