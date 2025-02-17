@@ -172,9 +172,9 @@ export const processTableBook = (
         .map((page, i) => resolvePage(page, ['pages', i], definitions, columns, [theme], logger, issues))
         .filter((page): page is SheetPage => page !== undefined);
 
-    const resultBook: SheetBook = { title: book.name, pages };
+    const result: SheetBook = { title: book.name, pages };
 
     return issues.length === 0
-        ? Result.success(resultBook)
-        : Result.failure(issues, resultBook);
+        ? Result.success(result)
+        : Result.failure(issues, result);
 };
