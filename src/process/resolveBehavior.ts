@@ -22,21 +22,17 @@ const resolveStyleAndColor = (
 
     let sheetStyle: SheetStyle | undefined;
 
-    const styleResult = style ? resolveStyle(style, definitions, path) : Result.success(undefined);
+    const styleResult = style ? resolveStyle(style, definitions, path, issues) : undefined;
 
-    const colorResult = color ? resolveColor(color, definitions, path) : Result.success(undefined);
+    const colorResult = color ? resolveColor(color, definitions, path, issues) : undefined;
 
-    if (styleResult.success)
-        sheetStyle = styleResult.value;
-    else
-        issues.push(...styleResult.info);
+    if (styleResult)
+        sheetStyle = styleResult;
 
-    if (colorResult.success) {
+    if (colorResult) {
         sheetStyle = sheetStyle ?? {};
-        sheetStyle.fore = colorResult.value;
+        sheetStyle.fore = colorResult;
     }
-    else
-        issues.push(...colorResult.info);
 
     return sheetStyle;
 };

@@ -53,7 +53,7 @@ export const Result = Object.freeze({
      * @param onFailure - A callback function that handles the failure case and returns a fallback value.
      * @returns The successful value if the result is successful, otherwise the value returned by `onFailure`.
      */
-    unwrap: <T, I, O = void>(result: Result<T, I>, onFailure: (info: I) => O): T | O => {
+    unwrap: <T, I, O>(result: Result<T, I>, onFailure: (info: I) => O): T | O => {
         return result.success ? result.value : onFailure(result.info);
     }
 });

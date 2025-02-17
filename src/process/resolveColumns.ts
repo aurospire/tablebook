@@ -8,7 +8,6 @@ export type ResolvedColumn = {
     index: number;
 };
 
-
 export type ResolvedColumnMap = Map<string, ResolvedColumn>;
 
 export const toLookupName = (page: string, group: string | undefined, name: string) => group ? `${page}.${group}.${name}` : `${page}.${name}`;
