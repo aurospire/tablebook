@@ -6,7 +6,7 @@ import { TableBook, TableColumn, TableColumnList, TableDataType, TableGroup, Tab
 import { ObjectPath, Result } from "../util";
 import { TableDefinitionsManager } from "./DefinitionsRegistry";
 import { resolveBehavior } from "./resolveBehavior";
-import { resolveColumns, ResolvedColumnMap } from "./resolveColumns";
+import { resolveColumns, ResolvedColumnMap, toLookupName } from "./resolveColumns";
 import { resolveStyle } from "./resolveStyle";
 import { mergeStyles, resolveTheme, SheetTheme } from "./resolveTheme";
 import { resolveValues } from "./resolveValues";
@@ -106,6 +106,8 @@ export const resolveGroup = (
 
     const theme = resolveTheme(group.theme ?? {}, definitions, themeParents, [], path, issues);
 
+    themeParents = [...themeParents, theme];
+
     const resolvedColumns = group.columns
         .map((column, i) => resolveColumn(column, pageName, undefined, dataRows, [...path, 'columns', i], definitions, columns, themeParents, logger, issues))
         .filter((column): column is SheetColumn => column !== undefined);
@@ -133,6 +135,8 @@ export const resolvePage = (
     definitions = definitions.overlay(page.definitions);
 
     const theme = resolveTheme(page.theme ?? {}, definitions, themeParents, [], path, issues);
+
+    themeParents = [...themeParents, theme];
 
     const schema: SheetPage['schema'] | undefined = Array.isArray(page.schema)
         ? page.schema
