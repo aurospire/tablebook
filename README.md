@@ -81,7 +81,7 @@ async function main() {
     {
       "name": "Summary",
       "rows": 100,
-      "groups": [
+      "schema": [
         {
           "name": "Revenue",
           "columns": [
@@ -581,7 +581,7 @@ Below is an example of a **book-level** theme referencing the built-in **blue** 
   "pages": [
     {
       "name": "Summary",
-      "groups": [
+      "schema": [
         {
           "name": "Revenue",
           "columns": [
