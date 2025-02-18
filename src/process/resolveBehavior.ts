@@ -243,7 +243,7 @@ const resolveEnumBehavior = (
 
 const resolveNumericBehavior = (
     type: TableNumericType,
-    pageName: string, groupName: string|undefined, columnName: string,
+    pageName: string, groupName: string | undefined, columnName: string,
     columns: Map<string, ResolvedColumn>,
     definitions: TableDefinitionsManager,
     path: ObjectPath,
@@ -283,7 +283,7 @@ const resolveNumericBehavior = (
 
 const resolveTemporalBehavior = (
     type: TableTemporalType,
-    pageName: string, groupName: string|undefined, columnName: string,
+    pageName: string, groupName: string | undefined, columnName: string,
     columns: Map<string, ResolvedColumn>,
     definitions: TableDefinitionsManager,
     path: ObjectPath,

@@ -31,9 +31,11 @@ export const resolveSelector = (
     else {
         const fullname = toLookupName(
             column.page ?? pageName,
-            column.group ?? groupName,
+            column.group ?? column.page ? column.group : groupName,
             column.name
         );
+
+        console.log(column, {pageName, groupName, columnName}, fullname);
 
         if (!columns.has(fullname)) {
             issues.push({ type: 'processing', message: `Invalid column`, path, data: fullname });
