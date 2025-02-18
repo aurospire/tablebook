@@ -19,6 +19,7 @@ export type GoogleAddSheetOptions = {
     columns?: number;
     color?: ColorObject;
 };
+
 export type GoogleBorder = sheets_v4.Schema$Border;
 
 export type GoogleColorStyle = sheets_v4.Schema$ColorStyle;
