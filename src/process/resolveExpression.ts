@@ -65,7 +65,7 @@ export const resolveExpression = (
                     if (expression.vars) {
                         for (const [name, subexp] of Object.entries(expression.vars)) {
 
-                            const subexpResult = resolveExpression(subexp, pageName, groupName, name, columns, path, issues);
+                            const subexpResult = resolveExpression(subexp, pageName, groupName, columnName, columns, path, issues);
 
                             if (subexpResult)
                                 resolvedTags.push([name, subexpResult]);

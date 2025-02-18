@@ -109,7 +109,7 @@ export const resolveGroup = (
     themeParents = [...themeParents, theme];
 
     const resolvedColumns = group.columns
-        .map((column, i) => resolveColumn(column, pageName, undefined, dataRows, [...path, 'columns', i], definitions, columns, themeParents, logger, issues))
+        .map((column, i) => resolveColumn(column, pageName, group.name, dataRows, [...path, 'columns', i], definitions, columns, themeParents, logger, issues))
         .filter((column): column is SheetColumn => column !== undefined);
 
     const result: SheetGroup = {
