@@ -2,7 +2,7 @@
     "name": "tablebook",
     "description": "Generate spreadsheets with a declarative and structured table-based schema.",
     "author": "aurospire",
-    "version": "0.11.2",
+    "version": "0.11.3",
     "repository": {
         "type": "git",
         "url": "https://github.com/aurospire/tablebook.git"
