@@ -64,8 +64,12 @@ import {
     TableUnitSelector, TableUnitSelectorRegex
 } from './types';
 
+
 /* Reference */
-const TableReference: z.ZodType<TableReference> = z.custom<TableReference>(value => TableReferenceRegex.test(value as string));
+const TableReference: z.ZodType<TableReference> = z.custom<TableReference>(
+    value => TableReferenceRegex.test(value as string),
+    { message: `Table reference must match regex ${TableReferenceRegex}` }
+);
 
 /* Data Reference */
 const TableSelfSelector: z.ZodType<TableSelfSelector> = z.literal(TableSelfLiteral);
@@ -96,7 +100,10 @@ const TableDataSelector: z.ZodType<TableSelector> = z.union([
 ]);
 
 /* Styling */
-const TableColor: z.ZodType<TableColor> = z.custom(value => TableColorRegex.test(value as string));
+const TableColor: z.ZodType<TableColor> = z.custom(
+    value => TableColorRegex.test(value as string),
+    { message: `Color must match regex ${TableColorRegex}` }
+);
 
 
 const TableColorReference = z.union([TableColor, TableReference]);
@@ -186,7 +193,10 @@ const TableExpression: z.ZodType<TableExpression> = z.union([
 ]);
 
 /* Data Rules */
-const TableTemporalString: z.ZodType<TableTemporalString> = z.custom(value => TableTemporalStringRegex.test(value as string));
+const TableTemporalString: z.ZodType<TableTemporalString> = z.custom(
+    value => TableTemporalStringRegex.test(value as string),
+    { message: `Temporal string must match regex ${TableTemporalStringRegex}` }
+);
 
 const makeValueRules = <T>(type: z.ZodType<T>) => {
     const comparison = z.object({
@@ -336,7 +346,7 @@ const TableDefinitions: z.ZodType<TableDefinitions> = z.object({
 }).strict();
 
 const TableUnit = z.object({
-    name: z.string().regex(TableUnitNameRegex),
+    name: z.string().regex(TableUnitNameRegex, `Unit name must match regex ${TableUnitNameRegex}`),
     theme: z.union([TableTheme, TableReference]).optional(),
     description: z.string().optional(),
     definitions: TableDefinitions.optional()
