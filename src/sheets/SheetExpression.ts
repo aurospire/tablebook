@@ -18,6 +18,23 @@ const toFormulaString = (value: string): string => {
     }).join(' & ');
 };
 
+export const substringSort = <T>(record: Record<string, T>): [key: string, value: T][] => {
+    const entries= Object.entries(record);
+
+    // Sort function
+    entries.sort((a, b) => {
+        const [keyA] = a;
+        const [keyB] = b;
+
+        if (keyA.includes(keyB)) return -1;  // A includes B → A should come after
+        else if (keyB.includes(keyA)) return 1; // B includes A → B should come after
+        else return keyA.localeCompare(keyB); // Otherwise, sort alphabetically
+    });
+
+    return entries;
+};
+
+
 export const toFormula = (exp: SheetExpression, position: SheetPosition): string => {
 
     switch (typeof exp) {
@@ -41,7 +58,7 @@ export const toFormula = (exp: SheetExpression, position: SheetPosition): string
                     let result = exp.text;
 
                     if (exp.vars) {
-                        for (const [name, subexp] of Object.entries(exp.vars)) {
+                        for (const [name, subexp] of substringSort(exp.vars)) {
                             const formula = toFormula(subexp, position);
 
                             result = result.replaceAll(name, formula);
